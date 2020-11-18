@@ -1,21 +1,17 @@
 from tkinter import *
 from tkinter import messagebox, ttk, scrolledtext
 import sqlite3
-from string import ascii_uppercase as alphabet
+import re
+
 charcoal = '#F1F1EE'
 rust = '#F62A00'
 navy = '#00293C'
 teal = '#1E656D'
 clients = []
 purchasers = []
-products = ["Some Product-1", "Some Product-2", "Some Product-3",
-            "Some Product-4", "Some Product-5", "Some Product-6", "Some Product-7", "Some Product-2", "Some Product-3",
-            "Some Product-4", "Some Product-5", "Some Product-6", "Some Product-7"]
-years = ["2020-2021", "2021-2022", "2022-2023",  "2023-2024",
+products = []
+years = ["2019-2020", "2020-2021", "2021-2022", "2022-2023",  "2023-2024",
          "2024-2025", "2025-2026", "2026-2027", "2027-2028", "2028-2029", "2029-2030"]
-months = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"]
-days = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16",
-        "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31"]
 
 
 class App(Tk):
@@ -86,7 +82,7 @@ class Home(Frame):
             "arial", 18, "bold"), command=lambda: controller.show_frame(UpdatePurchaseStatus)).grid(row=0, column=2, padx=20, pady=15)
 
 
-# ---------- SALES FRAMES --------
+# ---------- SALES FRAMES ----------
 
 
 class AddClient(Frame):
@@ -156,9 +152,8 @@ class AddClient(Frame):
 
     def insertClient(self, name, address, gst):
         try:
-            sqliteConnection = sqlite3.connect('Billing.db')
+            sqliteConnection = sqlite3.connect('test.db')
             cursor = sqliteConnection.cursor()
-            # print("Connected to SQLite")
 
             sqlite_insert_with_param = """INSERT INTO client
                     (c_name, c_address, c_gst)
@@ -178,7 +173,6 @@ class AddClient(Frame):
         finally:
             if (sqliteConnection):
                 sqliteConnection.close()
-                # print("The SQLite connection is closed")
 
     def clearText(self):
         self.cname_txt.delete(0, END)
@@ -269,9 +263,9 @@ class CreateBill(Frame):
 
     def insertBill(self, name, year, date, po):
         try:
-            sqliteConnection = sqlite3.connect('Billing.db')
+            sqliteConnection = sqlite3.connect('test.db')
             cursor = sqliteConnection.cursor()
-            # print("Connected to SQLite")
+
             cursor.execute(
                 """SELECT MAX(b_no) FROM bill WHERE b_year=?;""", (year,))
             val = cursor.fetchall()
@@ -296,7 +290,6 @@ class CreateBill(Frame):
         finally:
             if (sqliteConnection):
                 sqliteConnection.close()
-                # print("The SQLite connection is closed")
 
     def updateClientList(self):
         getCientList()
@@ -325,10 +318,9 @@ class AddBillDetails(Frame):
         # Product Name
         Label(self.addDetailsF, text="Product:", font=(
             "times new roman", 14, "bold")).grid(row=0, column=0, pady=10, sticky=E)
-        self.pname = StringVar()
-        self.pnameC = ttk.Combobox(self.addDetailsF, width=15, font=(
-            "arial", 14, "bold"), textvariable=self.pname, postcommand=self.updateProductList)
-        self.pnameC.grid(row=0, column=1, padx=20, pady=10)
+        self.pname = AutocompleteEntry(
+            products, self, listboxLength=10, width=15, bd=3, relief=GROOVE, font=("arial", 14, "bold"))
+        self.pname.place(x=150, y=300)
 
         # Quantity
         Label(self.addDetailsF, text="Quantity:", font=(
@@ -434,10 +426,9 @@ class AddBillDetails(Frame):
         # Product Name
         Label(self.editDetailsF, text="Product:", font=(
             "times new roman", 14, "bold")).grid(row=1, column=0, pady=10, sticky=E)
-        self.epname = StringVar()
-        self.epnameC = ttk.Combobox(self.editDetailsF, width=15, font=(
-            "arial", 14, "bold"), textvariable=self.epname, postcommand=self.updateProductList)
-        self.epnameC.grid(row=1, column=1, padx=20, pady=10)
+        self.epname = AutocompleteEntry(
+            products, self, listboxLength=10, width=15, bd=3, relief=GROOVE, font=("arial", 14, "bold"))
+        self.epname.place(x=770, y=345)
 
         # Quantity
         Label(self.editDetailsF, text="Quantity:", font=(
@@ -506,7 +497,7 @@ class AddBillDetails(Frame):
             "times new roman", 16, "bold")).grid(row=0, column=0, pady=10, sticky=E)
         self.byear = StringVar()
         self.byearC = ttk.Combobox(self.selectBillF, width=10, font=(
-            "arial", 16, "bold"), textvariable=self.byear, postcommand=self.updateYearList)
+            "arial", 16, "bold"), textvariable=self.byear, values=years)
         self.byearC.grid(row=0, column=1, padx=10, pady=10)
 
         # Bill No.
@@ -597,10 +588,6 @@ class AddBillDetails(Frame):
             messagebox.showerror(
                 title="Error", message="Product Field cannot be empty!!")
             return
-        if name not in products:
-            messagebox.showerror(
-                title="Error", message="Select Product's Name from Dropdown List!!")
-            return
         quantity = self.pquan.get()
         if not quantity:
             messagebox.showerror(
@@ -644,9 +631,9 @@ class AddBillDetails(Frame):
 
     def insertBillDetails(self, data_list):
         try:
-            sqliteConnection = sqlite3.connect('Billing.db')
+            sqliteConnection = sqlite3.connect('test.db')
             cursor = sqliteConnection.cursor()
-            # print("Connected to SQLite")
+
             cursor.execute(
                 "SELECT b_no FROM bill WHERE b_year=? AND b_no=?;", (data_list[0], data_list[1],))
             rows = cursor.fetchall()
@@ -672,6 +659,8 @@ class AddBillDetails(Frame):
                                 message="Details added successfully!!")
             cursor.close()
             self.viewBillDetails()
+            if data_list[3] not in products:
+                addProduct(data_list[3])
 
         except sqlite3.Error as error:
             messagebox.showerror(
@@ -679,7 +668,6 @@ class AddBillDetails(Frame):
         finally:
             if (sqliteConnection):
                 sqliteConnection.close()
-                # print("The SQLite connection is closed")
 
     def editBillDetails(self):
         b_year = self.byear.get()
@@ -766,9 +754,9 @@ class AddBillDetails(Frame):
 
     def updateBill(self, b_year, b_no, srno, constraints):
         try:
-            sqliteConnection = sqlite3.connect('Billing.db')
+            sqliteConnection = sqlite3.connect('test.db')
             cursor = sqliteConnection.cursor()
-            # print("Connected to SQLite")
+
             cursor.execute(
                 "SELECT b_no FROM bill WHERE b_year=? AND b_no=?;", (b_year, b_no,))
             rows = cursor.fetchall()
@@ -796,6 +784,8 @@ class AddBillDetails(Frame):
             getCientList()
             cursor.close()
             self.viewBillDetails()
+            if "bd_product" == constraints[0] and constraints[1] not in products:
+                addProduct(constraints[1])
 
         except sqlite3.Error as error:
             messagebox.showerror(
@@ -803,7 +793,6 @@ class AddBillDetails(Frame):
         finally:
             if (sqliteConnection):
                 sqliteConnection.close()
-                # print("The SQLite connection is closed")
 
     def viewBillDetails(self):
         b_year = self.byear.get()
@@ -825,9 +814,8 @@ class AddBillDetails(Frame):
 
     def selectBillDetails(self, b_year, b_no):
         try:
-            sqliteConnection = sqlite3.connect('Billing.db')
+            sqliteConnection = sqlite3.connect('test.db')
             cursor = sqliteConnection.cursor()
-            # print("Connected to SQLite")
 
             sqlite_insert_with_param = """SELECT bd_id, bd_product, bd_rate, bd_quantity, bd_cgst, bd_sgst, bd_igst, bd_amount, bd_hsn, bd_ch_no, bd_amc_no FROM bill_detail WHERE b_year=? AND b_no=?;"""
 
@@ -875,7 +863,6 @@ class AddBillDetails(Frame):
         finally:
             if (sqliteConnection):
                 sqliteConnection.close()
-                # print("The SQLite connection is closed")
 
     def removeLastDetail(self):
         b_year = self.byear.get()
@@ -896,9 +883,9 @@ class AddBillDetails(Frame):
 
     def deleteDetails(self, b_year, b_no):
         try:
-            sqliteConnection = sqlite3.connect('Billing.db')
+            sqliteConnection = sqlite3.connect('test.db')
             cursor = sqliteConnection.cursor()
-            # print("Connected to SQLite")
+
             cursor.execute(
                 "SELECT b_no FROM bill WHERE b_year=? AND b_no=?;", (b_year, b_no,))
             rows = cursor.fetchall()
@@ -928,7 +915,6 @@ class AddBillDetails(Frame):
         finally:
             if (sqliteConnection):
                 sqliteConnection.close()
-                # print("The SQLite connection is closed")
 
     def editClient(self):
         b_year = self.byear.get()
@@ -950,9 +936,9 @@ class AddBillDetails(Frame):
 
     def updateClient(self, b_year, b_no, cname):
         try:
-            sqliteConnection = sqlite3.connect('Billing.db')
+            sqliteConnection = sqlite3.connect('test.db')
             cursor = sqliteConnection.cursor()
-            # print("Connected to SQLite")
+
             cursor.execute("SELECT c_id FROM client WHERE c_name=?;", (cname,))
             c_id = cursor.fetchall()
             sqlite_insert_with_param = "UPDATE bill SET c_id = ? WHERE b_year = ? AND b_no = ?;"
@@ -969,13 +955,11 @@ class AddBillDetails(Frame):
         finally:
             if (sqliteConnection):
                 sqliteConnection.close()
-                # print("The SQLite connection is closed")
 
     def selectBillInfo(self, b_year, b_no):
         try:
-            sqliteConnection = sqlite3.connect('Billing.db')
+            sqliteConnection = sqlite3.connect('test.db')
             cursor = sqliteConnection.cursor()
-            # print("Connected to SQLite")
 
             sqlite_insert_with_param = """SELECT c_id FROM bill WHERE b_year=? AND b_no=?;"""
             data_tuple = (b_year, b_no)
@@ -1008,7 +992,6 @@ class AddBillDetails(Frame):
         finally:
             if (sqliteConnection):
                 sqliteConnection.close()
-                # print("The SQLite connection is closed")
 
     def clearTextAdd(self):
         self.pnameC.delete(0, END)
@@ -1030,15 +1013,6 @@ class AddBillDetails(Frame):
         self.eigst.delete(0, END)
         self.echallan.delete(0, END)
         self.eamc.delete(0, END)
-
-    def updateProductList(self):
-        # getCientList()
-        self.pnameC['values'] = products
-        self.epnameC['values'] = products
-
-    def updateYearList(self):
-        # getCientList()
-        self.byearC['values'] = years
 
     def updateClientList(self):
         getCientList()
@@ -1069,7 +1043,7 @@ class UpdateBillStatus(Frame):
             "times new roman", 18, "bold")).grid(row=0, column=0, padx=20, pady=10, sticky=E)
         self.byear = StringVar()
         self.byearC = ttk.Combobox(self.selectBillF, width=30, font=(
-            "arial", 18, "bold"), textvariable=self.byear, postcommand=self.updateYearList)
+            "arial", 18, "bold"), textvariable=self.byear, values=years)
         self.byearC.grid(row=0, column=1, padx=20, pady=10)
 
         # Client's Name
@@ -1144,7 +1118,6 @@ class UpdateBillStatus(Frame):
                 messagebox.showerror(
                     title="Error", message="Select Blling Year from Dropdown List!!")
                 return
-            # constraints.append("b_year")
             constraints.append(b_year)
         if not len(constraints):
             messagebox.showerror(
@@ -1154,9 +1127,9 @@ class UpdateBillStatus(Frame):
 
     def selectBill(self, constraints):
         try:
-            sqliteConnection = sqlite3.connect('Billing.db')
+            sqliteConnection = sqlite3.connect('test.db')
             cursor = sqliteConnection.cursor()
-            # print("Connected to SQLite")
+
             s = ""
             if constraints[0] == "c_name":
                 cursor.execute(
@@ -1201,7 +1174,6 @@ class UpdateBillStatus(Frame):
         finally:
             if (sqliteConnection):
                 sqliteConnection.close()
-                # print("The SQLite connection is closed")
 
     def editStatus(self):
         b_year = self.byear.get()
@@ -1227,9 +1199,9 @@ class UpdateBillStatus(Frame):
 
     def updateStatus(self, constraints):
         try:
-            sqliteConnection = sqlite3.connect('Billing.db')
+            sqliteConnection = sqlite3.connect('test.db')
             cursor = sqliteConnection.cursor()
-            # print("Connected to SQLite")
+
             cursor.execute("SELECT b_no FROM bill WHERE b_year=? AND b_no=?", (
                 constraints[1], constraints[2],))
             rows = cursor.fetchall()
@@ -1251,11 +1223,6 @@ class UpdateBillStatus(Frame):
         finally:
             if (sqliteConnection):
                 sqliteConnection.close()
-                # print("The SQLite connection is closed")
-
-    def updateYearList(self):
-        # getCientList()
-        self.byearC['values'] = years
 
     def updateClientList(self):
         getCientList()
@@ -1310,13 +1277,13 @@ class AddPurchaseBill(Frame):
             "times new roman", 22, "bold"), padx=100, pady=5)
         self.purchaseBF.place(x=1, y=250, relwidth=1, height=580)
 
-        # Billing Year
-        Label(self.purchaseBF, text="Billing Year:", font=(
+        # Billing Day
+        Label(self.purchaseBF, text="Billing Day:", font=(
             "times new roman", 22, "bold"), pady=10).grid(row=0, column=0, pady=15, sticky=E)
-        self.byear = IntVar()
-        self.byearE = Entry(self.purchaseBF, width=15, bd=3, font=(
-            "arial", 22, "bold"), textvariable=self.byear)
-        self.byearE.grid(row=0, column=1, padx=50, pady=15, sticky=W)
+        self.bday = IntVar()
+        self.bdayE = Entry(self.purchaseBF, width=15, bd=3, font=(
+            "arial", 22, "bold"), textvariable=self.bday)
+        self.bdayE.grid(row=0, column=1, padx=50, pady=15, sticky=W)
 
         # Billing Month
         Label(self.purchaseBF, text="Billing Month:", font=(
@@ -1326,13 +1293,13 @@ class AddPurchaseBill(Frame):
             "arial", 22, "bold"), textvariable=self.bmonth)
         self.bmonthE.grid(row=0, column=3, padx=50, pady=15, sticky=W)
 
-        # Billing Day
-        Label(self.purchaseBF, text="Billing Day:", font=(
+        # Billing Year
+        Label(self.purchaseBF, text="Billing Year:", font=(
             "times new roman", 22, "bold"), pady=10).grid(row=0, column=4, pady=15, sticky=E)
-        self.bday = IntVar()
-        self.bdayE = Entry(self.purchaseBF, width=15, bd=3, font=(
-            "arial", 22, "bold"), textvariable=self.bday)
-        self.bdayE.grid(row=0, column=5, padx=50, pady=15, sticky=W)
+        self.byear = IntVar()
+        self.byearE = Entry(self.purchaseBF, width=15, bd=3, font=(
+            "arial", 22, "bold"), textvariable=self.byear)
+        self.byearE.grid(row=0, column=5, padx=50, pady=15, sticky=W)
 
         # Taxes Frame
         self.taxF = LabelFrame(self.purchaseBF, text="Taxes", bd=6, relief=GROOVE, labelanchor=NW, font=(
@@ -1461,9 +1428,9 @@ class AddPurchaseBill(Frame):
 
     def insertPurchaser(self, constraints):
         try:
-            sqliteConnection = sqlite3.connect('Billing.db')
+            sqliteConnection = sqlite3.connect('test.db')
             cursor = sqliteConnection.cursor()
-            # print("Connected to SQLite")
+
             cursor.execute(
                 """INSERT INTO purchaser (p_name, p_gst) VALUES (?,?);""", constraints)
             sqliteConnection.commit()
@@ -1478,7 +1445,6 @@ class AddPurchaseBill(Frame):
         finally:
             if (sqliteConnection):
                 sqliteConnection.close()
-                # print("The SQLite connection is closed")
 
     def createBill(self):
         name = self.pname.get()
@@ -1490,20 +1456,32 @@ class AddPurchaseBill(Frame):
             messagebox.showerror(
                 title="Error", message="Add Client to the database First or Select from Dropdown List!!")
             return
-        year = self.byear.get()
-        if not year:
+        day = self.bday.get()
+        if not day:
             messagebox.showerror(
-                title="Error", message="Enter a Year!!")
+                title="Error", message="Enter a Day!!")
+            return
+        if not (0 < day < 32):
+            messagebox.showerror(
+                title="Error", message="Incorrect Day!!")
             return
         month = self.bmonth.get()
         if not month:
             messagebox.showerror(
                 title="Error", message="Enter a Month!!")
             return
-        day = self.bday.get()
-        if not day:
+        if not (0 < month < 13):
             messagebox.showerror(
-                title="Error", message="Enter a Day!!")
+                title="Error", message="Incorrect Month!!")
+            return
+        year = self.byear.get()
+        if not year:
+            messagebox.showerror(
+                title="Error", message="Enter a Year!!")
+            return
+        if not (2000 < years < 2040):
+            messagebox.showerror(
+                title="Error", message="Incorrect Year!!")
             return
         bgst_5 = self.bgst_5.get()
         bgst_12 = self.bgst_12.get()
@@ -1526,9 +1504,9 @@ class AddPurchaseBill(Frame):
 
     def insertBill(self, name, constraints):
         try:
-            sqliteConnection = sqlite3.connect('Billing.db')
+            sqliteConnection = sqlite3.connect('test.db')
             cursor = sqliteConnection.cursor()
-            # print("Connected to SQLite")
+
             cursor.execute(
                 """SELECT MAX(pb_no) FROM purchase_bill WHERE pb_year=?;""", (constraints[0],))
             val = cursor.fetchall()
@@ -1556,7 +1534,6 @@ class AddPurchaseBill(Frame):
         finally:
             if (sqliteConnection):
                 sqliteConnection.close()
-                # print("The SQLite connection is closed")
 
     def updatePurchaserList(self):
         getPurchaserList()
@@ -1598,19 +1575,19 @@ class UpdatePurchaseStatus(Frame):
             "times new roman", 22, "bold"), padx=20, pady=20)
         self.selectBillF.place(x=30, y=100, width=700, height=320)
 
-        # Billing Year
-        Label(self.selectBillF, text="Billing Year:", font=(
-            "times new roman", 18, "bold"), pady=10).place(x=20, y=10)
-        self.byear = Entry(self.selectBillF, width=10, bd=3, font=(
-            "arial", 18, "bold"))
-        self.byear.place(x=180, y=15)
-
         # Billing Month
         Label(self.selectBillF, text="Billing Month:", font=(
-            "times new roman", 18, "bold"), pady=10).place(x=370, y=10)
+            "times new roman", 18, "bold"), pady=10).place(x=20, y=10)
         self.bmonth = Entry(self.selectBillF, width=5, bd=3, font=(
             "arial", 18, "bold"))
-        self.bmonth.place(x=550, y=15)
+        self.bmonth.place(x=190, y=15)
+
+        # Billing Year
+        Label(self.selectBillF, text="Billing Year:", font=(
+            "times new roman", 18, "bold"), pady=10).place(x=320, y=10)
+        self.byear = Entry(self.selectBillF, width=10, bd=3, font=(
+            "arial", 18, "bold"))
+        self.byear.place(x=480, y=15)
 
         # Purchaser's Name
         Label(self.selectBillF, text="Purchaser's Name:", font=(
@@ -1680,11 +1657,9 @@ class UpdatePurchaseStatus(Frame):
             constraints.append(p_name)
         b_year = self.byear.get()
         if b_year:
-            # constraints.append("pb_year")
             constraints.append(b_year)
             b_month = self.bmonth.get()
             if b_month:
-                # constraints.append("pb_month")
                 constraints.append(b_month)
         if not len(constraints):
             messagebox.showerror(
@@ -1694,9 +1669,9 @@ class UpdatePurchaseStatus(Frame):
 
     def selectBill(self, constraints):
         try:
-            sqliteConnection = sqlite3.connect('Billing.db')
+            sqliteConnection = sqlite3.connect('test.db')
             cursor = sqliteConnection.cursor()
-            # print("Connected to SQLite")
+
             s = ""
             if constraints[0] == "p_name":
                 cursor.execute(
@@ -1749,7 +1724,6 @@ class UpdatePurchaseStatus(Frame):
         finally:
             if (sqliteConnection):
                 sqliteConnection.close()
-                # print("The SQLite connection is closed")
 
     def editStatus(self):
         b_year = self.byear.get()
@@ -1771,9 +1745,9 @@ class UpdatePurchaseStatus(Frame):
 
     def updateStatus(self, constraints):
         try:
-            sqliteConnection = sqlite3.connect('Billing.db')
+            sqliteConnection = sqlite3.connect('test.db')
             cursor = sqliteConnection.cursor()
-            # print("Connected to SQLite")
+
             cursor.execute(
                 "UPDATE purchase_bill SET pb_status=? WHERE pb_year=? AND pb_no=?;", constraints)
             messagebox.showinfo(
@@ -1788,17 +1762,124 @@ class UpdatePurchaseStatus(Frame):
         finally:
             if (sqliteConnection):
                 sqliteConnection.close()
-                # print("The SQLite connection is closed")
 
     def updatePurchaserList(self):
         getPurchaserList()
         self.pnameC['values'] = purchasers
 
 
+# ------ Autocomplete Entry Class -------
+
+
+class AutocompleteEntry(Entry):
+    def __init__(self, autocompleteList, *args, **kwargs):
+
+        # Listbox length
+        if 'listboxLength' in kwargs:
+            self.listboxLength = kwargs['listboxLength']
+            del kwargs['listboxLength']
+        else:
+            self.listboxLength = 8
+
+        # Custom matches function
+        if 'matchesFunction' in kwargs:
+            self.matchesFunction = kwargs['matchesFunction']
+            del kwargs['matchesFunction']
+        else:
+            def matches(fieldValue, acListEntry):
+                pattern = re.compile(
+                    '.*' + re.escape(fieldValue) + '.*', re.IGNORECASE)
+                return re.match(pattern, acListEntry)
+
+            self.matchesFunction = matches
+
+        Entry.__init__(self, *args, **kwargs)
+        self.focus()
+
+        self.autocompleteList = autocompleteList
+
+        self.var = self["textvariable"]
+        if self.var == '':
+            self.var = self["textvariable"] = StringVar()
+
+        self.var.trace('w', self.changed)
+        self.bind("<Return>", self.selection)
+        self.bind("<Up>", self.moveUp)
+        self.bind("<Down>", self.moveDown)
+
+        self.listboxUp = False
+
+    def changed(self, name, index, mode):
+        if self.var.get() == '':
+            if self.listboxUp:
+                self.listbox.destroy()
+                self.listboxUp = False
+        else:
+            words = self.comparison()
+            if words:
+                if not self.listboxUp:
+                    self.listbox = Listbox(
+                        width=20, height=self.listboxLength, font=("arial", 11))
+                    self.listbox.bind("<Button-1>", self.selection)
+                    self.listbox.bind("<Return>", self.selection)
+                    self.listbox.place(
+                        x=self.winfo_x(), y=self.winfo_y() + self.winfo_height())
+                    self.listboxUp = True
+
+                self.listbox.delete(0, END)
+                for w in words:
+                    self.listbox.insert(END, w)
+            else:
+                if self.listboxUp:
+                    self.listbox.destroy()
+                    self.listboxUp = False
+
+    def selection(self, event):
+        if self.listboxUp:
+            self.var.set(self.listbox.get(ACTIVE))
+            self.listbox.destroy()
+            self.listboxUp = False
+            self.icursor(END)
+
+    def moveUp(self, event):
+        if self.listboxUp:
+            if self.listbox.curselection() == ():
+                index = '0'
+            else:
+                index = self.listbox.curselection()[0]
+
+            if index != '0':
+                self.listbox.selection_clear(first=index)
+                index = str(int(index) - 1)
+
+                self.listbox.see(index)  # Scroll!
+                self.listbox.selection_set(first=index)
+                self.listbox.activate(index)
+
+    def moveDown(self, event):
+        if self.listboxUp:
+            if self.listbox.curselection() == ():
+                index = '0'
+            else:
+                index = self.listbox.curselection()[0]
+
+            if index != END:
+                self.listbox.selection_clear(first=index)
+                index = str(int(index) + 1)
+
+                self.listbox.see(index)  # Scroll!
+                self.listbox.selection_set(first=index)
+                self.listbox.activate(index)
+
+    def comparison(self):
+        return [w for w in self.autocompleteList if self.matchesFunction(self.var.get(), w)]
+
+
+# ---------- Global Update List Function --------
+
 def getCientList():
-    sqliteConnection = sqlite3.connect('Billing.db')
+    sqliteConnection = sqlite3.connect('test.db')
     cursor = sqliteConnection.cursor()
-    # print("Connected to SQLite")
     cursor.execute("""SELECT c_name FROM client;""")
     rows = cursor.fetchall()
     clients.clear()
@@ -1812,9 +1893,8 @@ def getCientList():
 
 
 def getPurchaserList():
-    sqliteConnection = sqlite3.connect('Billing.db')
+    sqliteConnection = sqlite3.connect('test.db')
     cursor = sqliteConnection.cursor()
-    # print("Connected to SQLite")
     cursor.execute("""SELECT p_name FROM purchaser;""")
     rows = cursor.fetchall()
     purchasers.clear()
@@ -1827,6 +1907,33 @@ def getPurchaserList():
         sqliteConnection.close()
 
 
+def addProduct(name):
+    sqliteConnection = sqlite3.connect('test.db')
+    cursor = sqliteConnection.cursor()
+    cursor.execute("INSERT INTO product VALUES (?)", (name,))
+    sqliteConnection.commit()
+    cursor.close()
+    if (sqliteConnection):
+        sqliteConnection.close()
+    getProductList()
+
+
+def getProductList():
+    sqliteConnection = sqlite3.connect('test.db')
+    cursor = sqliteConnection.cursor()
+    cursor.execute("""SELECT pr_name FROM product;""")
+    rows = cursor.fetchall()
+    products.clear()
+    for i in range(len(rows)):
+        products.append(rows[i][0])
+    products.sort()
+    sqliteConnection.commit()
+    cursor.close()
+    if (sqliteConnection):
+        sqliteConnection.close()
+
+
 if __name__ == "__main__":
+    getProductList()
     app = App()
     app.mainloop()
