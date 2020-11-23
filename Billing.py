@@ -1,7 +1,9 @@
 from tkinter import *
 from tkinter import messagebox, ttk, scrolledtext
+from decimal import ROUND_HALF_UP, Decimal
 import sqlite3
 import re
+import xlsxwriter
 
 charcoal = '#F1F1EE'
 rust = '#F62A00'
@@ -12,6 +14,105 @@ purchasers = []
 products = []
 years = ["2019-2020", "2020-2021", "2021-2022", "2022-2023",  "2023-2024",
          "2024-2025", "2025-2026", "2026-2027", "2027-2028", "2028-2029", "2029-2030"]
+one = ["", "One ", "Two ", "Three ", "Four ", "Five ", "Six ", "Seven ", "Eight ", "Nine ", "Ten ", "Eleven ",
+       "Twelve ", "Thirteen ", "Fourteen ", "Fifteen ", "Sixteen ", "Seventeen ", "Eighteen ", "Nineteen "]
+ten = ["", "", "Twenty ", "Thirty ", "Fourty ",
+       "Fifty ", "Sixty ", "Seventy ", "Eighty ", "Ninety "]
+
+
+# XLSXWriter
+def draw_frame_border(workbook, worksheet, first_row, first_col, rows_count, cols_count, thickness=1):
+
+    if cols_count == 1 and rows_count == 1:
+        # whole cell
+        worksheet.conditional_format(first_row, first_col,
+                                     first_row, first_col,
+                                     {'type': 'formula', 'criteria': 'True',
+                                      'format': workbook.add_format({'top': thickness, 'bottom': thickness,
+                                                                     'left': thickness, 'right': thickness})})
+    elif rows_count == 1:
+        # left cap
+        worksheet.conditional_format(first_row, first_col,
+                                     first_row, first_col,
+                                     {'type': 'formula', 'criteria': 'True',
+                                      'format': workbook.add_format({'top': thickness, 'left': thickness, 'bottom': thickness})})
+        # top and bottom sides
+        worksheet.conditional_format(first_row, first_col + 1,
+                                     first_row, first_col + cols_count - 2,
+                                     {'type': 'formula', 'criteria': 'True', 'format': workbook.add_format({'top': thickness, 'bottom': thickness})})
+
+        # right cap
+        worksheet.conditional_format(first_row, first_col + cols_count - 1,
+                                     first_row, first_col + cols_count - 1,
+                                     {'type': 'formula', 'criteria': 'True',
+                                      'format': workbook.add_format({'top': thickness, 'right': thickness, 'bottom': thickness})})
+
+    elif cols_count == 1:
+        # top cap
+        worksheet.conditional_format(first_row, first_col,
+                                     first_row, first_col,
+                                     {'type': 'formula', 'criteria': 'True',
+                                      'format': workbook.add_format({'top': thickness, 'left': thickness, 'right': thickness})})
+
+        # left and right sides
+        worksheet.conditional_format(first_row + 1,              first_col,
+                                     first_row + rows_count - 2, first_col,
+                                     {'type': 'formula', 'criteria': 'True', 'format': workbook.add_format({'left': thickness, 'right': thickness})})
+
+        # bottom cap
+        worksheet.conditional_format(first_row + rows_count - 1, first_col,
+                                     first_row + rows_count - 1, first_col,
+                                     {'type': 'formula', 'criteria': 'True',
+                                      'format': workbook.add_format({'bottom': thickness, 'left': thickness, 'right': thickness})})
+
+    else:
+        # top left corner
+        worksheet.conditional_format(first_row, first_col,
+                                     first_row, first_col,
+                                     {'type': 'formula', 'criteria': 'True',
+                                      'format': workbook.add_format({'top': thickness, 'left': thickness})})
+
+        # top right corner
+        worksheet.conditional_format(first_row, first_col + cols_count - 1,
+                                     first_row, first_col + cols_count - 1,
+                                     {'type': 'formula', 'criteria': 'True',
+                                      'format': workbook.add_format({'top': thickness, 'right': thickness})})
+
+        # bottom left corner
+        worksheet.conditional_format(first_row + rows_count - 1, first_col,
+                                     first_row + rows_count - 1, first_col,
+                                     {'type': 'formula', 'criteria': 'True',
+                                      'format': workbook.add_format({'bottom': thickness, 'left': thickness})})
+
+        # bottom right corner
+        worksheet.conditional_format(first_row + rows_count - 1, first_col + cols_count - 1,
+                                     first_row + rows_count - 1, first_col + cols_count - 1,
+                                     {'type': 'formula', 'criteria': 'True',
+                                      'format': workbook.add_format({'bottom': thickness, 'right': thickness})})
+
+        # top
+        worksheet.conditional_format(first_row, first_col + 1,
+                                     first_row, first_col + cols_count - 2,
+                                     {'type': 'formula', 'criteria': 'True', 'format': workbook.add_format({'top': thickness})})
+
+        # left
+        worksheet.conditional_format(first_row + 1,              first_col,
+                                     first_row + rows_count - 2, first_col,
+                                     {'type': 'formula', 'criteria': 'True', 'format': workbook.add_format({'left': thickness})})
+
+        # bottom
+        worksheet.conditional_format(first_row + rows_count - 1, first_col + 1,
+                                     first_row + rows_count - 1, first_col + cols_count - 2,
+                                     {'type': 'formula', 'criteria': 'True', 'format': workbook.add_format({'bottom': thickness})})
+
+        # right
+        worksheet.conditional_format(first_row + 1,              first_col + cols_count - 1,
+                                     first_row + rows_count - 2, first_col + cols_count - 1,
+                                     {'type': 'formula', 'criteria': 'True', 'format': workbook.add_format({'right': thickness})})
+
+
+# Header
+header = '&C&"Times New Roman"&B&U&20GST TAX INVOICE&18\n&U \n&UF.K. PATANWALA & Co.&U&18\n &14Hardware, Plumbing goods, Sanitary goods, Paints, Electrical materials && General merchant&18\n &14Address:- 67,Trinity Street, S.S Gaikwad Marg Dhobi Talao, Mumbai-400002.'
 
 
 class App(Tk):
@@ -27,7 +128,7 @@ class App(Tk):
         self.geometry("1920x1080+0+0")
         self.title("Billing Software")
         self.frames = {}
-        for F in (Home, AddClient, CreateBill, AddBillDetails, UpdateBillStatus, AddPurchaseBill, UpdatePurchaseStatus):
+        for F in (Home, AddClient, CreateBill, AddBillDetails, UpdateBillStatus, GenerateBill, AddPurchaseBill, UpdatePurchaseStatus):
             frame = F(container, self)
             self.frames[F] = frame
             frame.grid(row=0, column=0, sticky="nsew")
@@ -50,7 +151,7 @@ class Home(Frame):
         # --------- Sales Options ---------
         saleF = LabelFrame(self, text="Sales", bd=6, relief=GROOVE, labelanchor=N, font=(
             "times new roman", 30, "bold"), padx=460, pady=60)
-        saleF.place(x=1, y=130, relwidth=1, height=420)
+        saleF.place(x=1, y=130, relwidth=1, height=500)
 
         # Create Sales Bill
         Button(saleF, text="Create New Bill", bd=5, relief=GROOVE, bg="cadetblue", pady=20, width=32, font=(
@@ -68,10 +169,14 @@ class Home(Frame):
         Button(saleF, text="Search & Edit Bill Status", bd=5, relief=GROOVE, bg="cadetblue", pady=20, width=32, font=(
             "arial", 18, "bold"), command=lambda: controller.show_frame(UpdateBillStatus)).grid(row=1, column=1, padx=20, pady=15)
 
+        # Generate Bill
+        Button(saleF, text="Generate Bill", bd=5, relief=GROOVE, bg="cadetblue", pady=20, width=32, font=(
+            "arial", 18, "bold"), command=lambda: controller.show_frame(GenerateBill)).grid(row=2, column=0, columnspan=2, padx=20, pady=15)
+
         # --------- Purchase Options ---------
         purchaseF = LabelFrame(self, text="Purchase", bd=6, relief=GROOVE, labelanchor=N, font=(
             "times new roman", 30, "bold"), padx=460, pady=100)
-        purchaseF.place(x=1, y=600, relwidth=1, height=425)
+        purchaseF.place(x=1, y=660, relwidth=1, height=365)
 
         # Create Purchase Bill
         Button(purchaseF, text="Create New Bill", bd=5, relief=GROOVE, bg="cadetblue", pady=20, width=32, font=(
@@ -312,36 +417,29 @@ class AddBillDetails(Frame):
 
         # ---------- Add Details Frame ------------
         self.addDetailsF = LabelFrame(self.saleF, text="Add Details", bd=6, relief=GROOVE, labelanchor=NW, font=(
-            "times new roman", 18, "bold"), padx=10, pady=20)
+            "times new roman", 18, "bold"), padx=25, pady=20)
         self.addDetailsF.place(x=1, y=100, width=615, height=400)
 
         # Product Name
         Label(self.addDetailsF, text="Product:", font=(
-            "times new roman", 14, "bold")).grid(row=0, column=0, pady=10, sticky=E)
-        self.pname = AutocompleteEntry(
-            products, self, listboxLength=10, width=15, bd=3, relief=GROOVE, font=("arial", 14, "bold"))
-        self.pname.place(x=150, y=300)
+            "times new roman", 16, "bold")).grid(row=0, column=0, pady=10, sticky=E)
+        self.pname = AutocompleteAddEntry(
+            products, self, listboxLength=15, width=33, bd=3, relief=GROOVE, font=("arial", 18, "bold"))
+        self.pname.place(x=160, y=290)
 
         # Quantity
         Label(self.addDetailsF, text="Quantity:", font=(
-            "times new roman", 14, "bold")).grid(row=0, column=2, pady=10, sticky=E)
+            "times new roman", 14, "bold")).grid(row=1, column=0, pady=10, sticky=E)
         self.pquan = Entry(self.addDetailsF, width=15, bd=3, relief=GROOVE, font=(
             "arial", 14, "bold"))
-        self.pquan.grid(row=0, column=3, padx=10, pady=10)
+        self.pquan.grid(row=1, column=1, padx=10, pady=10)
 
         # Rate
         Label(self.addDetailsF, text="Rate:", font=(
-            "times new roman", 14, "bold")).grid(row=1, column=0, pady=10, sticky=E)
+            "times new roman", 14, "bold")).grid(row=1, column=2, pady=10, sticky=E)
         self.rate = Entry(self.addDetailsF, width=15, bd=3, relief=GROOVE, font=(
             "arial", 14, "bold"))
-        self.rate.grid(row=1, column=1, padx=10, pady=10)
-
-        # Taxable Amount
-        Label(self.addDetailsF, text="Amount:", font=(
-            "times new roman", 14, "bold")).grid(row=1, column=2, pady=10, sticky=E)
-        self.amt = Entry(self.addDetailsF, width=15, bd=3, relief=GROOVE, font=(
-            "arial", 14, "bold"))
-        self.amt.grid(row=1, column=3, padx=10, pady=10)
+        self.rate.grid(row=1, column=3, padx=10, pady=10)
 
         # GST
         self.gst = DoubleVar()
@@ -395,7 +493,7 @@ class AddBillDetails(Frame):
 
         # --------- Edit Details Frame ------------
         self.editDetailsF = LabelFrame(self.saleF, text="Edit Details", bd=6, relief=GROOVE, labelanchor=NW, font=(
-            "times new roman", 18, "bold"), padx=10, pady=20)
+            "times new roman", 18, "bold"), padx=25, pady=20)
         self.editDetailsF.place(x=645, y=100, width=615, height=400)
 
         # Bill Serial No.
@@ -428,7 +526,7 @@ class AddBillDetails(Frame):
             "times new roman", 14, "bold")).grid(row=1, column=0, pady=10, sticky=E)
         self.epname = AutocompleteEntry(
             products, self, listboxLength=10, width=15, bd=3, relief=GROOVE, font=("arial", 14, "bold"))
-        self.epname.place(x=770, y=345)
+        self.epname.place(x=800, y=345)
 
         # Quantity
         Label(self.editDetailsF, text="Quantity:", font=(
@@ -481,7 +579,7 @@ class AddBillDetails(Frame):
 
         # Edit Bill Details Button
         Button(self.editDetailsF, text="Edit Bill Detail", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=10, width=15, font=(
-            "arial", 16, "bold"), command=self.editBillDetails).grid(row=5, column=0, columnspan=2, padx=10, pady=10)
+            "arial", 16, "bold"), command=self.editBillDetails).grid(row=5, column=0, columnspan=2, padx=30, pady=10)
 
         # Clear Edit Details Button
         Button(self.editDetailsF, text="Clear", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=10, width=15, font=(
@@ -606,15 +704,7 @@ class AddBillDetails(Frame):
             messagebox.showerror(
                 title="Error", message="Enter a Valid Rate!!")
             return
-        amt = self.amt.get()
-        if not amt:
-            messagebox.showerror(
-                title="Error", message="Taxable Amount Field cannot be empty!!")
-            return
-        if not str.isdigit(amt):
-            messagebox.showerror(
-                title="Error", message="Enter a Valid Taxable Amount!!")
-            return
+        amt = int(quantity) * int(rate)
         gst = self.gst.get()
         igst = self.igst.get()
         if not gst and not igst:
@@ -626,7 +716,7 @@ class AddBillDetails(Frame):
         challan = self.challan.get()
 
         data_list = [b_year, b_no, name, rate, quantity,
-                     gst, gst, igst, amt, hsn, challan, amc]
+                     gst, igst, amt, hsn, challan, amc]
         self.insertBillDetails(data_list)
 
     def insertBillDetails(self, data_list):
@@ -651,8 +741,8 @@ class AddBillDetails(Frame):
             data_list.insert(2, id)
             sqlite_insert_with_param = """INSERT INTO bill_detail
                             (b_year, b_no,bd_id, bd_product, bd_rate, bd_quantity,
-                             bd_cgst, bd_sgst, bd_igst, bd_amount, bd_hsn, bd_ch_no, bd_amc_no)
-                            VALUES (?, ?, ?,?, ?, ?,?, ?,?,?,?, ?, ?);"""
+                             bd_cgst, bd_igst, bd_amount, bd_hsn, bd_ch_no, bd_amc_no)
+                            VALUES (?, ?, ?,?, ?, ?,?, ?,?,?,?, ?);"""
             cursor.execute(sqlite_insert_with_param, tuple(data_list))
             sqliteConnection.commit()
             messagebox.showinfo(title="Successful",
@@ -726,10 +816,6 @@ class AddBillDetails(Frame):
         if cgst:
             constraints.append("bd_cgst")
             constraints.append(cgst)
-        sgst = self.esgst.get()
-        if sgst:
-            constraints.append("bd_sgst")
-            constraints.append(sgst)
         igst = self.eigst.get()
         if igst:
             constraints.append("bd_igst")
@@ -817,7 +903,7 @@ class AddBillDetails(Frame):
             sqliteConnection = sqlite3.connect('test.db')
             cursor = sqliteConnection.cursor()
 
-            sqlite_insert_with_param = """SELECT bd_id, bd_product, bd_rate, bd_quantity, bd_cgst, bd_sgst, bd_igst, bd_amount, bd_hsn, bd_ch_no, bd_amc_no FROM bill_detail WHERE b_year=? AND b_no=?;"""
+            sqlite_insert_with_param = """SELECT bd_id, bd_product, bd_rate, bd_quantity, bd_cgst, bd_igst, bd_amount, bd_hsn, bd_ch_no, bd_amc_no FROM bill_detail WHERE b_year=? AND b_no=?;"""
 
             data_tuple = (b_year, b_no)
             cursor.execute(sqlite_insert_with_param, data_tuple)
@@ -844,12 +930,12 @@ class AddBillDetails(Frame):
                 s += str(row[2]).center(10)  # Rate
                 s += str(row[3]).center(7)  # Quantity
                 s += str(row[4]).center(7)  # CGST
-                s += str(row[5]).center(7)  # SGST
-                s += str(row[6]).center(7)  # IGST
-                s += str(row[7]).center(14)  # Amount
-                s += str(row[8]).center(10)  # HSN
-                s += str(row[9]).center(10)  # Challan
-                s += str(row[10]).center(10)  # AMC
+                s += str(row[4]).center(7)  # SGST
+                s += str(row[5]).center(7)  # IGST
+                s += str(row[6]).center(14)  # Amount
+                s += str(row[7]).center(10)  # HSN
+                s += str(row[8]).center(10)  # Challan
+                s += str(row[9]).center(10)  # AMC
             self.displayText.configure(state='normal')
             self.displayText.delete('1.0', END)
             self.displayText.insert(INSERT, s)
@@ -1228,6 +1314,1571 @@ class UpdateBillStatus(Frame):
         getCientList()
         self.cnameC['values'] = clients
 
+
+class GenerateBill(Frame):
+    def __init__(self, parent, controller):
+        Frame.__init__(self, parent)
+        title = Label(self, text="F. K. PATANWALA & Co.", bd=8, relief=GROOVE, font=(
+            "times new roman", 42, "bold"), pady=2).place(x=1, y=2, relwidth=1)
+
+        # --------- Sales Options ---------
+        self.saleF = LabelFrame(self, text="Sales", bd=6, relief=GROOVE, labelanchor=N, font=(
+            "times new roman", 30, "bold"), padx=220, pady=60)
+        self.saleF.place(x=1, y=130, relwidth=1, height=895)
+
+        Label(self.saleF, text="Bill Details", bd=4, relief=GROOVE, font=(
+            "times new roman", 26, "bold"), width=85, pady=10).grid(row=0, column=0, columnspan=6, pady=15)
+
+        # Financial Year
+        Label(self.saleF, text="Financial Year:", font=(
+            "times new roman", 22, "bold"), pady=10).grid(row=1, column=0, pady=15, sticky=E)
+        self.byear = StringVar()
+        self.byearC = ttk.Combobox(self.saleF, width=40, font=(
+            "arial", 22, "bold"), textvariable=self.byear, values=years)
+        self.byearC.grid(row=1, column=1, padx=50,
+                         columnspan=4, pady=15, sticky=W)
+
+        # Bill No
+        Label(self.saleF, text="Bill No.:", font=(
+            "times new roman", 22, "bold"), pady=10).grid(row=2, column=0, pady=15, sticky=E)
+        self.billno = Entry(self.saleF, width=40, bd=3, relief=GROOVE, font=(
+            "arial", 22, "bold"))
+        self.billno.grid(row=2, column=1, columnspan=4,
+                         padx=50, pady=15, sticky=W)
+
+        # Bill Type
+        Label(self.saleF, text="Bill Type:", font=(
+            "times new roman", 22, "bold"), pady=10).grid(row=3, column=0, padx=45, pady=15, sticky=E)
+        self.btype = IntVar()
+        Radiobutton(self.saleF, text="Normal", variable=self.btype, value=1, font=(
+            "times new roman", 16, "bold"), bg=rust, bd=3, relief=GROOVE, height=2, width=15,
+            indicatoron=0).grid(
+            row=3, column=1, padx=5, pady=15, sticky=W)
+        Radiobutton(self.saleF, text="Normal+AMC", variable=self.btype, value=2, font=(
+            "times new roman", 16, "bold"), bg=rust, bd=3, relief=GROOVE, height=2, width=15,
+            indicatoron=0).grid(
+            row=3, column=2, padx=5, pady=15, sticky=W)
+        Radiobutton(self.saleF, text="Normal + HSN", variable=self.btype, value=3, font=(
+            "times new roman", 16, "bold"), bg=rust, bd=3, relief=GROOVE, height=2, width=15,
+            indicatoron=0).grid(
+            row=3, column=3, padx=5, pady=15, sticky=W)
+        Radiobutton(self.saleF, text="Normal + IGST", variable=self.btype, value=4, font=(
+            "times new roman", 16, "bold"), bg=rust, bd=3, relief=GROOVE, height=2, width=15,
+            indicatoron=0).grid(
+            row=3, column=4, padx=5, pady=15, sticky=W)
+        Radiobutton(self.saleF, text="AMC + HSN", variable=self.btype, value=5, font=(
+            "times new roman", 16, "bold"), bg=rust, bd=3, relief=GROOVE, height=2, width=15,
+            indicatoron=0).grid(
+            row=3, column=5, padx=5, pady=15, sticky=W)
+
+        # Add Client Details Button
+        add_client_btn = Button(self.saleF, text="Generate Bill", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=20, width=50, font=(
+            "arial", 18, "bold"), command=self.getBillData).place(x=400, y=420)
+
+        # Home Button
+        add_client_btn = Button(self.saleF, text="Home", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=20, width=50, font=(
+            "arial", 18, "bold"), command=lambda: controller.show_frame(Home)).place(x=400, y=570)
+
+    def getBillData(self):
+        b_year = self.byear.get()
+        if not b_year:
+            messagebox.showerror(
+                title="Error", message="Financial Year Field cannot be empty!!")
+            return
+        if b_year not in years:
+            messagebox.showerror(
+                title="Error", message="Select Blling Year from Dropdown List!!")
+            return
+        b_no = self.billno.get()
+        if not b_no:
+            messagebox.showerror(
+                title="Error", message="Billing No. Field cannot be empty!!")
+            return
+        b_type = self.btype.get()
+        if not b_type:
+            messagebox.showerror(
+                title="Error", message="Select a Bill Type!!")
+            return
+        if b_type == 1:
+            self.generateNormalBill((b_year, b_no))
+        elif b_type == 2:
+            self.generateAMCBill((b_year, b_no))
+        elif b_type == 3:
+            self.generateHSNBill((b_year, b_no))
+        elif b_type == 4:
+            self.generateIGSTBill((b_year, b_no))
+        else:
+            self.generateAmcHsnBill((b_year, b_no))
+
+    def generateNormalBill(self, bill_info):
+        try:
+            sqliteConnection = sqlite3.connect('test.db')
+            cursor = sqliteConnection.cursor()
+
+            cursor.execute(
+                "SELECt c_id, b_date FROM bill WHERE b_year=? AND b_no=?", bill_info)
+            rows = cursor.fetchall()
+            c_id = rows[0][0]
+            b_date = rows[0][1]
+            cursor.execute(
+                "SELECT c_name, c_address, c_gst FROM client WHERE c_id=?", (c_id,))
+            rows = cursor.fetchall()
+            c_name, c_address, c_gst = rows[0]
+            cursor.execute(
+                "SELECT bd_id, bd_product, bd_quantity, bd_rate, bd_cgst, bd_amount FROM bill_detail WHERE b_year=? AND b_no=?", bill_info)
+            rows = cursor.fetchall()
+            bill_no = bill_info[0]+'/'+str(bill_info[1])
+            workbook = xlsxwriter.Workbook(
+                'Bills/' + bill_no+'-'+c_name+'.xlsx')
+            worksheet = workbook.add_worksheet()
+            worksheet.set_paper(9)
+            worksheet.set_portrait()
+            worksheet.center_horizontally()
+            worksheet.set_margins(0.1, 0.1, 1.6, 0.25)
+            worksheet.set_default_row(16)
+            worksheet.fit_to_pages(1, 0)
+            worksheet.set_header(header)
+            merge_head = workbook.add_format({
+                'bold': 'bold',
+                'underline': 'underline',
+                'align': 'center',
+                'font_name': 'Times New Roman',
+                'font_size': 20})
+            bold_12 = workbook.add_format({
+                'bold': 'bold',
+                'align': 'center',
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 12})
+            bold_14 = workbook.add_format({
+                'bold': 'bold',
+                'align': 'center',
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 14})
+            bold_14_u = workbook.add_format({
+                'bold': 'bold',
+                'underline': 'underline',
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 14})
+            bold_12_u = workbook.add_format({
+                'bold': 'bold',
+                'underline': 'underline',
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 12})
+            border = workbook.add_format({
+                'border': 1})
+            normal_12 = workbook.add_format({
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 12})
+            table_header = workbook.add_format({
+                'border': 1,
+                'bold': 'bold',
+                'align': 'center',
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 14})
+            table_data = workbook.add_format({
+                'border': 1,
+                'valign': 'bottom',
+                'align': 'center',
+                'font_name': 'Times New Roman',
+                'font_size': 11})
+
+            # ------ Set column Width -----
+            # Sr. No.
+            worksheet.set_column(0, 0, 5)
+            # PARTICULARS / PRODUCT
+            worksheet.set_column(1, 1, 40)
+            # Quantity
+            worksheet.set_column(2, 2, 5)
+            # Rate
+            worksheet.set_column(3, 3, 7)
+            # GST
+            worksheet.set_column(4, 4, 7)
+            # CGST
+            worksheet.set_column(5, 5, 7)
+            # SGST
+            worksheet.set_column(6, 6, 7)
+            # Amount
+            worksheet.set_column(7, 7, 10)
+
+            # -------- Excelsheet --------
+            len_entries = len(rows)
+            rem = len(rows)
+            pgs = 0
+            total = 0
+            gst = 0
+            if len_entries > 46:
+                pgs = int(len_entries/46)
+                len_entries %= 46
+            if len_entries > 23:
+                pgs += 2
+            else:
+                pgs += 1
+            len_entries = rem
+            for p in range(0, pgs):
+                pg = p*50
+                worksheet.merge_range('A' + str(1+pg)+':H' + str(
+                    1+pg), "GST No:- 27AADPP0622L1ZQ            Tel. No: +919820552008 / +919004023428            Email:aqpatanwala@hotmail.com", bold_12)
+                worksheet.write(
+                    'A' + str(3+pg), "To:- " + c_name, bold_14_u)
+                worksheet.merge_range(
+                    'A' + str(4+pg)+':H' + str(4+pg), "Address :- "+c_address, normal_12)
+                worksheet.write(
+                    'A' + str(5+pg), "GST:- " + c_gst, bold_12_u)
+
+                # Bill No.
+                worksheet.write_rich_string(
+                    'D' + str(5+pg), bold_12, "Bill No.: ", normal_12, bill_no)
+
+                # Date
+                worksheet.write_rich_string(
+                    'G' + str(5+pg), bold_12, "Date: ", normal_12, b_date)
+
+                # Table Columns
+                worksheet.write(
+                    'A' + str(7+pg), "Sr.No.", table_header)
+                worksheet.write(
+                    'B' + str(7+pg), "PARTICULARS", table_header)
+                worksheet.write(
+                    'C' + str(7+pg), "QTY", table_header)
+                worksheet.write(
+                    'D' + str(7+pg), "RATE", table_header)
+                worksheet.write(
+                    'E' + str(7+pg), "GST%", table_header)
+                worksheet.write(
+                    'F' + str(7+pg), "CGST%", table_header)
+                worksheet.write(
+                    'G' + str(7+pg), "SGST%", table_header)
+                worksheet.write(
+                    'H' + str(7+pg), "AMOUNT", table_header)
+                if rem > 46:
+                    for i in range(pg+8, pg+51):
+                        ent = len_entries-rem
+                        worksheet.write_number(
+                            'A' + str(i), rows[ent][0], table_data)
+                        worksheet.write_string(
+                            'B' + str(i), rows[ent][1], table_data)
+                        worksheet.write_number(
+                            'C' + str(i), rows[ent][2], table_data)
+                        worksheet.write_number(
+                            'D' + str(i), rows[ent][3], table_data)
+                        worksheet.write_number(
+                            'E' + str(i), rows[ent][4]*2, table_data)
+                        worksheet.write_number(
+                            'F' + str(i), rows[ent][4], table_data)
+                        worksheet.write_number(
+                            'G' + str(i), rows[ent][4], table_data)
+                        worksheet.write_number(
+                            'H' + str(i), rows[ent][5], table_data)
+                        total += rows[ent][5]
+                        gst += rows[ent][5]*rows[ent][4]*0.01
+                        rem -= 1
+                elif rem > 23:
+                    for i in range(pg+8, pg+31):
+                        ent = len_entries-rem
+                        worksheet.write_number(
+                            'A' + str(i), rows[ent][0], table_data)
+                        worksheet.write_string(
+                            'B' + str(i), rows[ent][1], table_data)
+                        worksheet.write_number(
+                            'C' + str(i), rows[ent][2], table_data)
+                        worksheet.write_number(
+                            'D' + str(i), rows[ent][3], table_data)
+                        worksheet.write_number(
+                            'E' + str(i), rows[ent][4]*2, table_data)
+                        worksheet.write_number(
+                            'F' + str(i), rows[ent][4], table_data)
+                        worksheet.write_number(
+                            'G' + str(i), rows[ent][4], table_data)
+                        worksheet.write_number(
+                            'H' + str(i), rows[ent][5], table_data)
+                        total += rows[ent][5]
+                        gst += rows[ent][5]*rows[ent][4]*0.01
+                        rem -= 1
+                else:
+                    count = rem
+                    for i in range(pg+8, pg+31):
+                        if rem == 0:
+                            break
+                        ent = len_entries-rem
+                        worksheet.write_number(
+                            'A' + str(i), rows[ent][0], table_data)
+                        worksheet.write_string(
+                            'B' + str(i), rows[ent][1], table_data)
+                        worksheet.write_number(
+                            'C' + str(i), rows[ent][2], table_data)
+                        worksheet.write_number(
+                            'D' + str(i), rows[ent][3], table_data)
+                        worksheet.write_number(
+                            'E' + str(i), rows[ent][4]*2, table_data)
+                        worksheet.write_number(
+                            'F' + str(i), rows[ent][4], table_data)
+                        worksheet.write_number(
+                            'G' + str(i), rows[ent][4], table_data)
+                        worksheet.write_number(
+                            'H' + str(i), rows[ent][5], table_data)
+                        total += rows[ent][5]
+                        gst += rows[ent][5]*rows[ent][4]*0.01
+                        rem -= 1
+                    if count < 23:
+                        for i in range(0, 9):
+                            draw_frame_border(workbook, worksheet,
+                                              count+7+pg, i, 23-count, 1)
+                    break
+
+            # TOTAL
+            gst = round(gst, 2)
+            worksheet.merge_range('E' + str(31+pg)+':G' +
+                                  str(31+pg), "TOTAL AMOUNT", table_header)
+            worksheet.write_number('H' + str(31+pg), total, table_header)
+            worksheet.merge_range('E' + str(32+pg)+':G' +
+                                  str(32+pg), "TOTAL CGST", table_header)
+            worksheet.write_number('H' + str(32+pg), gst, table_header)
+            worksheet.merge_range('E' + str(33+pg)+':G' +
+                                  str(33+pg), "TOTAL SGST", table_header)
+            worksheet.write_number('H' + str(33+pg), gst, table_header)
+            worksheet.merge_range('E' + str(34+pg)+':G' +
+                                  str(34+pg), "Round off + / -", table_header)
+            grand_total = total+(2*gst)
+            total_roundup = int(
+                Decimal(grand_total).quantize(0, ROUND_HALF_UP))
+            worksheet.write_number('H' + str(34+pg), abs(
+                total_roundup - grand_total), table_header)
+            worksheet.merge_range('E' + str(35+pg)+':G' +
+                                  str(35+pg), "GRAND TOTAL", table_header)
+            worksheet.write_number(
+                'H' + str(35+pg), total_roundup, table_header)
+
+            worksheet.write('A' + str(37+pg), "Rupees:- " +
+                            convertToWords(total_roundup), normal_12)
+            worksheet.write(
+                'A' + str(39+pg), "Note:- Goods once sold cannot be taken back.", normal_12)
+            worksheet.write(
+                'A' + str(40+pg), "Guarantee & Warranty applicable as per the original component suppliers terms & condition only.", normal_12)
+
+            # Bank Details
+            worksheet.write('A' + str(43+pg), "Bank details:-", normal_12)
+            worksheet.write('A' + str(44+pg),
+                            "Bank Name:- Bank of India", normal_12)
+            worksheet.write('A' + str(45+pg),
+                            "Branch :- Kalbadevi Branch", normal_12)
+            worksheet.write('A' + str(46+pg),
+                            "A/C No:- 002420110001459", normal_12)
+            worksheet.write(
+                'A' + str(47+pg), "RTGS/NEFT/IFSC Code: BKID0000024", normal_12)
+
+            # Proprietery Signature
+            worksheet.merge_range(
+                'E' + str(42+pg)+':H' + str(42+pg), "FOR F.K. PATANWALA & Co.", bold_14)
+            worksheet.merge_range(
+                'E' + str(48+pg)+':H' + str(48+pg), "Proprietor/Authorized signatory", bold_14)
+
+            worksheet.conditional_format(
+                'E' + str(31+pg)+':H' + str(35+pg), {'type': 'no_blanks', 'format': border})
+            cursor.execute(
+                "SELECT bd_ch_no FROM bill_detail WHERE b_year=? AND b_no=? AND bd_ch_no IS NOT ''", bill_info)
+            rows = cursor.fetchall()
+            if len(rows):
+                rows = sorted(set(rows))
+                challan = ''
+                for ch in rows:
+                    challan += str(ch[0]) + ","
+                worksheet.write_rich_string(
+                    'A6', bold_12, "Challan No.: ", normal_12, challan)
+            workbook.close()
+
+            sqliteConnection.commit()
+            messagebox.showinfo(title="Successful",
+                                message="Bill created successfully!!")
+            getCientList()
+            cursor.close()
+
+        except sqlite3.Error as error:
+            messagebox.showerror(
+                title="Failed to get Bill details table", message=error)
+        except xlsxwriter.exceptions.FileCreateError as error:
+            messagebox.showerror(
+                title="Failed to generate Bill", message=error)
+        finally:
+            if (sqliteConnection):
+                sqliteConnection.close()
+
+    def generateAMCBill(self, bill_info):
+        try:
+            sqliteConnection = sqlite3.connect('test.db')
+            cursor = sqliteConnection.cursor()
+
+            cursor.execute(
+                "SELECt c_id, b_date FROM bill WHERE b_year=? AND b_no=?", bill_info)
+            rows = cursor.fetchall()
+            c_id = rows[0][0]
+            b_date = rows[0][1]
+            cursor.execute(
+                "SELECT c_name, c_address, c_gst FROM client WHERE c_id=?", (c_id,))
+            rows = cursor.fetchall()
+            c_name, c_address, c_gst = rows[0]
+            cursor.execute(
+                "SELECT bd_id,bd_amc_no, bd_product, bd_quantity, bd_rate, bd_cgst, bd_amount FROM bill_detail WHERE b_year=? AND b_no=?", bill_info)
+            rows = cursor.fetchall()
+            bill_no = bill_info[0]+'/'+str(bill_info[1])
+            workbook = xlsxwriter.Workbook(
+                'Bills/' + bill_no+'-'+c_name+'.xlsx')
+            worksheet = workbook.add_worksheet()
+            worksheet.set_paper(9)
+            worksheet.set_portrait()
+            worksheet.center_horizontally()
+            worksheet.set_margins(0.1, 0.1, 1.6, 0.25)
+            worksheet.set_default_row(16)
+            worksheet.fit_to_pages(1, 0)
+            worksheet.set_header(header)
+            merge_head = workbook.add_format({
+                'bold': 'bold',
+                'underline': 'underline',
+                'align': 'center',
+                'font_name': 'Times New Roman',
+                'font_size': 20})
+            bold_12 = workbook.add_format({
+                'bold': 'bold',
+                'align': 'center',
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 12})
+            bold_14 = workbook.add_format({
+                'bold': 'bold',
+                'align': 'center',
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 14})
+            bold_14_u = workbook.add_format({
+                'bold': 'bold',
+                'underline': 'underline',
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 14})
+            bold_12_u = workbook.add_format({
+                'bold': 'bold',
+                'underline': 'underline',
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 12})
+            border = workbook.add_format({
+                'border': 1})
+            normal_12 = workbook.add_format({
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 12})
+            table_header = workbook.add_format({
+                'border': 1,
+                'bold': 'bold',
+                'align': 'center',
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 14})
+            table_data = workbook.add_format({
+                'border': 1,
+                'valign': 'bottom',
+                'align': 'center',
+                'font_name': 'Times New Roman',
+                'font_size': 11})
+
+            # ------ Set column Width -----
+            worksheet.set_column(0, 0, 5)  # Sr. No.
+            worksheet.set_column(1, 1, 6)  # Amc No.
+            worksheet.set_column(2, 2, 31)  # PARTICULARS / PRODUCT
+            worksheet.set_column(3, 3, 5)  # Quantity
+            worksheet.set_column(4, 4, 7)  # Rate
+            worksheet.set_column(5, 5, 7)  # GST
+            worksheet.set_column(6, 6, 7)  # CGST
+            worksheet.set_column(7, 7, 7)  # SGST
+            worksheet.set_column(8, 8, 10)  # Amount
+
+            # -------- Excelsheet --------
+            len_entries = len(rows)
+            rem = len(rows)
+            pgs = 0
+            total = 0
+            gst = 0
+            if len_entries > 46:
+                pgs = int(len_entries/46)
+                len_entries %= 46
+            if len_entries > 23:
+                pgs += 2
+            else:
+                pgs += 1
+            len_entries = rem
+            for p in range(0, pgs):
+                pg = p*50
+                worksheet.merge_range('A' + str(1+pg)+':I' + str(
+                    1+pg), "GST No:- 27AADPP0622L1ZQ            Tel. No: +919820552008 / +919004023428            Email:aqpatanwala@hotmail.com", bold_12)
+                worksheet.write(
+                    'A' + str(3+pg), "To:- " + c_name, bold_14_u)
+                worksheet.merge_range(
+                    'A' + str(4+pg)+':I' + str(4+pg), "Address :- "+c_address, normal_12)
+                worksheet.write(
+                    'A' + str(5+pg), "GST:- " + c_gst, bold_12_u)
+
+                # Bill No.
+                worksheet.write_rich_string(
+                    'D' + str(5+pg), bold_12, "Bill No.: ", normal_12, bill_no)
+
+                # Date
+                worksheet.write_rich_string(
+                    'H' + str(5+pg), bold_12, "Date: ", normal_12, b_date)
+
+                # Table Columns
+                worksheet.write(
+                    'A' + str(7+pg), "Sr.No.", table_header)
+                worksheet.write(
+                    'B' + str(7+pg), "AMC", table_header)
+                worksheet.write(
+                    'C' + str(7+pg), "PARTICULARS", table_header)
+                worksheet.write(
+                    'D' + str(7+pg), "QTY", table_header)
+                worksheet.write(
+                    'E' + str(7+pg), "RATE", table_header)
+                worksheet.write(
+                    'F' + str(7+pg), "GST%", table_header)
+                worksheet.write(
+                    'G' + str(7+pg), "CGST%", table_header)
+                worksheet.write(
+                    'H' + str(7+pg), "SGST%", table_header)
+                worksheet.write(
+                    'I' + str(7+pg), "AMOUNT", table_header)
+                if rem > 46:
+                    for i in range(pg+8, pg+51):
+                        ent = len_entries-rem
+                        worksheet.write_number(
+                            'A' + str(i), rows[ent][0], table_data)
+                        worksheet.write_string(
+                            'B' + str(i), rows[ent][1], table_data)
+                        worksheet.write_string(
+                            'C' + str(i), rows[ent][2], table_data)
+                        worksheet.write_number(
+                            'D' + str(i), rows[ent][3], table_data)
+                        worksheet.write_number(
+                            'E' + str(i), rows[ent][4], table_data)
+                        worksheet.write_number(
+                            'F' + str(i), rows[ent][5]*2, table_data)
+                        worksheet.write_number(
+                            'G' + str(i), rows[ent][5], table_data)
+                        worksheet.write_number(
+                            'H' + str(i), rows[ent][5], table_data)
+                        worksheet.write_number(
+                            'I' + str(i), rows[ent][6], table_data)
+                        total += rows[ent][6]
+                        gst += rows[ent][6]*rows[ent][5]*0.01
+                        rem -= 1
+                elif rem > 23:
+                    for i in range(pg+8, pg+31):
+                        ent = len_entries-rem
+                        worksheet.write_number(
+                            'A' + str(i), rows[ent][0], table_data)
+                        worksheet.write_string(
+                            'B' + str(i), rows[ent][1], table_data)
+                        worksheet.write_string(
+                            'C' + str(i), rows[ent][2], table_data)
+                        worksheet.write_number(
+                            'D' + str(i), rows[ent][3], table_data)
+                        worksheet.write_number(
+                            'E' + str(i), rows[ent][4], table_data)
+                        worksheet.write_number(
+                            'F' + str(i), rows[ent][5]*2, table_data)
+                        worksheet.write_number(
+                            'G' + str(i), rows[ent][5], table_data)
+                        worksheet.write_number(
+                            'H' + str(i), rows[ent][5], table_data)
+                        worksheet.write_number(
+                            'I' + str(i), rows[ent][6], table_data)
+                        total += rows[ent][6]
+                        gst += rows[ent][6]*rows[ent][5]*0.01
+                        rem -= 1
+                else:
+                    count = rem
+                    for i in range(pg+8, pg+31):
+                        if rem == 0:
+                            break
+                        ent = len_entries-rem
+                        worksheet.write_number(
+                            'A' + str(i), rows[ent][0], table_data)
+                        worksheet.write_string(
+                            'B' + str(i), rows[ent][1], table_data)
+                        worksheet.write_string(
+                            'C' + str(i), rows[ent][2], table_data)
+                        worksheet.write_number(
+                            'D' + str(i), rows[ent][3], table_data)
+                        worksheet.write_number(
+                            'E' + str(i), rows[ent][4], table_data)
+                        worksheet.write_number(
+                            'F' + str(i), rows[ent][5]*2, table_data)
+                        worksheet.write_number(
+                            'G' + str(i), rows[ent][5], table_data)
+                        worksheet.write_number(
+                            'H' + str(i), rows[ent][5], table_data)
+                        worksheet.write_number(
+                            'I' + str(i), rows[ent][6], table_data)
+                        total += rows[ent][6]
+                        gst += rows[ent][6]*rows[ent][5]*0.01
+                        rem -= 1
+                    if count < 23:
+                        for i in range(0, 10):
+                            draw_frame_border(workbook, worksheet,
+                                              count+7+pg, i, 23-count, 1)
+                    break
+
+            # TOTAL
+            gst = round(gst, 2)
+            worksheet.merge_range('F' + str(31+pg)+':H' +
+                                  str(31+pg), "TOTAL AMOUNT", table_header)
+            worksheet.write_number('I' + str(31+pg), total, table_header)
+            worksheet.merge_range('F' + str(32+pg)+':H' +
+                                  str(32+pg), "TOTAL CGST", table_header)
+            worksheet.write_number('I' + str(32+pg), gst, table_header)
+            worksheet.merge_range('F' + str(33+pg)+':H' +
+                                  str(33+pg), "TOTAL SGST", table_header)
+            worksheet.write_number('I' + str(33+pg), gst, table_header)
+            worksheet.merge_range('F' + str(34+pg)+':H' +
+                                  str(34+pg), "Round off + / -", table_header)
+            grand_total = total+(2*gst)
+            total_roundup = int(
+                Decimal(grand_total).quantize(0, ROUND_HALF_UP))
+            worksheet.write_number('I' + str(34+pg), abs(
+                total_roundup - grand_total), table_header)
+            worksheet.merge_range('F' + str(35+pg)+':H' +
+                                  str(35+pg), "GRAND TOTAL", table_header)
+            worksheet.write_number(
+                'I' + str(35+pg), total_roundup, table_header)
+
+            worksheet.write('A' + str(37+pg), "Rupees:- " +
+                            convertToWords(total_roundup), normal_12)
+            worksheet.write(
+                'A' + str(39+pg), "Note:- Goods once sold cannot be taken back.", normal_12)
+            worksheet.write(
+                'A' + str(40+pg), "Guarantee & Warranty applicable as per the original component suppliers terms & condition only.", normal_12)
+
+            # Bank Details
+            worksheet.write('A' + str(43+pg), "Bank details:-", normal_12)
+            worksheet.write('A' + str(44+pg),
+                            "Bank Name:- Bank of India", normal_12)
+            worksheet.write('A' + str(45+pg),
+                            "Branch :- Kalbadevi Branch", normal_12)
+            worksheet.write('A' + str(46+pg),
+                            "A/C No:- 002420110001459", normal_12)
+            worksheet.write(
+                'A' + str(47+pg), "RTGS/NEFT/IFSC Code: BKID0000024", normal_12)
+
+            # Proprietery Signature
+            worksheet.merge_range(
+                'E' + str(42+pg)+':I' + str(42+pg), "FOR F.K. PATANWALA & Co.", bold_14)
+            worksheet.merge_range(
+                'E' + str(48+pg)+':I' + str(48+pg), "Proprietor/Authorized signatory", bold_14)
+            cursor.execute(
+                "SELECT bd_ch_no FROM bill_detail WHERE b_year=? AND b_no=? AND bd_ch_no IS NOT ''", bill_info)
+            rows = cursor.fetchall()
+            if len(rows):
+                rows = sorted(set(rows))
+                challan = ''
+                for ch in rows:
+                    challan += str(ch[0]) + ","
+                worksheet.write_rich_string(
+                    'A6', bold_12, "Challan No.: ", normal_12, challan)
+            workbook.close()
+
+            sqliteConnection.commit()
+            messagebox.showinfo(title="Successful",
+                                message="Bill created successfully!!")
+            getCientList()
+            cursor.close()
+
+        except sqlite3.Error as error:
+            messagebox.showerror(
+                title="Failed to get Bill details table", message=error)
+        except xlsxwriter.exceptions.FileCreateError as error:
+            messagebox.showerror(
+                title="Failed to generate Bill", message=error)
+        finally:
+            if (sqliteConnection):
+                sqliteConnection.close()
+
+    def generateHSNBill(self, bill_info):
+        try:
+            sqliteConnection = sqlite3.connect('test.db')
+            cursor = sqliteConnection.cursor()
+
+            cursor.execute(
+                "SELECt c_id, b_date FROM bill WHERE b_year=? AND b_no=?", bill_info)
+            rows = cursor.fetchall()
+            c_id = rows[0][0]
+            b_date = rows[0][1]
+            cursor.execute(
+                "SELECT c_name, c_address, c_gst FROM client WHERE c_id=?", (c_id,))
+            rows = cursor.fetchall()
+            c_name, c_address, c_gst = rows[0]
+            cursor.execute(
+                "SELECT bd_id, bd_product, bd_hsn, bd_quantity, bd_rate, bd_cgst, bd_amount FROM bill_detail WHERE b_year=? AND b_no=?", bill_info)
+            rows = cursor.fetchall()
+            bill_no = bill_info[0]+'/'+str(bill_info[1])
+            workbook = xlsxwriter.Workbook(
+                'Bills/' + bill_no+'-'+c_name+'.xlsx')
+            worksheet = workbook.add_worksheet()
+            worksheet.set_paper(9)
+            worksheet.set_portrait()
+            worksheet.center_horizontally()
+            worksheet.set_margins(0.1, 0.1, 1.6, 0.25)
+            worksheet.set_default_row(16)
+            worksheet.fit_to_pages(1, 0)
+            worksheet.set_header(header)
+            merge_head = workbook.add_format({
+                'bold': 'bold',
+                'underline': 'underline',
+                'align': 'center',
+                'font_name': 'Times New Roman',
+                'font_size': 20})
+            bold_12 = workbook.add_format({
+                'bold': 'bold',
+                'align': 'center',
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 12})
+            bold_14 = workbook.add_format({
+                'bold': 'bold',
+                'align': 'center',
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 14})
+            bold_14_u = workbook.add_format({
+                'bold': 'bold',
+                'underline': 'underline',
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 14})
+            bold_12_u = workbook.add_format({
+                'bold': 'bold',
+                'underline': 'underline',
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 12})
+            border = workbook.add_format({
+                'border': 1})
+            normal_12 = workbook.add_format({
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 12})
+            table_header = workbook.add_format({
+                'border': 1,
+                'bold': 'bold',
+                'align': 'center',
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 14})
+            table_data = workbook.add_format({
+                'border': 1,
+                'valign': 'bottom',
+                'align': 'center',
+                'font_name': 'Times New Roman',
+                'font_size': 11})
+
+            # ------ Set column Width -----
+            worksheet.set_column(0, 0, 5)  # Sr. No.
+            worksheet.set_column(1, 1, 31)  # PARTICULARS / PRODUCT
+            worksheet.set_column(2, 2, 6)  # HSN
+            worksheet.set_column(3, 3, 5)  # Quantity
+            worksheet.set_column(4, 4, 7)  # Rate
+            worksheet.set_column(5, 5, 7)  # GST
+            worksheet.set_column(6, 6, 7)  # CGST
+            worksheet.set_column(7, 7, 7)  # SGST
+            worksheet.set_column(8, 8, 10)  # Amount
+
+            # -------- Excelsheet --------
+            len_entries = len(rows)
+            rem = len(rows)
+            pgs = 0
+            total = 0
+            gst = 0
+            if len_entries > 46:
+                pgs = int(len_entries/46)
+                len_entries %= 46
+            if len_entries > 23:
+                pgs += 2
+            else:
+                pgs += 1
+            len_entries = rem
+            for p in range(0, pgs):
+                pg = p*50
+                worksheet.merge_range('A' + str(1+pg)+':I' + str(
+                    1+pg), "GST No:- 27AADPP0622L1ZQ            Tel. No: +919820552008 / +919004023428            Email:aqpatanwala@hotmail.com", bold_12)
+                worksheet.write(
+                    'A' + str(3+pg), "To:- " + c_name, bold_14_u)
+                worksheet.merge_range(
+                    'A' + str(4+pg)+':I' + str(4+pg), "Address :- "+c_address, normal_12)
+                worksheet.write(
+                    'A' + str(5+pg), "GST:- " + c_gst, bold_12_u)
+
+                # Bill No.
+                worksheet.write_rich_string(
+                    'D' + str(5+pg), bold_12, "Bill No.: ", normal_12, bill_no)
+
+                # Date
+                worksheet.write_rich_string(
+                    'H' + str(5+pg), bold_12, "Date: ", normal_12, b_date)
+
+                # Table Columns
+                worksheet.write(
+                    'A' + str(7+pg), "Sr.No.", table_header)
+                worksheet.write(
+                    'B' + str(7+pg), "PARTICULARS", table_header)
+                worksheet.write(
+                    'C' + str(7+pg), "HSN", table_header)
+                worksheet.write(
+                    'D' + str(7+pg), "QTY", table_header)
+                worksheet.write(
+                    'E' + str(7+pg), "RATE", table_header)
+                worksheet.write(
+                    'F' + str(7+pg), "GST%", table_header)
+                worksheet.write(
+                    'G' + str(7+pg), "CGST%", table_header)
+                worksheet.write(
+                    'H' + str(7+pg), "SGST%", table_header)
+                worksheet.write(
+                    'I' + str(7+pg), "AMOUNT", table_header)
+                if rem > 46:
+                    for i in range(pg+8, pg+51):
+                        ent = len_entries-rem
+                        worksheet.write_number(
+                            'A' + str(i), rows[ent][0], table_data)
+                        worksheet.write_string(
+                            'B' + str(i), rows[ent][1], table_data)
+                        worksheet.write_string(
+                            'C' + str(i), rows[ent][2], table_data)
+                        worksheet.write_number(
+                            'D' + str(i), rows[ent][3], table_data)
+                        worksheet.write_number(
+                            'E' + str(i), rows[ent][4], table_data)
+                        worksheet.write_number(
+                            'F' + str(i), rows[ent][5]*2, table_data)
+                        worksheet.write_number(
+                            'G' + str(i), rows[ent][5], table_data)
+                        worksheet.write_number(
+                            'H' + str(i), rows[ent][5], table_data)
+                        worksheet.write_number(
+                            'I' + str(i), rows[ent][6], table_data)
+                        total += rows[ent][6]
+                        gst += rows[ent][6]*rows[ent][5]*0.01
+                        rem -= 1
+                elif rem > 23:
+                    for i in range(pg+8, pg+31):
+                        ent = len_entries-rem
+                        worksheet.write_number(
+                            'A' + str(i), rows[ent][0], table_data)
+                        worksheet.write_string(
+                            'B' + str(i), rows[ent][1], table_data)
+                        worksheet.write_string(
+                            'C' + str(i), rows[ent][2], table_data)
+                        worksheet.write_number(
+                            'D' + str(i), rows[ent][3], table_data)
+                        worksheet.write_number(
+                            'E' + str(i), rows[ent][4], table_data)
+                        worksheet.write_number(
+                            'F' + str(i), rows[ent][5]*2, table_data)
+                        worksheet.write_number(
+                            'G' + str(i), rows[ent][5], table_data)
+                        worksheet.write_number(
+                            'H' + str(i), rows[ent][5], table_data)
+                        worksheet.write_number(
+                            'I' + str(i), rows[ent][6], table_data)
+                        total += rows[ent][6]
+                        gst += rows[ent][6]*rows[ent][5]*0.01
+                        rem -= 1
+                else:
+                    count = rem
+                    for i in range(pg+8, pg+31):
+                        if rem == 0:
+                            break
+                        ent = len_entries-rem
+                        worksheet.write_number(
+                            'A' + str(i), rows[ent][0], table_data)
+                        worksheet.write_string(
+                            'B' + str(i), rows[ent][1], table_data)
+                        worksheet.write_string(
+                            'C' + str(i), rows[ent][2], table_data)
+                        worksheet.write_number(
+                            'D' + str(i), rows[ent][3], table_data)
+                        worksheet.write_number(
+                            'E' + str(i), rows[ent][4], table_data)
+                        worksheet.write_number(
+                            'F' + str(i), rows[ent][5]*2, table_data)
+                        worksheet.write_number(
+                            'G' + str(i), rows[ent][5], table_data)
+                        worksheet.write_number(
+                            'H' + str(i), rows[ent][5], table_data)
+                        worksheet.write_number(
+                            'I' + str(i), rows[ent][6], table_data)
+                        total += rows[ent][6]
+                        gst += rows[ent][6]*rows[ent][5]*0.01
+                        rem -= 1
+                    if count < 23:
+                        for i in range(0, 10):
+                            draw_frame_border(workbook, worksheet,
+                                              count+7+pg, i, 23-count, 1)
+                    break
+
+            # TOTAL
+            gst = round(gst, 2)
+            worksheet.merge_range('F' + str(31+pg)+':H' +
+                                  str(31+pg), "TOTAL AMOUNT", table_header)
+            worksheet.write_number('I' + str(31+pg), total, table_header)
+            worksheet.merge_range('F' + str(32+pg)+':H' +
+                                  str(32+pg), "TOTAL CGST", table_header)
+            worksheet.write_number('I' + str(32+pg), gst, table_header)
+            worksheet.merge_range('F' + str(33+pg)+':H' +
+                                  str(33+pg), "TOTAL SGST", table_header)
+            worksheet.write_number('I' + str(33+pg), gst, table_header)
+            worksheet.merge_range('F' + str(34+pg)+':H' +
+                                  str(34+pg), "Round off + / -", table_header)
+            grand_total = total+(2*gst)
+            total_roundup = int(
+                Decimal(grand_total).quantize(0, ROUND_HALF_UP))
+            worksheet.write_number(
+                'I' + str(34+pg), abs(total_roundup - grand_total), table_header)
+            worksheet.merge_range('F' + str(35+pg)+':H' +
+                                  str(35+pg), "GRAND TOTAL", table_header)
+            worksheet.write_number(
+                'I' + str(35+pg), total_roundup, table_header)
+
+            worksheet.write('A' + str(37+pg), "Rupees:- " +
+                            convertToWords(total_roundup), normal_12)
+            worksheet.write(
+                'A' + str(39+pg), "Note:- Goods once sold cannot be taken back.", normal_12)
+            worksheet.write(
+                'A' + str(40+pg), "Guarantee & Warranty applicable as per the original component suppliers terms & condition only.", normal_12)
+
+            # Bank Details
+            worksheet.write('A' + str(43+pg), "Bank details:-", normal_12)
+            worksheet.write('A' + str(44+pg),
+                            "Bank Name:- Bank of India", normal_12)
+            worksheet.write('A' + str(45+pg),
+                            "Branch :- Kalbadevi Branch", normal_12)
+            worksheet.write('A' + str(46+pg),
+                            "A/C No:- 002420110001459", normal_12)
+            worksheet.write(
+                'A' + str(47+pg), "RTGS/NEFT/IFSC Code: BKID0000024", normal_12)
+
+            # Proprietery Signature
+            worksheet.merge_range(
+                'E' + str(42+pg)+':I' + str(42+pg), "FOR F.K. PATANWALA & Co.", bold_14)
+            worksheet.merge_range(
+                'E' + str(48+pg)+':I' + str(48+pg), "Proprietor/Authorized signatory", bold_14)
+            cursor.execute(
+                "SELECT bd_ch_no FROM bill_detail WHERE b_year=? AND b_no=? AND bd_ch_no IS NOT ''", bill_info)
+            rows = cursor.fetchall()
+            if len(rows):
+                rows = sorted(set(rows))
+                challan = ''
+                for ch in rows:
+                    challan += str(ch[0]) + ","
+                worksheet.write_rich_string(
+                    'A6', bold_12, "Challan No.: ", normal_12, challan)
+            workbook.close()
+
+            sqliteConnection.commit()
+            messagebox.showinfo(title="Successful",
+                                message="Bill created successfully!!")
+            getCientList()
+            cursor.close()
+
+        except sqlite3.Error as error:
+            messagebox.showerror(
+                title="Failed to get Bill details table", message=error)
+        except xlsxwriter.exceptions.FileCreateError as error:
+            messagebox.showerror(
+                title="Failed to generate Bill", message=error)
+        finally:
+            if (sqliteConnection):
+                sqliteConnection.close()
+
+    def generateIGSTBill(self, bill_info):
+        try:
+            sqliteConnection = sqlite3.connect('test.db')
+            cursor = sqliteConnection.cursor()
+
+            cursor.execute(
+                "SELECt c_id, b_date FROM bill WHERE b_year=? AND b_no=?", bill_info)
+            rows = cursor.fetchall()
+            c_id = rows[0][0]
+            b_date = rows[0][1]
+            cursor.execute(
+                "SELECT c_name, c_address, c_gst FROM client WHERE c_id=?", (c_id,))
+            rows = cursor.fetchall()
+            c_name, c_address, c_gst = rows[0]
+            cursor.execute(
+                "SELECT bd_id, bd_product, bd_quantity, bd_rate, bd_igst, bd_amount FROM bill_detail WHERE b_year=? AND b_no=?", bill_info)
+            rows = cursor.fetchall()
+            bill_no = bill_info[0]+'/'+str(bill_info[1])
+            workbook = xlsxwriter.Workbook(
+                'Bills/' + bill_no+'-'+c_name+'.xlsx')
+            worksheet = workbook.add_worksheet()
+            worksheet.set_paper(9)
+            worksheet.set_portrait()
+            worksheet.center_horizontally()
+            worksheet.set_margins(0.1, 0.1, 1.6, 0.25)
+            worksheet.set_default_row(16)
+            worksheet.fit_to_pages(1, 0)
+            worksheet.set_header(header)
+            merge_head = workbook.add_format({
+                'bold': 'bold',
+                'underline': 'underline',
+                'align': 'center',
+                'font_name': 'Times New Roman',
+                'font_size': 20})
+            bold_12 = workbook.add_format({
+                'bold': 'bold',
+                'align': 'center',
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 12})
+            bold_14 = workbook.add_format({
+                'bold': 'bold',
+                'align': 'center',
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 14})
+            bold_14_u = workbook.add_format({
+                'bold': 'bold',
+                'underline': 'underline',
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 14})
+            bold_12_u = workbook.add_format({
+                'bold': 'bold',
+                'underline': 'underline',
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 12})
+            border = workbook.add_format({
+                'border': 1})
+            normal_12 = workbook.add_format({
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 12})
+            table_header = workbook.add_format({
+                'border': 1,
+                'bold': 'bold',
+                'align': 'center',
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 14})
+            table_data = workbook.add_format({
+                'border': 1,
+                'valign': 'bottom',
+                'align': 'center',
+                'font_name': 'Times New Roman',
+                'font_size': 11})
+
+            # ------ Set column Width -----
+            worksheet.set_column(0, 0, 5)  # Sr. No.
+            worksheet.set_column(1, 1, 46)  # PARTICULARS / PRODUCT
+            worksheet.set_column(2, 2, 5)  # Quantity
+            worksheet.set_column(3, 3, 7)  # Rate
+            worksheet.set_column(4, 4, 7)  # GST
+            worksheet.set_column(5, 5, 7)  # IGST
+            worksheet.set_column(6, 6, 10)  # Amount
+
+            # -------- Excelsheet --------
+            len_entries = len(rows)
+            rem = len(rows)
+            pgs = 0
+            total = 0
+            gst = 0
+            igst = 0
+            if len_entries > 46:
+                pgs = int(len_entries/46)
+                len_entries %= 46
+            if len_entries > 23:
+                pgs += 2
+            else:
+                pgs += 1
+            len_entries = rem
+            for p in range(0, pgs):
+                pg = p*50
+                worksheet.merge_range('A' + str(1+pg)+':G' + str(
+                    1+pg), "GST No:- 27AADPP0622L1ZQ            Tel. No: +919820552008 / +919004023428            Email:aqpatanwala@hotmail.com", bold_12)
+                worksheet.write(
+                    'A' + str(3+pg), "To:- " + c_name, bold_14_u)
+                worksheet.merge_range(
+                    'A' + str(4+pg)+':G' + str(4+pg), "Address :- "+c_address, normal_12)
+                worksheet.write(
+                    'A' + str(5+pg), "GST:- " + c_gst, bold_12_u)
+
+                # Bill No.
+                worksheet.write_rich_string(
+                    'D' + str(5+pg), bold_12, "Bill No.: ", normal_12, bill_no)
+
+                # Date
+                worksheet.write_rich_string(
+                    'F' + str(5+pg), bold_12, "Date: ", normal_12, b_date)
+
+                # Table Columns
+                worksheet.write(
+                    'A' + str(7+pg), "Sr.No.", table_header)
+                worksheet.write(
+                    'B' + str(7+pg), "PARTICULARS", table_header)
+                worksheet.write(
+                    'C' + str(7+pg), "QTY", table_header)
+                worksheet.write(
+                    'D' + str(7+pg), "RATE", table_header)
+                worksheet.write(
+                    'E' + str(7+pg), "GST%", table_header)
+                worksheet.write(
+                    'F' + str(7+pg), "IGST%", table_header)
+                worksheet.write(
+                    'G' + str(7+pg), "AMOUNT", table_header)
+                if rem > 46:
+                    for i in range(pg+8, pg+51):
+                        ent = len_entries-rem
+                        worksheet.write_number(
+                            'A' + str(i), rows[ent][0], table_data)
+                        worksheet.write_string(
+                            'B' + str(i), rows[ent][1], table_data)
+                        worksheet.write_number(
+                            'C' + str(i), rows[ent][2], table_data)
+                        worksheet.write_number(
+                            'D' + str(i), rows[ent][3], table_data)
+                        worksheet.write_number(
+                            'E' + str(i), rows[ent][4], table_data)
+                        worksheet.write_number(
+                            'F' + str(i), rows[ent][4], table_data)
+                        worksheet.write_number(
+                            'G' + str(i), rows[ent][5], table_data)
+                        total += rows[ent][5]
+                        igst += rows[ent][5]*rows[ent][4]*0.01
+                        rem -= 1
+                elif rem > 23:
+                    for i in range(pg+8, pg+31):
+                        ent = len_entries-rem
+                        worksheet.write_number(
+                            'A' + str(i), rows[ent][0], table_data)
+                        worksheet.write_string(
+                            'B' + str(i), rows[ent][1], table_data)
+                        worksheet.write_number(
+                            'C' + str(i), rows[ent][2], table_data)
+                        worksheet.write_number(
+                            'D' + str(i), rows[ent][3], table_data)
+                        worksheet.write_number(
+                            'E' + str(i), rows[ent][4], table_data)
+                        worksheet.write_number(
+                            'F' + str(i), rows[ent][4], table_data)
+                        worksheet.write_number(
+                            'G' + str(i), rows[ent][5], table_data)
+                        total += rows[ent][5]
+                        igst += rows[ent][5]*rows[ent][4]*0.01
+                        rem -= 1
+                else:
+                    count = rem
+                    for i in range(pg+8, pg+31):
+                        if rem == 0:
+                            break
+                        ent = len_entries-rem
+                        worksheet.write_number(
+                            'A' + str(i), rows[ent][0], table_data)
+                        worksheet.write_string(
+                            'B' + str(i), rows[ent][1], table_data)
+                        worksheet.write_number(
+                            'C' + str(i), rows[ent][2], table_data)
+                        worksheet.write_number(
+                            'D' + str(i), rows[ent][3], table_data)
+                        worksheet.write_number(
+                            'E' + str(i), rows[ent][4], table_data)
+                        worksheet.write_number(
+                            'F' + str(i), rows[ent][4], table_data)
+                        worksheet.write_number(
+                            'G' + str(i), rows[ent][5], table_data)
+                        total += rows[ent][5]
+                        igst += rows[ent][5]*rows[ent][4]*0.01
+                        rem -= 1
+                    if count < 23:
+                        for i in range(0, 10):
+                            draw_frame_border(workbook, worksheet,
+                                              count+7+pg, i, 23-count, 1)
+                    break
+
+            # TOTAL
+            igst = round(igst, 2)
+            worksheet.merge_range('D' + str(31+pg)+':F' +
+                                  str(31+pg), "TOTAL AMOUNT", table_header)
+            worksheet.write_number('G' + str(31+pg), total, table_header)
+            worksheet.merge_range('D' + str(32+pg)+':F' +
+                                  str(32+pg), "TOTAL IGST", table_header)
+            worksheet.write_number('G' + str(32+pg), igst, table_header)
+            worksheet.merge_range('D' + str(33+pg)+':F' +
+                                  str(33+pg), "Round off + / -", table_header)
+            grand_total = total + igst
+            total_roundup = int(
+                Decimal(grand_total).quantize(0, ROUND_HALF_UP))
+            worksheet.write_number(
+                'G' + str(33+pg), abs(total_roundup - grand_total), table_header)
+            worksheet.merge_range('D' + str(34+pg)+':F' +
+                                  str(34+pg), "GRAND TOTAL", table_header)
+            worksheet.write_number(
+                'G' + str(34+pg), total_roundup, table_header)
+
+            worksheet.write('A' + str(36+pg), "Rupees:- " +
+                            convertToWords(total_roundup), normal_12)
+            worksheet.write(
+                'A' + str(39+pg), "Note:- Goods once sold cannot be taken back.", normal_12)
+            worksheet.write(
+                'A' + str(40+pg), "Guarantee & Warranty applicable as per the original component suppliers terms & condition only.", normal_12)
+
+            # Bank Details
+            worksheet.write('A' + str(43+pg), "Bank details:-", normal_12)
+            worksheet.write('A' + str(44+pg),
+                            "Bank Name:- Bank of India", normal_12)
+            worksheet.write('A' + str(45+pg),
+                            "Branch :- Kalbadevi Branch", normal_12)
+            worksheet.write('A' + str(46+pg),
+                            "A/C No:- 002420110001459", normal_12)
+            worksheet.write(
+                'A' + str(47+pg), "RTGS/NEFT/IFSC Code: BKID0000024", normal_12)
+
+            # Proprietery Signature
+            worksheet.merge_range(
+                'D' + str(42+pg)+':G' + str(42+pg), "FOR F.K. PATANWALA & Co.", bold_14)
+            worksheet.merge_range(
+                'D' + str(48+pg)+':G' + str(48+pg), "Proprietor/Authorized signatory", bold_14)
+            cursor.execute(
+                "SELECT bd_ch_no FROM bill_detail WHERE b_year=? AND b_no=? AND bd_ch_no IS NOT ''", bill_info)
+            rows = cursor.fetchall()
+            if len(rows):
+                rows = sorted(set(rows))
+                challan = ''
+                for ch in rows:
+                    challan += str(ch[0]) + ","
+                worksheet.write_rich_string(
+                    'A6', bold_12, "Challan No.: ", normal_12, challan)
+            workbook.close()
+
+            sqliteConnection.commit()
+            messagebox.showinfo(title="Successful",
+                                message="Bill created successfully!!")
+            getCientList()
+            cursor.close()
+
+        except sqlite3.Error as error:
+            messagebox.showerror(
+                title="Failed to get Bill details table", message=error)
+        except xlsxwriter.exceptions.FileCreateError as error:
+            messagebox.showerror(
+                title="Failed to generate Bill", message=error)
+        finally:
+            if (sqliteConnection):
+                sqliteConnection.close()
+
+    def generateAmcHsnBill(self, bill_info):
+        try:
+            sqliteConnection = sqlite3.connect('test.db')
+            cursor = sqliteConnection.cursor()
+
+            cursor.execute(
+                "SELECt c_id, b_date FROM bill WHERE b_year=? AND b_no=?", bill_info)
+            rows = cursor.fetchall()
+            c_id = rows[0][0]
+            b_date = rows[0][1]
+            cursor.execute(
+                "SELECT c_name, c_address, c_gst FROM client WHERE c_id=?", (c_id,))
+            rows = cursor.fetchall()
+            c_name, c_address, c_gst = rows[0]
+            cursor.execute(
+                "SELECT bd_id,bd_amc_no, bd_product, bd_hsn, bd_quantity, bd_rate, bd_cgst, bd_amount FROM bill_detail WHERE b_year=? AND b_no=?", bill_info)
+            rows = cursor.fetchall()
+            bill_no = bill_info[0]+'/'+str(bill_info[1])
+            workbook = xlsxwriter.Workbook(
+                'Bills/' + bill_no+'-'+c_name+'.xlsx')
+            worksheet = workbook.add_worksheet()
+            worksheet.set_paper(9)
+            worksheet.set_portrait()
+            worksheet.center_horizontally()
+            worksheet.set_margins(0.1, 0.1, 1.6, 0.25)
+            worksheet.set_default_row(16)
+            worksheet.fit_to_pages(1, 0)
+            worksheet.set_header(header)
+            merge_head = workbook.add_format({
+                'bold': 'bold',
+                'underline': 'underline',
+                'align': 'center',
+                'font_name': 'Times New Roman',
+                'font_size': 20})
+            bold_12 = workbook.add_format({
+                'bold': 'bold',
+                'align': 'center',
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 12})
+            bold_14 = workbook.add_format({
+                'bold': 'bold',
+                'align': 'center',
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 14})
+            bold_14_u = workbook.add_format({
+                'bold': 'bold',
+                'underline': 'underline',
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 14})
+            bold_12_u = workbook.add_format({
+                'bold': 'bold',
+                'underline': 'underline',
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 12})
+            border = workbook.add_format({
+                'border': 1})
+            normal_12 = workbook.add_format({
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 12})
+            table_header = workbook.add_format({
+                'border': 1,
+                'bold': 'bold',
+                'align': 'center',
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 14})
+            table_data = workbook.add_format({
+                'border': 1,
+                'valign': 'bottom',
+                'align': 'center',
+                'font_name': 'Times New Roman',
+                'font_size': 11})
+
+            # ------ Set column Width -----
+            worksheet.set_column(0, 0, 5)  # Sr. No.
+            worksheet.set_column(1, 1, 6)  # Amc No.
+            worksheet.set_column(2, 2, 27)  # PARTICULARS / PRODUCT
+            worksheet.set_column(3, 3, 4)  # HSN
+            worksheet.set_column(4, 4, 5)  # Quantity
+            worksheet.set_column(5, 5, 7)  # Rate
+            worksheet.set_column(6, 6, 7)  # GST
+            worksheet.set_column(7, 7, 7)  # CGST
+            worksheet.set_column(8, 8, 7)  # SGST
+            worksheet.set_column(9, 9, 10)  # Amount
+            # -------- Excelsheet --------
+            len_entries = len(rows)
+            rem = len(rows)
+            pgs = 0
+            total = 0
+            gst = 0
+            if len_entries > 46:
+                pgs = int(len_entries/46)
+                len_entries %= 46
+            if len_entries > 23:
+                pgs += 2
+            else:
+                pgs += 1
+            len_entries = rem
+            for p in range(0, pgs):
+                pg = p*50
+                worksheet.merge_range('A' + str(1+pg)+':J' + str(
+                    1+pg), "GST No:- 27AADPP0622L1ZQ            Tel. No: +919820552008 / +919004023428            Email:aqpatanwala@hotmail.com", bold_12)
+                worksheet.write(
+                    'A' + str(3+pg), "To:- " + c_name, bold_14_u)
+                worksheet.merge_range(
+                    'A' + str(4+pg)+':J' + str(4+pg), "Address :- "+c_address, normal_12)
+                worksheet.write(
+                    'A' + str(5+pg), "GST:- " + c_gst, bold_12_u)
+
+                # Bill No.
+                worksheet.write_rich_string(
+                    'D' + str(5+pg), bold_12, "Bill No.: ", normal_12, bill_no)
+
+                # Date
+                worksheet.write_rich_string(
+                    'H' + str(5+pg), bold_12, "Date: ", normal_12, b_date)
+
+                # Table Columns
+                worksheet.write(
+                    'A' + str(7+pg), "Sr.No.", table_header)
+                worksheet.write(
+                    'B' + str(7+pg), "AMC", table_header)
+                worksheet.write(
+                    'C' + str(7+pg), "PARTICULARS", table_header)
+                worksheet.write(
+                    'D' + str(7+pg), "HSN", table_header)
+                worksheet.write(
+                    'E' + str(7+pg), "QTY", table_header)
+                worksheet.write(
+                    'F' + str(7+pg), "RATE", table_header)
+                worksheet.write(
+                    'G' + str(7+pg), "GST%", table_header)
+                worksheet.write(
+                    'H' + str(7+pg), "CGST%", table_header)
+                worksheet.write(
+                    'I' + str(7+pg), "SGST%", table_header)
+                worksheet.write(
+                    'J' + str(7+pg), "AMOUNT", table_header)
+                if rem > 46:
+                    for i in range(pg+8, pg+51):
+                        ent = len_entries-rem
+                        worksheet.write_number(
+                            'A' + str(i), rows[ent][0], table_data)
+                        worksheet.write_string(
+                            'B' + str(i), rows[ent][1], table_data)
+                        worksheet.write_string(
+                            'C' + str(i), rows[ent][2], table_data)
+                        worksheet.write_string(
+                            'D' + str(i), rows[ent][3], table_data)
+                        worksheet.write_number(
+                            'E' + str(i), rows[ent][4], table_data)
+                        worksheet.write_number(
+                            'F' + str(i), rows[ent][5], table_data)
+                        worksheet.write_number(
+                            'G' + str(i), rows[ent][6]*2, table_data)
+                        worksheet.write_number(
+                            'H' + str(i), rows[ent][6], table_data)
+                        worksheet.write_number(
+                            'I' + str(i), rows[ent][6], table_data)
+                        worksheet.write_number(
+                            'J' + str(i), rows[ent][7], table_data)
+                        total += rows[ent][7]
+                        gst += rows[ent][7]*rows[ent][6]*0.01
+                        rem -= 1
+                elif rem > 23:
+                    for i in range(pg+8, pg+31):
+                        ent = len_entries-rem
+                        worksheet.write_number(
+                            'A' + str(i), rows[ent][0], table_data)
+                        worksheet.write_string(
+                            'B' + str(i), rows[ent][1], table_data)
+                        worksheet.write_string(
+                            'C' + str(i), rows[ent][2], table_data)
+                        worksheet.write_string(
+                            'D' + str(i), rows[ent][3], table_data)
+                        worksheet.write_number(
+                            'E' + str(i), rows[ent][4], table_data)
+                        worksheet.write_number(
+                            'F' + str(i), rows[ent][5], table_data)
+                        worksheet.write_number(
+                            'G' + str(i), rows[ent][6]*2, table_data)
+                        worksheet.write_number(
+                            'H' + str(i), rows[ent][6], table_data)
+                        worksheet.write_number(
+                            'I' + str(i), rows[ent][6], table_data)
+                        worksheet.write_number(
+                            'J' + str(i), rows[ent][7], table_data)
+                        total += rows[ent][7]
+                        gst += rows[ent][7]*rows[ent][6]*0.01
+                        rem -= 1
+                else:
+                    count = rem
+                    for i in range(pg+8, pg+31):
+                        if rem == 0:
+                            break
+                        ent = len_entries-rem
+                        worksheet.write_number(
+                            'A' + str(i), rows[ent][0], table_data)
+                        worksheet.write_string(
+                            'B' + str(i), rows[ent][1], table_data)
+                        worksheet.write_string(
+                            'C' + str(i), rows[ent][2], table_data)
+                        worksheet.write_string(
+                            'D' + str(i), rows[ent][3], table_data)
+                        worksheet.write_number(
+                            'E' + str(i), rows[ent][4], table_data)
+                        worksheet.write_number(
+                            'F' + str(i), rows[ent][5], table_data)
+                        worksheet.write_number(
+                            'G' + str(i), rows[ent][6]*2, table_data)
+                        worksheet.write_number(
+                            'H' + str(i), rows[ent][6], table_data)
+                        worksheet.write_number(
+                            'I' + str(i), rows[ent][6], table_data)
+                        worksheet.write_number(
+                            'J' + str(i), rows[ent][7], table_data)
+                        total += rows[ent][7]
+                        gst += rows[ent][7]*rows[ent][6]*0.01
+                        rem -= 1
+                    if count < 23:
+                        for i in range(0, 10):
+                            draw_frame_border(workbook, worksheet,
+                                              count+7+pg, i, 23-count, 1)
+                    break
+
+            # TOTAL
+            gst = round(gst, 2)
+            worksheet.merge_range('G' + str(31+pg)+':I' +
+                                  str(31+pg), "TOTAL AMOUNT", table_header)
+            worksheet.write_number('J' + str(31+pg), total, table_header)
+            worksheet.merge_range('G' + str(32+pg)+':I' +
+                                  str(32+pg), "TOTAL CGST", table_header)
+            worksheet.write_number('J' + str(32+pg), gst, table_header)
+            worksheet.merge_range('G' + str(33+pg)+':I' +
+                                  str(33+pg), "TOTAL SGST", table_header)
+            worksheet.write_number('J' + str(33+pg), gst, table_header)
+            worksheet.merge_range('G' + str(34+pg)+':I' +
+                                  str(34+pg), "Round off + / -", table_header)
+            grand_total = total+(2*gst)
+            total_roundup = int(
+                Decimal(grand_total).quantize(0, ROUND_HALF_UP))
+            worksheet.write_number(
+                'J' + str(34+pg), abs(total_roundup - grand_total), table_header)
+            worksheet.merge_range('G' + str(35+pg)+':I' +
+                                  str(35+pg), "GRAND TOTAL", table_header)
+            worksheet.write_number(
+                'J' + str(35+pg), total_roundup, table_header)
+
+            worksheet.write('A' + str(37+pg), "Rupees:- " +
+                            convertToWords(total_roundup), normal_12)
+            worksheet.write(
+                'A' + str(39+pg), "Note:- Goods once sold cannot be taken back.", normal_12)
+            worksheet.write(
+                'A' + str(40+pg), "Guarantee & Warranty applicable as per the original component suppliers terms & condition only.", normal_12)
+
+            # Bank Details
+            worksheet.write('A' + str(43+pg), "Bank details:-", normal_12)
+            worksheet.write('A' + str(44+pg),
+                            "Bank Name:- Bank of India", normal_12)
+            worksheet.write('A' + str(45+pg),
+                            "Branch :- Kalbadevi Branch", normal_12)
+            worksheet.write('A' + str(46+pg),
+                            "A/C No:- 002420110001459", normal_12)
+            worksheet.write(
+                'A' + str(47+pg), "RTGS/NEFT/IFSC Code: BKID0000024", normal_12)
+
+            # Proprietery Signature
+            worksheet.merge_range(
+                'F' + str(42+pg)+':J' + str(42+pg), "FOR F.K. PATANWALA & Co.", bold_14)
+            worksheet.merge_range(
+                'F' + str(48+pg)+':J' + str(48+pg), "Proprietor/Authorized signatory", bold_14)
+            cursor.execute(
+                "SELECT bd_ch_no FROM bill_detail WHERE b_year=? AND b_no=? AND bd_ch_no IS NOT ''", bill_info)
+            rows = cursor.fetchall()
+            if len(rows):
+                rows = sorted(set(rows))
+                challan = ''
+                for ch in rows:
+                    challan += str(ch[0]) + ","
+                worksheet.write_rich_string(
+                    'A6', bold_12, "Challan No.: ", normal_12, challan)
+            workbook.close()
+
+            sqliteConnection.commit()
+            messagebox.showinfo(title="Successful",
+                                message="Bill created successfully!!")
+            getCientList()
+            cursor.close()
+
+        except sqlite3.Error as error:
+            messagebox.showerror(
+                title="Failed to get Bill details table", message=error)
+        except xlsxwriter.exceptions.FileCreateError as error:
+            messagebox.showerror(
+                title="Failed to generate Bill", message=error)
+        finally:
+            if (sqliteConnection):
+                sqliteConnection.close()
 
 # ---------- PURCHASES FRAMES --------
 
@@ -1875,7 +3526,111 @@ class AutocompleteEntry(Entry):
         return [w for w in self.autocompleteList if self.matchesFunction(self.var.get(), w)]
 
 
+class AutocompleteAddEntry(Entry):
+    def __init__(self, autocompleteList, *args, **kwargs):
+
+        # Listbox length
+        if 'listboxLength' in kwargs:
+            self.listboxLength = kwargs['listboxLength']
+            del kwargs['listboxLength']
+        else:
+            self.listboxLength = 8
+
+        # Custom matches function
+        if 'matchesFunction' in kwargs:
+            self.matchesFunction = kwargs['matchesFunction']
+            del kwargs['matchesFunction']
+        else:
+            def matches(fieldValue, acListEntry):
+                pattern = re.compile(
+                    '.*' + re.escape(fieldValue) + '.*', re.IGNORECASE)
+                return re.match(pattern, acListEntry)
+
+            self.matchesFunction = matches
+
+        Entry.__init__(self, *args, **kwargs)
+        self.focus()
+
+        self.autocompleteList = autocompleteList
+
+        self.var = self["textvariable"]
+        if self.var == '':
+            self.var = self["textvariable"] = StringVar()
+
+        self.var.trace('w', self.changed)
+        self.bind("<Return>", self.selection)
+        self.bind("<Up>", self.moveUp)
+        self.bind("<Down>", self.moveDown)
+
+        self.listboxUp = False
+
+    def changed(self, name, index, mode):
+        if self.var.get() == '':
+            if self.listboxUp:
+                self.listbox.destroy()
+                self.listboxUp = False
+        else:
+            words = self.comparison()
+            if words:
+                if not self.listboxUp:
+                    self.listbox = Listbox(
+                        width=33, height=self.listboxLength, font=("arial", 18))
+                    self.listbox.bind("<Button-1>", self.selection)
+                    self.listbox.bind("<Return>", self.selection)
+                    self.listbox.place(
+                        x=self.winfo_x(), y=self.winfo_y() + self.winfo_height())
+                    self.listboxUp = True
+
+                self.listbox.delete(0, END)
+                for w in words:
+                    self.listbox.insert(END, w)
+            else:
+                if self.listboxUp:
+                    self.listbox.destroy()
+                    self.listboxUp = False
+
+    def selection(self, event):
+        if self.listboxUp:
+            self.var.set(self.listbox.get(ACTIVE))
+            self.listbox.destroy()
+            self.listboxUp = False
+            self.icursor(END)
+
+    def moveUp(self, event):
+        if self.listboxUp:
+            if self.listbox.curselection() == ():
+                index = '0'
+            else:
+                index = self.listbox.curselection()[0]
+
+            if index != '0':
+                self.listbox.selection_clear(first=index)
+                index = str(int(index) - 1)
+
+                self.listbox.see(index)  # Scroll!
+                self.listbox.selection_set(first=index)
+                self.listbox.activate(index)
+
+    def moveDown(self, event):
+        if self.listboxUp:
+            if self.listbox.curselection() == ():
+                index = '0'
+            else:
+                index = self.listbox.curselection()[0]
+
+            if index != END:
+                self.listbox.selection_clear(first=index)
+                index = str(int(index) + 1)
+
+                self.listbox.see(index)  # Scroll!
+                self.listbox.selection_set(first=index)
+                self.listbox.activate(index)
+
+    def comparison(self):
+        return [w for w in self.autocompleteList if self.matchesFunction(self.var.get(), w)]
+
 # ---------- Global Update List Function --------
+
 
 def getCientList():
     sqliteConnection = sqlite3.connect('test.db')
@@ -1933,7 +3688,33 @@ def getProductList():
         sqliteConnection.close()
 
 
+# ---------- Number to Word -----------
+
+def numToWords(n, s):
+    str = ""
+    if (n > 19):
+        str += ten[n // 10] + one[n % 10]
+    else:
+        str += one[n]
+    if (n):
+        str += s
+    return str
+
+
+def convertToWords(n):
+    out = ""
+    out += numToWords((n // 10000000), "Crore ")
+    out += numToWords(((n // 100000) % 100), "Lakh ")
+    out += numToWords(((n // 1000) % 100), "Thousand ")
+    out += numToWords(((n // 100) % 10), "Hundred ")
+    if (n > 100 and n % 100):
+        out += "and "
+    out += numToWords((n % 100), "")
+    return out
+
+
 if __name__ == "__main__":
     getProductList()
     app = App()
     app.mainloop()
+
