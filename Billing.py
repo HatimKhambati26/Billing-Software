@@ -116,7 +116,6 @@ header = '&C&"Times New Roman"&B&U&20GST TAX INVOICE&18\n&U \n&UF.K. PATANWALA &
 
 
 class App(Tk):
-
     def __init__(self, *args, **kwargs):
         Tk.__init__(self, *args, **kwargs)
         container = Frame(self)
@@ -125,10 +124,11 @@ class App(Tk):
         container.grid_columnconfigure(0, weight=1)
         self.tk_setPalette(background=charcoal, foreground=navy,
                            activeBackground=rust, activeForeground=charcoal)
-        self.geometry("1920x1080+0+0")
+        self.geometry("1280x800+0+0")
         self.title("Billing Software")
         self.frames = {}
-        for F in (Home, AddClient, CreateBill, AddBillDetails, UpdateBillStatus, GenerateBill, AddPurchaseBill, UpdatePurchaseStatus):
+        # for F in (Home, AddClient, CreateBill, AddBillDetails, EditBillDetails, UpdateBillStatus, GenerateBill, AddPurchaseBill,):
+        for F in (Home, AddClient, CreateBill, AddBillDetails, EditBillDetails, UpdateBillStatus, GenerateBill, AddPurchaseBill, UpdatePurchaseStatus):
             frame = F(container, self)
             self.frames[F] = frame
             frame.grid(row=0, column=0, sticky="nsew")
@@ -146,45 +146,62 @@ class Home(Frame):
         self.controller = controller
 
         title = Label(self, text="F. K. PATANWALA & Co.", bd=8, relief=GROOVE, font=(
-            "times new roman", 42, "bold"), pady=2).place(x=1, y=2, relwidth=1)
+            "times new roman", 36, "bold"), pady=2).place(x=1, y=2, relwidth=1)
 
         # --------- Sales Options ---------
         saleF = LabelFrame(self, text="Sales", bd=6, relief=GROOVE, labelanchor=N, font=(
-            "times new roman", 30, "bold"), padx=460, pady=60)
-        saleF.place(x=1, y=130, relwidth=1, height=500)
+            "times new roman", 28, "bold"))
+        saleF.place(x=1, rely=0.11, relwidth=1, relheight=0.45)
 
         # Create Sales Bill
-        Button(saleF, text="Create New Bill", bd=5, relief=GROOVE, bg="cadetblue", pady=20, width=32, font=(
-            "arial", 18, "bold"), command=lambda: controller.show_frame(CreateBill)).grid(row=0, column=0, padx=20, pady=15)
+        Button(saleF, text="Create New Bill", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+            "arial", 18, "bold"), command=lambda: controller.show_frame(CreateBill)).place(relx=0.15, rely=0.1, relwidth=0.3, relheight=0.2)
 
-        # Edit Sales Bill Button
-        Button(saleF, text="Edit Bill", bd=5, relief=GROOVE, bg="cadetblue", pady=20, width=32, font=(
-            "arial", 18, "bold"), command=lambda: controller.show_frame(AddBillDetails)).grid(row=0, column=1, padx=20, pady=15)
+        # Add Sales Bill Button
+        Button(saleF, text="Add Bill", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+            "arial", 18, "bold"), command=lambda: controller.show_frame(AddBillDetails)).place(relx=0.55, rely=0.1, relwidth=0.3, relheight=0.2)
 
         # Add Client Button
-        Button(saleF, text="Add New Client", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=20, width=32, font=(
-            "arial", 18, "bold"), command=lambda: controller.show_frame(AddClient)).grid(row=1, column=0, padx=20, pady=15)
+        Button(saleF, text="Add New Client", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+            "arial", 18, "bold"), command=lambda: controller.show_frame(AddClient)).place(relx=0.15, rely=0.4, relwidth=0.3, relheight=0.2)
+
+        # Edit Sales Bill Button
+        Button(saleF, text="Edit Bill", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+            "arial", 18, "bold"), command=lambda: controller.show_frame(EditBillDetails)).place(relx=0.55, rely=0.4, relwidth=0.3, relheight=0.2)
 
         # Check & Edit Bill Status Button
-        Button(saleF, text="Search & Edit Bill Status", bd=5, relief=GROOVE, bg="cadetblue", pady=20, width=32, font=(
-            "arial", 18, "bold"), command=lambda: controller.show_frame(UpdateBillStatus)).grid(row=1, column=1, padx=20, pady=15)
+        Button(saleF, text="Search & Edit Bill Status", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+            "arial", 18, "bold"), command=lambda: controller.show_frame(UpdateBillStatus)).place(relx=0.15, rely=0.7, relwidth=0.3, relheight=0.2)
 
         # Generate Bill
-        Button(saleF, text="Generate Bill", bd=5, relief=GROOVE, bg="cadetblue", pady=20, width=32, font=(
-            "arial", 18, "bold"), command=lambda: controller.show_frame(GenerateBill)).grid(row=2, column=0, columnspan=2, padx=20, pady=15)
+        Button(saleF, text="Create & Print Bill", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+            "arial", 18, "bold"), command=lambda: controller.show_frame(GenerateBill)).place(relx=0.55, rely=0.7, relwidth=0.3, relheight=0.2)
 
         # --------- Purchase Options ---------
         purchaseF = LabelFrame(self, text="Purchase", bd=6, relief=GROOVE, labelanchor=N, font=(
-            "times new roman", 30, "bold"), padx=460, pady=100)
-        purchaseF.place(x=1, y=660, relwidth=1, height=365)
+            "times new roman", 28, "bold"))
+        purchaseF.place(x=1, rely=0.58, relwidth=1, relheight=0.22)
 
         # Create Purchase Bill
-        Button(purchaseF, text="Create New Bill", bd=5, relief=GROOVE, bg="cadetblue", pady=20, width=32, font=(
-            "arial", 18, "bold"), command=lambda: controller.show_frame(AddPurchaseBill)).grid(row=0, column=0, padx=20, pady=15)
+        Button(purchaseF, text="Create New Bill", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+            "arial", 18, "bold"), command=lambda: controller.show_frame(AddPurchaseBill)).place(relx=0.15, rely=0.2, relwidth=0.3, relheight=0.6)
 
         # Search Bill Button
-        Button(purchaseF, text="Search & Edit Bill Status", bd=5, relief=GROOVE, bg="cadetblue", pady=20, width=32, font=(
-            "arial", 18, "bold"), command=lambda: controller.show_frame(UpdatePurchaseStatus)).grid(row=0, column=2, padx=20, pady=15)
+        Button(purchaseF, text="Search & Edit Bill Status", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+            "arial", 18, "bold"), command=lambda: controller.show_frame(UpdatePurchaseStatus)).place(relx=0.55, rely=0.2, relwidth=0.3, relheight=0.6)
+
+        # # Generate Bill Button
+        # Button(purchaseF, text="Generate Bill", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+        #     "arial", 18, "bold"), command=lambda: controller.show_frame(UpdatePurchaseStatus)).place(relx=0.7, rely=0.2, relwidth=0.25, relheight=0.6)
+
+        # --------- Backup Options ---------
+        BackupF = LabelFrame(self, text="Backup", bd=6, relief=GROOVE, labelanchor=N, font=(
+            "times new roman", 28, "bold"), padx=50, pady=15)
+        BackupF.place(x=1, rely=0.82, relwidth=1, relheight=0.18)
+
+        # Generate Bill
+        Button(BackupF, text="Sync", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+            "arial", 18, "bold"), command=lambda: controller.show_frame(GenerateBill)).place(relx=0.3, rely=0.05, relwidth=0.4, relheight=0.9)
 
 
 # ---------- SALES FRAMES ----------
@@ -194,48 +211,51 @@ class AddClient(Frame):
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
         title = Label(self, text="F. K. PATANWALA & Co.", bd=8, relief=GROOVE, font=(
-            "times new roman", 42, "bold"), pady=2).place(x=1, y=2, relwidth=1)
+            "times new roman", 36, "bold"), pady=2).place(x=1, y=2, relwidth=1)
 
         # --------- Sales Options ---------
         self.saleF = LabelFrame(self, text="Sales", bd=6, relief=GROOVE, labelanchor=N, font=(
-            "times new roman", 30, "bold"), padx=220, pady=60)
-        self.saleF.place(x=1, y=130, relwidth=1, height=895)
+            "times new roman", 28, "bold"))
+        self.saleF.place(relx=0, rely=0.1, relwidth=1, relheight=0.9)
 
         Label(self.saleF, text="Client's Details", bd=4, relief=GROOVE, font=(
-            "times new roman", 26, "bold"), width=85, pady=10).grid(row=0, column=0, columnspan=2, pady=15)
+            "times new roman", 26, "bold")).place(relx=0.05, rely=0.04, relwidth=0.9, relheight=0.1)
 
         # Client's Name
         Label(self.saleF, text="Client's Name:", font=(
-            "times new roman", 22, "bold"), pady=10).grid(row=1, column=0, pady=15, sticky=E)
+            "times new roman", 22, "bold"), pady=10).place(relx=0.1, rely=0.17, relwidth=0.3, relheight=0.1)
         self.cname_txt = Entry(self.saleF, width=40, bd=3, relief=GROOVE, font=(
             "arial", 22, "bold"))
-        self.cname_txt.grid(row=1, column=1, padx=50, pady=15, sticky=W)
+        self.cname_txt.place(relx=0.45, rely=0.18,
+                             relwidth=0.45, relheight=0.07)
 
         # Client's GST No
         Label(self.saleF, text="Client's GST No:", font=(
-            "times new roman", 22, "bold"), pady=10).grid(row=2, column=0, pady=15, sticky=E)
+            "times new roman", 22, "bold"), pady=10).place(relx=0.1, rely=0.29, relwidth=0.3, relheight=0.1)
         self.cgst_txt = Entry(self.saleF, width=40, bd=3, relief=GROOVE, font=(
             "arial", 22, "bold"))
-        self.cgst_txt.grid(row=2, column=1, padx=50, pady=15, sticky=W)
+        self.cgst_txt.place(relx=0.45, rely=0.30,
+                            relwidth=0.45, relheight=0.07)
 
         # Client's Address
         Label(self.saleF, text="Client's Address:", font=(
-            "times new roman", 22, "bold"), pady=10).grid(row=3, column=0, pady=15, sticky=E)
+            "times new roman", 22, "bold"), pady=10).place(relx=0.1, rely=0.41, relwidth=0.3, relheight=0.1)
         self.caddress_txt = Entry(self.saleF, width=40, bd=3, relief=GROOVE, font=(
             "arial", 22, "bold"))
-        self.caddress_txt.grid(row=3, column=1, padx=50, pady=15, sticky=W)
+        self.caddress_txt.place(relx=0.45, rely=0.42,
+                                relwidth=0.45, relheight=0.07)
 
         # Add Client Details Button
         add_client_btn = Button(self.saleF, text="Add New Client", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=20, width=50, font=(
-            "arial", 18, "bold"), command=self.addClient).place(x=400, y=400)
+            "arial", 18, "bold"), command=self.addClient).place(relx=0.2, rely=0.56, relwidth=0.6, relheight=0.1)
 
         # CLear Details Button
         clear_btn = Button(self.saleF, text="Clear", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=20, width=20, font=(
-            "arial", 18, "bold"), command=self.clearText).place(x=400, y=550)
+            "arial", 18, "bold"), command=self.clearText).place(relx=0.2, rely=0.70, relwidth=0.6, relheight=0.1)
 
         # Home Button
         add_client_btn = Button(self.saleF, text="Home", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=20, width=20, font=(
-            "arial", 18, "bold"), command=lambda: controller.show_frame(Home)).place(x=790, y=550)
+            "arial", 18, "bold"), command=lambda: controller.show_frame(Home)).place(relx=0.2, rely=0.84, relwidth=0.6, relheight=0.1)
 
     def addClient(self):
         name = self.cname_txt.get()
@@ -257,7 +277,7 @@ class AddClient(Frame):
 
     def insertClient(self, name, address, gst):
         try:
-            sqliteConnection = sqlite3.connect('test.db')
+            sqliteConnection = sqlite3.connect('Billing.db')
             cursor = sqliteConnection.cursor()
 
             sqlite_insert_with_param = """INSERT INTO client
@@ -289,59 +309,60 @@ class CreateBill(Frame):
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
         title = Label(self, text="F. K. PATANWALA & Co.", bd=8, relief=GROOVE, font=(
-            "times new roman", 42, "bold"), pady=2).place(x=1, y=2, relwidth=1)
+            "times new roman", 36, "bold"), pady=2).place(x=1, y=2, relwidth=1)
 
         # --------- Sales Options ---------
         self.saleF = LabelFrame(self, text="Sales", bd=6, relief=GROOVE, labelanchor=N, font=(
-            "times new roman", 30, "bold"), padx=180, pady=60)
-        self.saleF.place(x=1, y=130, relwidth=1, height=895)
+            "times new roman", 28, "bold"))
+        self.saleF.place(relx=0, rely=0.1, relwidth=1, relheight=0.9)
 
         Label(self.saleF, text="Bill Details", bd=4, relief=GROOVE, font=(
-            "times new roman", 26, "bold"), width=85, pady=10).grid(row=0, column=0, columnspan=6, pady=15)
+            "times new roman", 26, "bold")).place(relx=0.05, rely=0.04, relwidth=0.9, relheight=0.1)
 
         # Billing Client's Name
         Label(self.saleF, text="Client's Name:", font=(
-            "times new roman", 22, "bold"), pady=10).grid(row=1, column=0, columnspan=2, pady=15, sticky=E)
+            "times new roman", 22, "bold")).place(relx=0.1, rely=0.17, relwidth=0.3, relheight=0.1)
         self.cname = StringVar()
         self.cname_txt = ttk.Combobox(self.saleF, width=40, font=(
             "arial", 22, "bold"), textvariable=self.cname, postcommand=self.updateClientList)
-        self.cname_txt.grid(row=1, column=2, columnspan=4,
-                            padx=50, pady=25, sticky=W)
+        self.cname_txt.place(relx=0.45, rely=0.18,
+                             relwidth=0.45, relheight=0.07)
 
         # Billing Year
         Label(self.saleF, text="Financial Year:", font=(
-            "times new roman", 22, "bold"), pady=10).grid(row=2, column=0, pady=15, sticky=E)
+            "times new roman", 22, "bold")).place(relx=0.1, rely=0.29, relwidth=0.3, relheight=0.1)
         self.byear = StringVar()
         self.byear_txt = OptionMenu(self.saleF, self.byear, *years)
         self.byear_txt.config(width=15, font=(
             "arial", 22, "bold"), bd=3, relief=GROOVE)
-        self.byear_txt.grid(row=2, column=1, padx=50, pady=15, sticky=W)
+        self.byear_txt.place(relx=0.45, rely=0.30,
+                             relwidth=0.45, relheight=0.07)
 
         # Billing Date
         Label(self.saleF, text="Date:", font=(
-            "times new roman", 22, "bold"), pady=10).grid(row=2, column=2, pady=15, sticky=E)
+            "times new roman", 22, "bold")).place(relx=0.1, rely=0.41, relwidth=0.3, relheight=0.1)
         self.bdate = Entry(self.saleF, width=15, font=(
             "arial", 22, "bold"), bd=3, relief=GROOVE)
-        self.bdate.grid(row=2, column=3, padx=50, pady=15, sticky=W)
+        self.bdate.place(relx=0.45, rely=0.42, relwidth=0.45, relheight=0.07)
 
         # P.O. Number
         Label(self.saleF, text="P.O. Number.:", font=(
-            "times new roman", 22, "bold"), pady=10).grid(row=2, column=4, pady=15, sticky=E)
+            "times new roman", 22, "bold")).place(relx=0.1, rely=0.53, relwidth=0.3, relheight=0.1)
         self.bpo = Entry(self.saleF, width=15, font=(
             "arial", 22, "bold"), bd=3, relief=GROOVE)
-        self.bpo.grid(row=2, column=5, padx=50, pady=65, sticky=W)
+        self.bpo.place(relx=0.45, rely=0.54, relwidth=0.45, relheight=0.07)
 
         # Add Bill Button
         Button(self.saleF, text="Add Bill", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=20, width=50, font=(
-            "arial", 18, "bold"), command=self.createBill).place(x=410, y=400)
+            "arial", 18, "bold"), command=self.createBill).place(relx=0.2, rely=0.70, relwidth=0.6, relheight=0.1)
 
         # Add Bill Details Button
         clear_btn = Button(self.saleF, text="Add Bill Details", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=20, width=20, font=(
-            "arial", 18, "bold"), command=lambda: controller.show_frame(AddBillDetails)).place(x=410, y=550)
+            "arial", 18, "bold"), command=lambda: controller.show_frame(AddBillDetails)).place(relx=0.2, rely=0.84, relwidth=0.25, relheight=0.1)
 
         # Home Button
         add_client_btn = Button(self.saleF, text="Home", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=20, width=20, font=(
-            "arial", 18, "bold"), command=lambda: controller.show_frame(Home)).place(x=800, y=550)
+            "arial", 18, "bold"), command=lambda: controller.show_frame(Home)).place(relx=0.55, rely=0.84, relwidth=0.25, relheight=0.1)
 
     def createBill(self):
         name = self.cname_txt.get()
@@ -368,7 +389,7 @@ class CreateBill(Frame):
 
     def insertBill(self, name, year, date, po):
         try:
-            sqliteConnection = sqlite3.connect('test.db')
+            sqliteConnection = sqlite3.connect('Billing.db')
             cursor = sqliteConnection.cursor()
 
             cursor.execute(
@@ -405,239 +426,241 @@ class AddBillDetails(Frame):
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
         title = Label(self, text="F. K. PATANWALA & Co.", bd=8, relief=GROOVE, font=(
-            "times new roman", 42, "bold"), pady=2).place(x=1, y=2, relwidth=1)
+            "times new roman", 36, "bold"), pady=2).place(x=1, y=2, relwidth=1)
 
         # --------- Sales Options ---------
         self.saleF = LabelFrame(self, text="Sales", bd=6, relief=GROOVE, labelanchor=N, font=(
-            "times new roman", 30, "bold"), padx=20, pady=10)
-        self.saleF.place(x=1, y=80, relwidth=1, height=945)
+            "times new roman", 28, "bold"))
+        self.saleF.place(relx=0, rely=0.1, relwidth=1, relheight=0.9)
 
-        Label(self.saleF, text="Bill Product Details", bd=4, relief=GROOVE, font=(
-            "times new roman", 26, "bold"), width=85, pady=10).place(x=1, y=1, relwidth=1)
+        Label(self.saleF, text="Bill Details", bd=4, relief=GROOVE, font=(
+            "times new roman", 26, "bold")).place(relx=0.05, rely=0.01, relwidth=0.9, relheight=0.07)
 
         # ---------- Add Details Frame ------------
         self.addDetailsF = LabelFrame(self.saleF, text="Add Details", bd=6, relief=GROOVE, labelanchor=NW, font=(
-            "times new roman", 18, "bold"), padx=25, pady=20)
-        self.addDetailsF.place(x=1, y=100, width=615, height=400)
+            "times new roman", 18, "bold"))
+        self.addDetailsF.place(relx=0.01, rely=0.09,
+                               relwidth=0.48, relheight=0.45)
 
         # Product Name
         Label(self.addDetailsF, text="Product:", font=(
-            "times new roman", 16, "bold")).grid(row=0, column=0, pady=10, sticky=E)
+            "times new roman", 18, "bold")).place(relx=0, rely=0.01, relwidth=0.2, relheight=0.1)
         self.pname = AutocompleteAddEntry(
-            products, self, listboxLength=15, width=33, bd=3, relief=GROOVE, font=("arial", 18, "bold"))
-        self.pname.place(x=160, y=290)
+            products, self.addDetailsF, listboxLength=15, bd=3, relief=GROOVE, font=("arial", 18, "bold"))
+        self.pname.place(relx=0.2, rely=0.01, relwidth=0.75, relheight=0.13)
 
         # Quantity
         Label(self.addDetailsF, text="Quantity:", font=(
-            "times new roman", 14, "bold")).grid(row=1, column=0, pady=10, sticky=E)
-        self.pquan = Entry(self.addDetailsF, width=15, bd=3, relief=GROOVE, font=(
+            "times new roman", 14, "bold")).place(relx=0, rely=0.18, relwidth=0.2, relheight=0.1)
+        self.pquan = Entry(self.addDetailsF, bd=3, relief=GROOVE, font=(
             "arial", 14, "bold"))
-        self.pquan.grid(row=1, column=1, padx=10, pady=10)
+        self.pquan.place(relx=0.2, rely=0.18, relwidth=0.2, relheight=0.1)
 
         # Rate
         Label(self.addDetailsF, text="Rate:", font=(
-            "times new roman", 14, "bold")).grid(row=1, column=2, pady=10, sticky=E)
-        self.rate = Entry(self.addDetailsF, width=15, bd=3, relief=GROOVE, font=(
+            "times new roman", 14, "bold")).place(relx=0.55, rely=0.18, relwidth=0.2, relheight=0.1)
+        self.rate = Entry(self.addDetailsF, bd=3, relief=GROOVE, font=(
             "arial", 14, "bold"))
-        self.rate.grid(row=1, column=3, padx=10, pady=10)
+        self.rate.place(relx=0.75, rely=0.18, relwidth=0.2, relheight=0.1)
 
         # GST
         self.gst = DoubleVar()
         # CGST
-        Label(self.addDetailsF, text="CGST:", font=(
-            "times new roman", 14, "bold")).grid(row=2, column=0, pady=10, sticky=E)
-        Entry(self.addDetailsF, width=15, bd=3, relief=GROOVE, font=(
-            "arial", 14, "bold"), textvariable=self.gst).grid(row=2, column=1, padx=10, pady=10)
-
-        # SGST
-        Label(self.addDetailsF, text="SGST:", font=(
-            "times new roman", 14, "bold")).grid(row=2, column=2, pady=10, sticky=E)
-        Entry(self.addDetailsF, width=15, bd=3, relief=GROOVE, font=(
-            "arial", 14, "bold"), textvariable=self.gst).grid(row=2, column=3, padx=10, pady=10)
+        Label(self.addDetailsF, text="GST:", font=(
+            "times new roman", 14, "bold")).place(relx=0, rely=0.32, relwidth=0.2, relheight=0.1)
+        Entry(self.addDetailsF, bd=3, relief=GROOVE, font=(
+            "arial", 14, "bold"), textvariable=self.gst).place(relx=0.2, rely=0.32, relwidth=0.2, relheight=0.1)
 
         # IGST
         Label(self.addDetailsF, text="IGST:", font=(
-            "times new roman", 14, "bold")).grid(row=3, column=0, pady=10, sticky=E)
+            "times new roman", 14, "bold")).place(relx=0.55, rely=0.32, relwidth=0.2, relheight=0.1)
         self.igst = DoubleVar()
         Entry(self.addDetailsF, width=15, bd=3, relief=GROOVE, font=(
-            "arial", 14, "bold"), textvariable=self.igst).grid(row=3, column=1, padx=10, pady=10)
+            "arial", 14, "bold"), textvariable=self.igst).place(relx=0.75, rely=0.32, relwidth=0.2, relheight=0.1)
 
         # Challan No.
         Label(self.addDetailsF, text="Challan No:", font=(
-            "times new roman", 14, "bold")).grid(row=3, column=2, pady=10, sticky=E)
-        self.challan = Entry(self.addDetailsF, width=15, bd=3, relief=GROOVE, font=(
+            "times new roman", 14, "bold")).place(relx=0, rely=0.46, relwidth=0.2, relheight=0.1)
+        self.challan = Entry(self.addDetailsF, bd=3, relief=GROOVE, font=(
             "arial", 14, "bold"))
-        self.challan.grid(row=3, column=3, padx=10, pady=10)
+        self.challan.place(relx=0.2, rely=0.46, relwidth=0.2, relheight=0.1)
 
         # HSN Code
-        Label(self.addDetailsF, text="HSN Code:", font=(
-            "times new roman", 14, "bold")).grid(row=4, column=0, pady=10, sticky=E)
-        self.phsn = Entry(self.addDetailsF, width=15, bd=3, relief=GROOVE, font=(
+        Label(self.addDetailsF, text="HSN:", font=(
+            "times new roman", 14, "bold")).place(relx=0.55, rely=0.46, relwidth=0.2, relheight=0.1)
+        self.phsn = Entry(self.addDetailsF, bd=3, relief=GROOVE, font=(
             "arial", 14, "bold"))
-        self.phsn.grid(row=4, column=1, padx=10, pady=10)
+        self.phsn.place(relx=0.75, rely=0.46, relwidth=0.2, relheight=0.1)
 
         # AMC No.
         Label(self.addDetailsF, text="AMC No:", font=(
-            "times new roman", 14, "bold")).grid(row=4, column=2, pady=10, sticky=E)
+            "times new roman", 14, "bold")).place(relx=0.3, rely=0.60, relwidth=0.2, relheight=0.1)
         self.amc = Entry(self.addDetailsF, width=15, bd=3, relief=GROOVE, font=(
             "arial", 14, "bold"))
-        self.amc.grid(row=4, column=3, padx=10, pady=10)
+        self.amc.place(relx=0.5, rely=0.60, relwidth=0.2, relheight=0.1)
 
         # Insert Bill Details Button
-        Button(self.addDetailsF, text="Add Bill Detail", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=10, width=15, font=(
-            "arial", 16, "bold"), command=self.addBillDetails).grid(row=5, column=0, columnspan=2, padx=10, pady=10)
+        Button(self.addDetailsF, text="Add Bill Detail", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+            "arial", 16, "bold"), command=self.addBillDetails).place(relx=0.1, rely=0.76, relwidth=0.5, relheight=0.14)
 
         # Clear Details Button
-        Button(self.addDetailsF, text="Clear", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=10, width=15, font=(
-            "arial", 16, "bold"), command=self.clearTextAdd).grid(row=5, column=2, columnspan=2, padx=10, pady=10)
+        Button(self.addDetailsF, text="Clear", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+            "arial", 16, "bold"), command=self.clearTextAdd).place(relx=0.7, rely=0.76, relwidth=0.2, relheight=0.14)
 
-        # --------- Edit Details Frame ------------
-        self.editDetailsF = LabelFrame(self.saleF, text="Edit Details", bd=6, relief=GROOVE, labelanchor=NW, font=(
-            "times new roman", 18, "bold"), padx=25, pady=20)
-        self.editDetailsF.place(x=645, y=100, width=615, height=400)
+        # # --------- Edit Details Frame ------------
+        # self.editDetailsF = LabelFrame(self.saleF, text="Edit Details", bd=6, relief=GROOVE, labelanchor=NW, font=(
+        #     "times new roman", 18, "bold"), padx=25, pady=20)
+        # self.editDetailsF.place(x=645, y=100, width=615, height=400)
 
-        # Bill Serial No.
-        Label(self.editDetailsF, text="", font=(
-            "times new roman", 14, "bold")).grid(row=0, column=0, columnspan=4, pady=10, sticky=E)
+        # # Bill Serial No.
+        # Label(self.editDetailsF, text="", font=(
+        #     "times new roman", 14, "bold")).grid(row=0, column=0, columnspan=4, pady=10, sticky=E)
 
-        Label(self.editDetailsF, text="Serial No.:", font=(
-            "times new roman", 14, "bold")).place(x=1, y=10)
-        self.esrno = StringVar()
-        self.esrnoC = Entry(self.editDetailsF, width=4, font=(
-            "arial", 14, "bold"), textvariable=self.esrno, bd=3, relief=GROOVE)
-        self.esrnoC.place(x=100, y=10)
+        # Label(self.editDetailsF, text="Serial No.:", font=(
+        #     "times new roman", 14, "bold")).place(x=1, y=10)
+        # self.esrno = StringVar()
+        # self.esrnoC = Entry(self.editDetailsF, width=4, font=(
+        #     "arial", 14, "bold"), textvariable=self.esrno, bd=3, relief=GROOVE)
+        # self.esrnoC.place(x=100, y=10)
 
-        # HSN Code
-        Label(self.editDetailsF, text="HSN Code:", font=(
-            "times new roman", 14, "bold")).place(x=180, y=10)
-        self.ephsn = Entry(self.editDetailsF, width=6, bd=3, relief=GROOVE, font=(
-            "arial", 14, "bold"))
-        self.ephsn.place(x=280, y=10)
+        # # HSN Code
+        # Label(self.editDetailsF, text="HSN Code:", font=(
+        #     "times new roman", 14, "bold")).place(x=180, y=10)
+        # self.ephsn = Entry(self.editDetailsF, width=6, bd=3, relief=GROOVE, font=(
+        #     "arial", 14, "bold"))
+        # self.ephsn.place(x=280, y=10)
 
-        # AMC No.
-        Label(self.editDetailsF, text="AMC No:", font=(
-            "times new roman", 14, "bold")).place(x=380, y=10)
-        self.eamc = Entry(self.editDetailsF, width=7, bd=3, relief=GROOVE, font=(
-            "arial", 14, "bold"))
-        self.eamc.place(x=470, y=10)
+        # # AMC No.
+        # Label(self.editDetailsF, text="AMC No:", font=(
+        #     "times new roman", 14, "bold")).place(x=380, y=10)
+        # self.eamc = Entry(self.editDetailsF, width=7, bd=3, relief=GROOVE, font=(
+        #     "arial", 14, "bold"))
+        # self.eamc.place(x=470, y=10)
 
-        # Product Name
-        Label(self.editDetailsF, text="Product:", font=(
-            "times new roman", 14, "bold")).grid(row=1, column=0, pady=10, sticky=E)
-        self.epname = AutocompleteEntry(
-            products, self, listboxLength=10, width=15, bd=3, relief=GROOVE, font=("arial", 14, "bold"))
-        self.epname.place(x=800, y=345)
+        # # Product Name
+        # Label(self.editDetailsF, text="Product:", font=(
+        #     "times new roman", 14, "bold")).grid(row=1, column=0, pady=10, sticky=E)
+        # self.epname = AutocompleteEntry(
+        #     products, self, listboxLength=10, width=15, bd=3, relief=GROOVE, font=("arial", 14, "bold"))
+        # self.epname.place(x=800, y=345)
 
-        # Quantity
-        Label(self.editDetailsF, text="Quantity:", font=(
-            "times new roman", 14, "bold")).grid(row=1, column=2, pady=10, sticky=E)
-        self.epquan = Entry(self.editDetailsF, width=15, bd=3, relief=GROOVE, font=(
-            "arial", 14, "bold"))
-        self.epquan.grid(row=1, column=3, padx=10, pady=10)
+        # # Quantity
+        # Label(self.editDetailsF, text="Quantity:", font=(
+        #     "times new roman", 14, "bold")).grid(row=1, column=2, pady=10, sticky=E)
+        # self.epquan = Entry(self.editDetailsF, width=15, bd=3, relief=GROOVE, font=(
+        #     "arial", 14, "bold"))
+        # self.epquan.grid(row=1, column=3, padx=10, pady=10)
 
-        # Rate
-        Label(self.editDetailsF, text="Rate:", font=(
-            "times new roman", 14, "bold")).grid(row=2, column=0, pady=10, sticky=E)
-        self.erate = Entry(self.editDetailsF, width=15, bd=3, relief=GROOVE, font=(
-            "arial", 14, "bold"))
-        self.erate.grid(row=2, column=1, padx=10, pady=10)
+        # # Rate
+        # Label(self.editDetailsF, text="Rate:", font=(
+        #     "times new roman", 14, "bold")).grid(row=2, column=0, pady=10, sticky=E)
+        # self.erate = Entry(self.editDetailsF, width=15, bd=3, relief=GROOVE, font=(
+        #     "arial", 14, "bold"))
+        # self.erate.grid(row=2, column=1, padx=10, pady=10)
 
-        # Taxable Amount
-        Label(self.editDetailsF, text="Amount:", font=(
-            "times new roman", 14, "bold")).grid(row=2, column=2, pady=10, sticky=E)
-        self.eamt = Entry(self.editDetailsF, width=15, bd=3, relief=GROOVE, font=(
-            "arial", 14, "bold"))
-        self.eamt.grid(row=2, column=3, padx=10, pady=10)
+        # # Taxable Amount
+        # Label(self.editDetailsF, text="Amount:", font=(
+        #     "times new roman", 14, "bold")).grid(row=2, column=2, pady=10, sticky=E)
+        # self.eamt = Entry(self.editDetailsF, width=15, bd=3, relief=GROOVE, font=(
+        #     "arial", 14, "bold"))
+        # self.eamt.grid(row=2, column=3, padx=10, pady=10)
 
-        # CGST
-        Label(self.editDetailsF, text="CGST:", font=(
-            "times new roman", 14, "bold")).grid(row=3, column=0, pady=10, sticky=E)
-        self.ecgst = Entry(self.editDetailsF, width=15, bd=3, relief=GROOVE, font=(
-            "arial", 14, "bold"))
-        self.ecgst.grid(row=3, column=1, padx=10, pady=10)
+        # # CGST
+        # Label(self.editDetailsF, text="CGST:", font=(
+        #     "times new roman", 14, "bold")).grid(row=3, column=0, pady=10, sticky=E)
+        # self.ecgst = Entry(self.editDetailsF, width=15, bd=3, relief=GROOVE, font=(
+        #     "arial", 14, "bold"))
+        # self.ecgst.grid(row=3, column=1, padx=10, pady=10)
 
-        # SGST
-        Label(self.editDetailsF, text="SGST:", font=(
-            "times new roman", 14, "bold")).grid(row=3, column=2, pady=10, sticky=E)
-        self.esgst = Entry(self.editDetailsF, width=15, bd=3, relief=GROOVE, font=(
-            "arial", 14, "bold"))
-        self.esgst.grid(row=3, column=3, padx=10, pady=10)
+        # # SGST
+        # Label(self.editDetailsF, text="SGST:", font=(
+        #     "times new roman", 14, "bold")).grid(row=3, column=2, pady=10, sticky=E)
+        # self.esgst = Entry(self.editDetailsF, width=15, bd=3, relief=GROOVE, font=(
+        #     "arial", 14, "bold"))
+        # self.esgst.grid(row=3, column=3, padx=10, pady=10)
 
-        # IGST
-        Label(self.editDetailsF, text="IGST:", font=(
-            "times new roman", 14, "bold")).grid(row=4, column=0, pady=10, sticky=E)
-        self.eigst = Entry(self.editDetailsF, width=15, bd=3, relief=GROOVE, font=(
-            "arial", 14, "bold"))
-        self.eigst.grid(row=4, column=1, padx=10, pady=10)
+        # # IGST
+        # Label(self.editDetailsF, text="IGST:", font=(
+        #     "times new roman", 14, "bold")).grid(row=4, column=0, pady=10, sticky=E)
+        # self.eigst = Entry(self.editDetailsF, width=15, bd=3, relief=GROOVE, font=(
+        #     "arial", 14, "bold"))
+        # self.eigst.grid(row=4, column=1, padx=10, pady=10)
 
-        # Challan No.
-        Label(self.editDetailsF, text="Challan No:", font=(
-            "times new roman", 14, "bold")).grid(row=4, column=2, pady=10, sticky=E)
-        self.echallan = Entry(self.editDetailsF, width=15, bd=3, relief=GROOVE, font=(
-            "arial", 14, "bold"))
-        self.echallan.grid(row=4, column=3, padx=10, pady=10)
+        # # Challan No.
+        # Label(self.editDetailsF, text="Challan No:", font=(
+        #     "times new roman", 14, "bold")).grid(row=4, column=2, pady=10, sticky=E)
+        # self.echallan = Entry(self.editDetailsF, width=15, bd=3, relief=GROOVE, font=(
+        #     "arial", 14, "bold"))
+        # self.echallan.grid(row=4, column=3, padx=10, pady=10)
 
-        # Edit Bill Details Button
-        Button(self.editDetailsF, text="Edit Bill Detail", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=10, width=15, font=(
-            "arial", 16, "bold"), command=self.editBillDetails).grid(row=5, column=0, columnspan=2, padx=30, pady=10)
+        # # Edit Bill Details Button
+        # Button(self.editDetailsF, text="Edit Bill Detail", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=10, width=15, font=(
+        #     "arial", 16, "bold"), command=self.editBillDetails).grid(row=5, column=0, columnspan=2, padx=30, pady=10)
 
-        # Clear Edit Details Button
-        Button(self.editDetailsF, text="Clear", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=10, width=15, font=(
-            "arial", 16, "bold"), command=self.clearTextEdit).grid(row=5, column=2, columnspan=2, padx=10, pady=10)
+        # # Clear Edit Details Button
+        # Button(self.editDetailsF, text="Clear", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=10, width=15, font=(
+        #     "arial", 16, "bold"), command=self.clearTextEdit).grid(row=5, column=2, columnspan=2, padx=10, pady=10)
 
-        # --------- Select Bill Frame ------------
+        # # --------- Select Bill Frame ------------
         self.selectBillF = LabelFrame(self.saleF, text="Select Bill", bd=6, relief=GROOVE, labelanchor=NW, font=(
             "times new roman", 18, "bold"), padx=20, pady=10)
-        self.selectBillF.place(x=1290, y=100, width=580, height=180)
+        self.selectBillF.place(relx=0.51, rely=0.09,
+                               relwidth=0.48, relheight=0.45)
 
         # Billing Year
         Label(self.selectBillF, text="Billing Year:", font=(
-            "times new roman", 16, "bold")).grid(row=0, column=0, pady=10, sticky=E)
+            "times new roman", 16, "bold")).place(relx=0, rely=0.01, relwidth=0.4, relheight=0.15)
         self.byear = StringVar()
-        self.byearC = ttk.Combobox(self.selectBillF, width=10, font=(
+        self.byearC = ttk.Combobox(self.selectBillF, font=(
             "arial", 16, "bold"), textvariable=self.byear, values=years)
-        self.byearC.grid(row=0, column=1, padx=10, pady=10)
+        self.byearC.place(relx=0.4, rely=0.01, relwidth=0.4, relheight=0.15)
 
         # Bill No.
         Label(self.selectBillF, text="Billing No:", font=(
-            "times new roman", 16, "bold")).grid(row=0, column=2, pady=10, sticky=E)
+            "times new roman", 16, "bold")).place(relx=0, rely=0.3, relwidth=0.4, relheight=0.15)
         self.bno = StringVar()
-        self.bnoC = Entry(self.selectBillF, width=10, bd=3, relief=GROOVE, font=(
+        self.bnoC = Entry(self.selectBillF, bd=3, relief=GROOVE, font=(
             "arial", 16, "bold"), textvariable=self.bno)
-        self.bnoC.grid(row=0, column=3, padx=10, pady=10)
+        self.bnoC.place(relx=0.4, rely=0.3, relwidth=0.4, relheight=0.15)
 
         # Current Bill Details Button
-        Button(self.selectBillF, text="View Bill Details", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=10, width=18, font=(
-            "arial", 16, "bold"), command=self.viewBillDetails).place(x=1, y=60)
+        Button(self.selectBillF, text="View Bill Details", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+            "arial", 16, "bold"), command=self.viewBillDetails).place(relx=0.1, rely=0.61, relwidth=0.35, relheight=0.15)
 
         # Delete Last Entry Bill Details Button
-        Button(self.selectBillF, text="Delete Last Entry", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=10, width=18, font=(
-            "arial", 16, "bold"), command=self.removeLastDetail).place(x=270, y=60)
+        Button(self.selectBillF, text="Delete Last Entry", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+            "arial", 16, "bold"), command=self.removeLastDetail).place(relx=0.55, rely=0.61, relwidth=0.35, relheight=0.15)
 
-        # --------- Edit Client Frame ------------
-        self.editClientF = LabelFrame(self.saleF, text="Edit Client", bd=6, relief=GROOVE, labelanchor=NW, font=(
-            "times new roman", 18, "bold"), padx=30, pady=10)
-        self.editClientF.place(x=1290, y=290, width=580, height=210)
+        # Home Button
+        Button(self.selectBillF, text="Home", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", width=35, pady=30, font=(
+            "arial", 18, "bold"), command=lambda: controller.show_frame(Home)).place(relx=0.3, rely=0.81, relwidth=0.4, relheight=0.15)
 
-        # Billing Client's Name
-        Label(self.editClientF, text="Client's Name:", font=(
-            "times new roman", 16, "bold")).grid(row=0, column=0, pady=20, sticky=E)
-        self.ecname = StringVar()
-        self.cname_txt = ttk.Combobox(self.editClientF, width=25, font=(
-            "arial", 16, "bold"), textvariable=self.ecname, postcommand=self.updateClientList)
-        self.cname_txt.grid(row=0, column=1,
-                            padx=20, pady=10, sticky=W)
+        # # --------- Edit Client Frame ------------
+        # self.editClientF = LabelFrame(self.saleF, text="Edit Client", bd=6, relief=GROOVE, labelanchor=NW, font=(
+        #     "times new roman", 18, "bold"), padx=30, pady=10)
+        # self.editClientF.place(x=1290, y=290, width=580, height=210)
 
-        # Edit Client Button
-        Button(self.editClientF, text="Edit Client", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", width=15, pady=10, font=(
-            "arial", 16, "bold"), command=self.editClient).place(x=150, y=80)
+        # # Billing Client's Name
+        # Label(self.editClientF, text="Client's Name:", font=(
+        #     "times new roman", 16, "bold")).grid(row=0, column=0, pady=20, sticky=E)
+        # self.ecname = StringVar()
+        # self.cname_txt = ttk.Combobox(self.editClientF, width=25, font=(
+        #     "arial", 16, "bold"), textvariable=self.ecname, postcommand=self.updateClientList)
+        # self.cname_txt.grid(row=0, column=1,
+        #                     padx=20, pady=10, sticky=W)
+
+        # # Edit Client Button
+        # Button(self.editClientF, text="Edit Client", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", width=15, pady=10, font=(
+        #     "arial", 16, "bold"), command=self.editClient).place(x=150, y=80)
 
         # --------- View Bill Detials Frame ------------
         self.viewBillF = LabelFrame(self.saleF, text="View Bill Detials", bd=6, relief=GROOVE, labelanchor=NW, font=(
-            "times new roman", 18, "bold"), padx=10, pady=10)
-        self.viewBillF.place(x=1, y=512, width=1355, height=360)
+            "times new roman", 18, "bold"))
+        self.viewBillF.place(relx=0.01, rely=0.54,
+                             relwidth=0.98, relheight=0.45)
         self.displayBillF = Frame(self.viewBillF)
-        self.displayBillF.place(x=10, y=20, width=1305, height=280)
+        self.displayBillF.place(relx=0.01, rely=0.01,
+                                relwidth=0.98, relheight=0.98)
         self.displayText = scrolledtext.ScrolledText(
             self.displayBillF, font=("Courier",
                                      12, "bold"), padx=10, pady=10)
@@ -645,26 +668,22 @@ class AddBillDetails(Frame):
                                 "\n\n\n\n\n\n\n\n\t\t\t\t\tSelect Billing Year and Billing No. to see the entries!! ")
         self.displayText.configure(state='disabled')
         self.displayText.pack(side="left", fill="both", expand=True)
-        Label(self.viewBillF, text="Sr. No.\t\t            Product\t\t              Rate      Quantity CGST   SGST    IGST       AMOUNT\t     HSN         Ch. No.      AMC No.", font=(
+        Label(self.viewBillF, text="Sr. No.\t\t            Product\t\t              Rate      Quantity  GST     IGST       AMOUNT\t       HSN         Ch. No.      AMC No.", font=(
             "times new roman", 15, "bold")).place(x=30, y=0)
 
-        # --------- Bill Information Frame ------------
-        self.viewInfoF = LabelFrame(self.saleF, text="Bill Information", bd=6, relief=GROOVE, labelanchor=NW, font=(
-            "times new roman", 18, "bold"), padx=10, pady=10)
-        self.viewInfoF.place(x=1380, y=512, width=490, height=230)
-        self.displayInfoF = Frame(self.viewInfoF)
-        self.displayInfoF.place(x=10, y=10, width=440, height=150)
-        self.displayInfo = scrolledtext.ScrolledText(
-            self.displayInfoF, font=("arial",
-                                     16, "bold"), padx=10, pady=10)
-        self.displayInfo.insert(INSERT,
-                                "\n       Select Billing Year and Billing No. \n              to see the Information!! ")
-        self.displayInfo.configure(state='disabled')
-        self.displayInfo.pack(side="left", fill="both", expand=True)
-
-        # Update Date Button
-        Button(self.saleF, text="Home", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", width=35, pady=30, font=(
-            "arial", 18, "bold"), command=lambda: controller.show_frame(Home)).place(x=1380, y=770)
+        # # --------- Bill Information Frame ------------
+        # self.viewInfoF = LabelFrame(self.saleF, text="Bill Information", bd=6, relief=GROOVE, labelanchor=NW, font=(
+        #     "times new roman", 18, "bold"), padx=10, pady=10)
+        # self.viewInfoF.place(x=1380, y=512, width=490, height=230)
+        # self.displayInfoF = Frame(self.viewInfoF)
+        # self.displayInfoF.place(x=10, y=10, width=440, height=150)
+        # self.displayInfo = scrolledtext.ScrolledText(
+        #     self.displayInfoF, font=("arial",
+        #                              16, "bold"), padx=10, pady=10)
+        # self.displayInfo.insert(INSERT,
+        #                         "\n       Select Billing Year and Billing No. \n              to see the Information!! ")
+        # self.displayInfo.configure(state='disabled')
+        # self.displayInfo.pack(side="left", fill="both", expand=True)
 
     def addBillDetails(self):
         b_year = self.byear.get()
@@ -705,7 +724,7 @@ class AddBillDetails(Frame):
                 title="Error", message="Enter a Valid Rate!!")
             return
         amt = int(quantity) * int(rate)
-        gst = self.gst.get()
+        gst = self.gst.get() * 0.5
         igst = self.igst.get()
         if not gst and not igst:
             messagebox.showerror(
@@ -721,7 +740,7 @@ class AddBillDetails(Frame):
 
     def insertBillDetails(self, data_list):
         try:
-            sqliteConnection = sqlite3.connect('test.db')
+            sqliteConnection = sqlite3.connect('Billing.db')
             cursor = sqliteConnection.cursor()
 
             cursor.execute(
@@ -758,6 +777,324 @@ class AddBillDetails(Frame):
         finally:
             if (sqliteConnection):
                 sqliteConnection.close()
+
+    def viewBillDetails(self):
+        b_year = self.byear.get()
+        if not b_year:
+            messagebox.showerror(
+                title="Error", message="Billing Year Field cannot be empty!!")
+            return
+        if b_year not in years:
+            messagebox.showerror(
+                title="Error", message="Select Blling Year from Dropdown List!!")
+            return
+        b_no = self.bno.get()
+        if not b_no:
+            messagebox.showerror(
+                title="Error", message="Billing No. Field cannot be empty!!")
+            return
+        self.selectBillDetails(b_year, b_no)
+
+    def selectBillDetails(self, b_year, b_no):
+        try:
+            sqliteConnection = sqlite3.connect('Billing.db')
+            cursor = sqliteConnection.cursor()
+
+            sqlite_insert_with_param = """SELECT bd_id, bd_product, bd_rate, bd_quantity, bd_cgst, bd_igst, bd_amount, bd_hsn, bd_ch_no, bd_amc_no FROM bill_detail WHERE b_year=? AND b_no=?;"""
+
+            data_tuple = (b_year, b_no)
+            cursor.execute(sqlite_insert_with_param, data_tuple)
+            rows = cursor.fetchall()
+            if not rows:
+                cursor.execute(
+                    "SELECT b_no FROM bill WHERE b_year=? AND b_no=?", data_tuple)
+                rows = cursor.fetchall()
+                if not rows:
+                    messagebox.showerror(
+                        title="Error", message="Bill No. does not EXIST!!")
+                    return
+                else:
+                    messagebox.showerror(
+                        title="Error", message="Bill No. has no Entries!!")
+                    return
+            s = ""
+            for row in rows:
+                s += "\n" + str(row[0]).center(7)
+                if len(row[1]) < 36:
+                    s += str(row[1]).center(38)
+                else:
+                    s += str(row[1])[:36]+".."
+                s += str(row[2]).center(10)  # Rate
+                s += str(row[3]).center(7)  # Quantity
+                s += str(row[4]*2).center(7)  # GST
+                s += str(row[5]).center(7)  # IGST
+                s += str(row[6]).center(14)  # Amount
+                s += str(row[7]).center(10)  # HSN
+                s += str(row[8]).center(10)  # Challan
+                s += str(row[9]).center(10)  # AMC
+            self.displayText.configure(state='normal')
+            self.displayText.delete('1.0', END)
+            self.displayText.insert(INSERT, s)
+            self.displayText.configure(state='disabled')
+            sqliteConnection.commit()
+            cursor.close()
+
+        except sqlite3.Error as error:
+            messagebox.showerror(
+                title="Failed to get data from bill_detail table", message=error)
+        finally:
+            if (sqliteConnection):
+                sqliteConnection.close()
+
+    def removeLastDetail(self):
+        b_year = self.byear.get()
+        if not b_year:
+            messagebox.showerror(
+                title="Error", message="Billing Year Field cannot be empty!!")
+            return
+        if b_year not in years:
+            messagebox.showerror(
+                title="Error", message="Select Blling Year from Dropdown List!!")
+            return
+        b_no = self.bno.get()
+        if not b_no:
+            messagebox.showerror(
+                title="Error", message="Billing No. Field cannot be empty!!")
+            return
+        self.deleteDetails(b_year, b_no)
+
+    def deleteDetails(self, b_year, b_no):
+        try:
+            sqliteConnection = sqlite3.connect('Billing.db')
+            cursor = sqliteConnection.cursor()
+
+            cursor.execute(
+                "SELECT b_no FROM bill WHERE b_year=? AND b_no=?;", (b_year, b_no,))
+            rows = cursor.fetchall()
+            if not rows:
+                messagebox.showerror(
+                    title="Error", message="Bill No. does not EXIST!!")
+                return
+            cursor.execute(
+                "SELECT MAX(bd_id) FROM bill_detail WHERE b_year=? AND b_no=?;", (b_year, b_no,))
+            rows = cursor.fetchall()
+            if not rows[0][0]:
+                messagebox.showerror(
+                    title="Error", message="Bill has No Entries!!")
+                return
+            cursor.execute(
+                "DELETE from bill_detail WHERE bd_id = ? AND b_year = ? AND b_no = ?;", (rows[0][0], b_year, b_no,))
+            sqliteConnection.commit()
+            messagebox.showinfo(title="Successful",
+                                message="Details Deleted Successfully!!")
+            getCientList()
+            cursor.close()
+            self.viewBillDetails()
+
+        except sqlite3.Error as error:
+            messagebox.showerror(
+                title="Failed to insert into bill_detail table", message=error)
+        finally:
+            if (sqliteConnection):
+                sqliteConnection.close()
+
+    def clearTextAdd(self):
+        self.pnameC.delete(0, END)
+        self.phsn.delete(0, END)
+        self.pquan.delete(0, END)
+        self.cgst.delete(0, END)
+        self.sgst.delete(0, END)
+        self.igst.delete(0, END)
+        self.challan.delete(0, END)
+        self.amc.delete(0, END)
+
+    def updateClientList(self):
+        getCientList()
+        self.cname_txt['values'] = clients
+
+
+class EditBillDetails(Frame):
+    def __init__(self, parent, controller):
+        Frame.__init__(self, parent)
+        title = Label(self, text="F. K. PATANWALA & Co.", bd=8, relief=GROOVE, font=(
+            "times new roman", 36, "bold"), pady=2).place(x=1, y=2, relwidth=1)
+
+        # --------- Sales Options ---------
+        self.saleF = LabelFrame(self, text="Sales", bd=6, relief=GROOVE, labelanchor=N, font=(
+            "times new roman", 28, "bold"))
+        self.saleF.place(relx=0, rely=0.1, relwidth=1, relheight=0.9)
+
+        Label(self.saleF, text="Bill Details", bd=4, relief=GROOVE, font=(
+            "times new roman", 26, "bold")).place(relx=0.05, rely=0.01, relwidth=0.9, relheight=0.07)
+
+        # --------- Edit Details Frame ------------
+        self.editDetailsF = LabelFrame(self.saleF, text="Edit Details", bd=6, relief=GROOVE, labelanchor=NW, font=(
+            "times new roman", 18, "bold"))
+        self.editDetailsF.place(relx=0.01, rely=0.09,
+                                relwidth=0.38, relheight=0.45)
+
+        # Bill Serial No.
+        Label(self.editDetailsF, text="Sr. No.:", font=(
+            "times new roman", 14, "bold")).place(relx=0.01, rely=0.01, relwidth=0.16, relheight=0.1)
+        self.esrno = StringVar()
+        self.esrnoC = Entry(self.editDetailsF, width=4, font=(
+            "arial", 14, "bold"), textvariable=self.esrno, bd=3, relief=GROOVE)
+        self.esrnoC.place(relx=0.16, rely=0.01, relwidth=0.16, relheight=0.1)
+
+        # HSN Code
+        Label(self.editDetailsF, text="HSN:", font=(
+            "times new roman", 14, "bold")).place(relx=0.32, rely=0.01, relwidth=0.16, relheight=0.1)
+        self.ephsn = Entry(self.editDetailsF, width=6, bd=3, relief=GROOVE, font=(
+            "arial", 14, "bold"))
+        self.ephsn.place(relx=0.48, rely=0.01, relwidth=0.16, relheight=0.1)
+
+        # AMC No.
+        Label(self.editDetailsF, text="AMC:", font=(
+            "times new roman", 14, "bold")).place(relx=0.64, rely=0.01, relwidth=0.16, relheight=0.1)
+        self.eamc = Entry(self.editDetailsF, width=7, bd=3, relief=GROOVE, font=(
+            "arial", 14, "bold"))
+        self.eamc.place(relx=0.8, rely=0.01, relwidth=0.16, relheight=0.1)
+
+        # Product Name
+        Label(self.editDetailsF, text="Product:", font=(
+            "times new roman", 14, "bold")).place(relx=0, rely=0.16, relwidth=0.2, relheight=0.1)
+        self.epname = AutocompleteEntry(
+            products, self.editDetailsF, listboxLength=10, width=15, bd=3, relief=GROOVE, font=("arial", 14, "bold"))
+        self.epname.place(relx=0.2, rely=0.16, relwidth=0.75, relheight=0.1)
+
+        # Quantity
+        Label(self.editDetailsF, text="Quantity:", font=(
+            "times new roman", 14, "bold")).place(relx=0, rely=0.31, relwidth=0.2, relheight=0.1)
+        self.epquan = Entry(self.editDetailsF, width=15, bd=3, relief=GROOVE, font=(
+            "arial", 14, "bold"))
+        self.epquan.place(relx=0.2, rely=0.31, relwidth=0.2, relheight=0.1)
+
+        # Rate
+        Label(self.editDetailsF, text="Rate:", font=(
+            "times new roman", 14, "bold")).place(relx=0.55, rely=0.31, relwidth=0.2, relheight=0.1)
+        self.erate = Entry(self.editDetailsF, width=15, bd=3, relief=GROOVE, font=(
+            "arial", 14, "bold"))
+        self.erate.place(relx=0.75, rely=0.31, relwidth=0.2, relheight=0.1)
+
+        # Taxable Amount
+        Label(self.editDetailsF, text="Amount:", font=(
+            "times new roman", 14, "bold")).place(relx=0, rely=0.46, relwidth=0.2, relheight=0.1)
+        self.eamt = Entry(self.editDetailsF, width=15, bd=3, relief=GROOVE, font=(
+            "arial", 14, "bold"))
+        self.eamt.place(relx=0.2, rely=0.46, relwidth=0.2, relheight=0.1)
+
+        # GST
+        Label(self.editDetailsF, text="GST:", font=(
+            "times new roman", 14, "bold")).place(relx=0.55, rely=0.46, relwidth=0.2, relheight=0.1)
+        self.ecgst = Entry(self.editDetailsF, width=15, bd=3, relief=GROOVE, font=(
+            "arial", 14, "bold"))
+        self.ecgst.place(relx=0.75, rely=0.46, relwidth=0.2, relheight=0.1)
+
+        # IGST
+        Label(self.editDetailsF, text="IGST:", font=(
+            "times new roman", 14, "bold")).place(relx=0, rely=0.61, relwidth=0.2, relheight=0.1)
+        self.eigst = Entry(self.editDetailsF, width=15, bd=3, relief=GROOVE, font=(
+            "arial", 14, "bold"))
+        self.eigst.place(relx=0.2, rely=0.61, relwidth=0.2, relheight=0.1)
+
+        # Challan No.
+        Label(self.editDetailsF, text="Challan No:", font=(
+            "times new roman", 14, "bold")).place(relx=0.5, rely=0.61, relwidth=0.2, relheight=0.1)
+        self.echallan = Entry(self.editDetailsF, width=15, bd=3, relief=GROOVE, font=(
+            "arial", 14, "bold"))
+        self.echallan.place(relx=0.75, rely=0.61, relwidth=0.2, relheight=0.1)
+
+        # Edit Bill Details Button
+        Button(self.editDetailsF, text="Edit Bill Detail", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=10, width=15, font=(
+            "arial", 16, "bold"), command=self.editBillDetails).place(relx=0.1, rely=0.8, relwidth=0.35, relheight=0.15)
+
+        # Clear Edit Details Button
+        Button(self.editDetailsF, text="Clear", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=10, width=15, font=(
+            "arial", 16, "bold"), command=self.clearTextEdit).place(relx=0.55, rely=0.8, relwidth=0.35, relheight=0.15)
+
+        # # --------- Select Bill Frame ------------
+        self.selectBillF = LabelFrame(self.saleF, text="Select Bill", bd=6, relief=GROOVE, labelanchor=NW, font=(
+            "times new roman", 18, "bold"))
+        self.selectBillF.place(relx=0.4, rely=0.09,
+                               relwidth=0.25, relheight=0.45)
+
+        # Billing Year
+        Label(self.selectBillF, text="Billing Year:", font=(
+            "times new roman", 16, "bold")).place(relx=0, rely=0, relwidth=0.45, relheight=0.15)
+        self.byear = StringVar()
+        self.byearC = ttk.Combobox(self.selectBillF, font=(
+            "arial", 16, "bold"), textvariable=self.byear, values=years)
+        self.byearC.place(relx=0.45, rely=0.01, relwidth=0.5, relheight=0.12)
+
+        # Bill No.
+        Label(self.selectBillF, text="Billing No:", font=(
+            "times new roman", 16, "bold")).place(relx=0, rely=0.17, relwidth=0.45, relheight=0.15)
+        self.bno = StringVar()
+        self.bnoC = Entry(self.selectBillF, bd=3, relief=GROOVE, font=(
+            "arial", 16, "bold"), textvariable=self.bno)
+        self.bnoC.place(relx=0.45, rely=0.19, relwidth=0.5, relheight=0.12)
+
+        # Current Bill Details Button
+        Button(self.selectBillF, text="View Bill Details", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+            "arial", 16, "bold"), command=self.viewBillDetails).place(relx=0.15, rely=0.4, relwidth=0.7, relheight=0.15)
+
+        # Delete Last Entry Bill Details Button
+        Button(self.selectBillF, text="Delete Last Entry", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+            "arial", 16, "bold"), command=self.removeLastDetail).place(relx=0.15, rely=0.6, relwidth=0.7, relheight=0.15)
+
+        # Home Button
+        Button(self.selectBillF, text="Home", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", width=35, pady=30, font=(
+            "arial", 18, "bold"), command=lambda: controller.show_frame(Home)).place(relx=0.15, rely=0.8, relwidth=0.7, relheight=0.15)
+
+        # --------- Edit Client Frame ------------
+        self.editClientF = LabelFrame(self.saleF, text="Edit Client Name", bd=6, relief=GROOVE, labelanchor=NW, font=(
+            "times new roman", 18, "bold"))
+        self.editClientF.place(relx=0.66, rely=0.09,
+                               relwidth=0.33, relheight=0.15)
+
+        # Billing Client's Name
+        self.ecname = StringVar()
+        self.cname_txt = ttk.Combobox(self.editClientF, width=25, font=(
+            "arial", 16, "bold"), textvariable=self.ecname, postcommand=self.updateClientList)
+        self.cname_txt.place(relx=0.05, rely=0.3, relwidth=0.5, relheight=0.4)
+
+        # Edit Client Button
+        Button(self.editClientF, text="Edit Client", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", width=15, pady=10, font=(
+            "arial", 16, "bold"), command=self.editClient).place(relx=0.6, rely=0.22, relwidth=0.35, relheight=0.56)
+
+        # --------- Bill Information Frame ------------
+        self.viewInfoF = LabelFrame(self.saleF, text="Bill Information", bd=6, relief=GROOVE, labelanchor=NW, font=(
+            "times new roman", 18, "bold"))
+        self.viewInfoF.place(relx=0.66, rely=0.25,
+                             relwidth=0.33, relheight=0.29)
+        self.displayInfoF = Frame(self.viewInfoF)
+        self.displayInfoF.place(
+            relx=0.02, rely=0.05, relwidth=0.96, relheight=0.9)
+        self.displayInfo = scrolledtext.ScrolledText(
+            self.displayInfoF, font=("arial",
+                                     16, "bold"), padx=10, pady=10)
+        self.displayInfo.insert(INSERT,
+                                "\nSelect Billing Year and Billing No. \nto see the Information!! ")
+        self.displayInfo.configure(state='disabled')
+        self.displayInfo.pack(side="left", fill="both", expand=True)
+
+        # --------- View Bill Detials Frame ------------
+        self.viewBillF = LabelFrame(self.saleF, text="View Bill Detials", bd=6, relief=GROOVE, labelanchor=NW, font=(
+            "times new roman", 18, "bold"))
+        self.viewBillF.place(relx=0.01, rely=0.54,
+                             relwidth=0.98, relheight=0.45)
+        self.displayBillF = Frame(self.viewBillF)
+        self.displayBillF.place(relx=0.01, rely=0.01,
+                                relwidth=0.98, relheight=0.98)
+        self.displayText = scrolledtext.ScrolledText(
+            self.displayBillF, font=("Courier",
+                                     12, "bold"), padx=10, pady=10)
+        self.displayText.insert(INSERT,
+                                "\n\n\n\n\n\n\n\n\t\t\t\t\tSelect Billing Year and Billing No. to see the entries!! ")
+        self.displayText.configure(state='disabled')
+        self.displayText.pack(side="left", fill="both", expand=True)
+        Label(self.viewBillF, text="Sr. No.\t\t            Product\t\t              Rate      Quantity  GST     IGST       AMOUNT\t       HSN         Ch. No.      AMC No.", font=(
+            "times new roman", 15, "bold")).place(x=30, y=0)
 
     def editBillDetails(self):
         b_year = self.byear.get()
@@ -840,7 +1177,7 @@ class AddBillDetails(Frame):
 
     def updateBill(self, b_year, b_no, srno, constraints):
         try:
-            sqliteConnection = sqlite3.connect('test.db')
+            sqliteConnection = sqlite3.connect('Billing.db')
             cursor = sqliteConnection.cursor()
 
             cursor.execute(
@@ -900,7 +1237,7 @@ class AddBillDetails(Frame):
 
     def selectBillDetails(self, b_year, b_no):
         try:
-            sqliteConnection = sqlite3.connect('test.db')
+            sqliteConnection = sqlite3.connect('Billing.db')
             cursor = sqliteConnection.cursor()
 
             sqlite_insert_with_param = """SELECT bd_id, bd_product, bd_rate, bd_quantity, bd_cgst, bd_igst, bd_amount, bd_hsn, bd_ch_no, bd_amc_no FROM bill_detail WHERE b_year=? AND b_no=?;"""
@@ -929,8 +1266,7 @@ class AddBillDetails(Frame):
                     s += str(row[1])[:36]+".."
                 s += str(row[2]).center(10)  # Rate
                 s += str(row[3]).center(7)  # Quantity
-                s += str(row[4]).center(7)  # CGST
-                s += str(row[4]).center(7)  # SGST
+                s += str(row[4]*2).center(7)  # GST
                 s += str(row[5]).center(7)  # IGST
                 s += str(row[6]).center(14)  # Amount
                 s += str(row[7]).center(10)  # HSN
@@ -969,7 +1305,7 @@ class AddBillDetails(Frame):
 
     def deleteDetails(self, b_year, b_no):
         try:
-            sqliteConnection = sqlite3.connect('test.db')
+            sqliteConnection = sqlite3.connect('Billing.db')
             cursor = sqliteConnection.cursor()
 
             cursor.execute(
@@ -1022,7 +1358,7 @@ class AddBillDetails(Frame):
 
     def updateClient(self, b_year, b_no, cname):
         try:
-            sqliteConnection = sqlite3.connect('test.db')
+            sqliteConnection = sqlite3.connect('Billing.db')
             cursor = sqliteConnection.cursor()
 
             cursor.execute("SELECT c_id FROM client WHERE c_name=?;", (cname,))
@@ -1044,7 +1380,7 @@ class AddBillDetails(Frame):
 
     def selectBillInfo(self, b_year, b_no):
         try:
-            sqliteConnection = sqlite3.connect('test.db')
+            sqliteConnection = sqlite3.connect('Billing.db')
             cursor = sqliteConnection.cursor()
 
             sqlite_insert_with_param = """SELECT c_id FROM bill WHERE b_year=? AND b_no=?;"""
@@ -1079,16 +1415,6 @@ class AddBillDetails(Frame):
             if (sqliteConnection):
                 sqliteConnection.close()
 
-    def clearTextAdd(self):
-        self.pnameC.delete(0, END)
-        self.phsn.delete(0, END)
-        self.pquan.delete(0, END)
-        self.cgst.delete(0, END)
-        self.sgst.delete(0, END)
-        self.igst.delete(0, END)
-        self.challan.delete(0, END)
-        self.amc.delete(0, END)
-
     def clearTextEdit(self):
         self.esrnoC.delete(0, END)
         self.epnameC.delete(0, END)
@@ -1109,71 +1435,79 @@ class UpdateBillStatus(Frame):
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
         title = Label(self, text="F. K. PATANWALA & Co.", bd=8, relief=GROOVE, font=(
-            "times new roman", 42, "bold"), pady=2).place(x=1, y=2, relwidth=1)
+            "times new roman", 36, "bold"), pady=2).place(x=1, y=2, relwidth=1)
 
         # --------- Sales Options ---------
         self.saleF = LabelFrame(self, text="Sales", bd=6, relief=GROOVE, labelanchor=N, font=(
-            "times new roman", 30, "bold"), padx=220, pady=10)
-        self.saleF.place(x=1, y=130, relwidth=1, height=895)
+            "times new roman", 28, "bold"))
+        self.saleF.place(relx=0, rely=0.1, relwidth=1, relheight=0.9)
 
         Label(self.saleF, text="Check & Edit Bill Payment", bd=4, relief=GROOVE, font=(
-            "times new roman", 26, "bold"), width=85, pady=10).place(x=20, y=20, relwidth=1, height=60)
+            "times new roman", 26, "bold")).place(relx=0.05, rely=0.03, relwidth=0.9, relheight=0.09)
 
         # --------- Check Bill Status Frame ------------
         self.selectBillF = LabelFrame(self.saleF, text="  Search Bill Payment  ", bd=6, relief=GROOVE, labelanchor=NW, font=(
-            "times new roman", 22, "bold"), padx=20, pady=20)
-        self.selectBillF.place(x=30, y=100, width=700, height=320)
+            "times new roman", 22, "bold"))
+        self.selectBillF.place(relx=0.05, rely=0.14,
+                               relwidth=0.43, relheight=0.38)
 
         # Billing Year
         Label(self.selectBillF, text="Billing Year:", font=(
-            "times new roman", 18, "bold")).grid(row=0, column=0, padx=20, pady=10, sticky=E)
+            "times new roman", 18, "bold")).place(relx=0.1, rely=0.1, relwidth=0.3, relheight=0.12)
         self.byear = StringVar()
-        self.byearC = ttk.Combobox(self.selectBillF, width=30, font=(
+        self.byearC = ttk.Combobox(self.selectBillF, font=(
             "arial", 18, "bold"), textvariable=self.byear, values=years)
-        self.byearC.grid(row=0, column=1, padx=20, pady=10)
+        self.byearC.place(relx=0.4, rely=0.11, relwidth=0.5, relheight=0.11)
 
         # Client's Name
         Label(self.selectBillF, text="Client's Name:", font=(
-            "times new roman", 18, "bold")).grid(row=1, column=0, padx=20, pady=20, sticky=E)
+            "times new roman", 18, "bold")).place(relx=0.1, rely=0.35, relwidth=0.3, relheight=0.12)
         self.cname = StringVar()
-        self.cnameC = ttk.Combobox(self.selectBillF, width=30, font=(
+        self.cnameC = ttk.Combobox(self.selectBillF, font=(
             "arial", 18, "bold"), textvariable=self.cname, postcommand=self.updateClientList)
-        self.cnameC.grid(row=1, column=1, padx=20, pady=10)
+        self.cnameC.place(relx=0.4, rely=0.35, relwidth=0.5, relheight=0.14)
 
         # Search Bills Button
-        Button(self.selectBillF, text="Search Bill", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=10, width=30, font=(
-            "arial", 18, "bold"), command=self.searchBill).place(x=120, y=150)
+        Button(self.selectBillF, text="Search Bill", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+            "arial", 18, "bold"), command=self.searchBill).place(relx=0.1, rely=0.65, relwidth=0.35, relheight=0.21)
+
+        # Home Button
+        Button(self.selectBillF, text="Home", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+            "arial", 18, "bold"), command=lambda: controller.show_frame(Home)).place(relx=0.55, rely=0.65, relwidth=0.35, relheight=0.21)
 
         # --------- Edit Bill Status Frame ------------
         self.editStatusF = LabelFrame(self.saleF, text="  Update Bill Payment  ", bd=6, relief=GROOVE, labelanchor=NW, font=(
-            "times new roman", 22, "bold"), padx=20, pady=20)
-        self.editStatusF.place(x=780, y=100, width=700, height=320)
+            "times new roman", 22, "bold"))
+        self.editStatusF.place(relx=0.52, rely=0.14,
+                               relwidth=0.43, relheight=0.38)
 
         # Bill No.
         Label(self.editStatusF, text="Billing No:", font=(
-            "times new roman", 18, "bold")).grid(row=0, column=0, padx=10, pady=10, sticky=E)
+            "times new roman", 18, "bold")).place(relx=0.1, rely=0.1, relwidth=0.4, relheight=0.12)
         self.bno = StringVar()
         self.bnoC = Entry(self.editStatusF, width=30, font=(
             "arial", 18, "bold"), textvariable=self.bno, bd=3, relief=GROOVE)
-        self.bnoC.grid(row=0, column=1, padx=10, pady=10)
+        self.bnoC.place(relx=0.55, rely=0.11, relwidth=0.4, relheight=0.14)
 
         # Payment Status
         Label(self.editStatusF, text="Payment Status:", font=(
-            "times new roman", 18, "bold")).grid(row=1, column=0, padx=15, pady=20, sticky=E)
+            "times new roman", 18, "bold")).place(relx=0.1, rely=0.35, relwidth=0.4, relheight=0.12)
         self.estatus = Entry(self.editStatusF, width=30, font=(
             "arial", 18, "bold"), bd=3, relief=GROOVE)
-        self.estatus.grid(row=1, column=1, padx=10, pady=10)
+        self.estatus.place(relx=0.55, rely=0.35, relwidth=0.4, relheight=0.14)
 
         # Current Bill Details Button
-        Button(self.editStatusF, text="Update Status", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=10, width=30, font=(
-            "arial", 18, "bold"), command=self.editStatus).place(x=120, y=150)
+        Button(self.editStatusF, text="Update Status", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+            "arial", 18, "bold"), command=self.editStatus).place(relx=0.3, rely=0.65, relwidth=0.4, relheight=0.21)
 
         # --------- View Bill Detials Frame ------------
         self.viewBillF = LabelFrame(self.saleF, text="View Bill Detials", bd=6, relief=GROOVE, labelanchor=NW, font=(
             "times new roman", 18, "bold"), padx=10, pady=10)
-        self.viewBillF.place(x=30, y=440, width=990, height=360)
+        self.viewBillF.place(relx=0.05, rely=0.54,
+                             relwidth=0.9, relheight=0.45)
         self.displayBillF = Frame(self.viewBillF)
-        self.displayBillF.place(x=10, y=20, width=940, height=280)
+        self.displayBillF.place(relx=0.01, rely=0.05,
+                                relwidth=0.98, relheight=0.98)
         self.displayText = scrolledtext.ScrolledText(
             self.displayBillF, font=("Courier",
                                      12, "bold"), padx=10, pady=10)
@@ -1183,10 +1517,6 @@ class UpdateBillStatus(Frame):
         self.displayText.pack(side="left", fill="both", expand=True)
         Label(self.viewBillF, text="Bill. No.\t       Year\t\t\t\t     Client's Name\t\t\t              Payment", font=(
             "times new roman", 15, "bold")).place(x=30, y=0)
-
-        # Home Button
-        Button(self.saleF, text="Home", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", width=25, pady=20, font=(
-            "arial", 18, "bold"), command=lambda: controller.show_frame(Home)).place(x=1080, y=600)
 
     def searchBill(self):
         constraints = []
@@ -1213,7 +1543,7 @@ class UpdateBillStatus(Frame):
 
     def selectBill(self, constraints):
         try:
-            sqliteConnection = sqlite3.connect('test.db')
+            sqliteConnection = sqlite3.connect('Billing.db')
             cursor = sqliteConnection.cursor()
 
             s = ""
@@ -1285,7 +1615,7 @@ class UpdateBillStatus(Frame):
 
     def updateStatus(self, constraints):
         try:
-            sqliteConnection = sqlite3.connect('test.db')
+            sqliteConnection = sqlite3.connect('Billing.db')
             cursor = sqliteConnection.cursor()
 
             cursor.execute("SELECT b_no FROM bill WHERE b_year=? AND b_no=?", (
@@ -1319,65 +1649,60 @@ class GenerateBill(Frame):
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
         title = Label(self, text="F. K. PATANWALA & Co.", bd=8, relief=GROOVE, font=(
-            "times new roman", 42, "bold"), pady=2).place(x=1, y=2, relwidth=1)
+            "times new roman", 36, "bold"), pady=2).place(x=1, y=2, relwidth=1)
 
         # --------- Sales Options ---------
         self.saleF = LabelFrame(self, text="Sales", bd=6, relief=GROOVE, labelanchor=N, font=(
-            "times new roman", 30, "bold"), padx=220, pady=60)
-        self.saleF.place(x=1, y=130, relwidth=1, height=895)
+            "times new roman", 28, "bold"))
+        self.saleF.place(relx=0, rely=0.1, relwidth=1, relheight=0.9)
 
         Label(self.saleF, text="Bill Details", bd=4, relief=GROOVE, font=(
-            "times new roman", 26, "bold"), width=85, pady=10).grid(row=0, column=0, columnspan=6, pady=15)
+            "times new roman", 26, "bold")).place(relx=0.05, rely=0.03, relwidth=0.9, relheight=0.09)
 
         # Financial Year
         Label(self.saleF, text="Financial Year:", font=(
-            "times new roman", 22, "bold"), pady=10).grid(row=1, column=0, pady=15, sticky=E)
+            "times new roman", 22, "bold")).place(relx=0.1, rely=0.17, relwidth=0.3, relheight=0.12)
         self.byear = StringVar()
         self.byearC = ttk.Combobox(self.saleF, width=40, font=(
             "arial", 22, "bold"), textvariable=self.byear, values=years)
-        self.byearC.grid(row=1, column=1, padx=50,
-                         columnspan=4, pady=15, sticky=W)
+        self.byearC.place(relx=0.4, rely=0.2, relwidth=0.5, relheight=0.06)
 
         # Bill No
         Label(self.saleF, text="Bill No.:", font=(
-            "times new roman", 22, "bold"), pady=10).grid(row=2, column=0, pady=15, sticky=E)
+            "times new roman", 22, "bold"), pady=10).place(relx=0.1, rely=0.30, relwidth=0.3, relheight=0.12)
         self.billno = Entry(self.saleF, width=40, bd=3, relief=GROOVE, font=(
             "arial", 22, "bold"))
-        self.billno.grid(row=2, column=1, columnspan=4,
-                         padx=50, pady=15, sticky=W)
+        self.billno.place(relx=0.4, rely=0.32, relwidth=0.5, relheight=0.07)
 
         # Bill Type
         Label(self.saleF, text="Bill Type:", font=(
-            "times new roman", 22, "bold"), pady=10).grid(row=3, column=0, padx=45, pady=15, sticky=E)
+            "times new roman", 22, "bold")).place(relx=0.1, rely=0.43, relwidth=0.3, relheight=0.12)
         self.btype = IntVar()
         Radiobutton(self.saleF, text="Normal", variable=self.btype, value=1, font=(
-            "times new roman", 16, "bold"), bg=rust, bd=3, relief=GROOVE, height=2, width=15,
-            indicatoron=0).grid(
-            row=3, column=1, padx=5, pady=15, sticky=W)
+            "times new roman", 16, "bold"), bg=rust, bd=3, relief=GROOVE,
+            indicatoron=0).place(relx=0.4, rely=0.45, relwidth=0.2, relheight=0.07)
         Radiobutton(self.saleF, text="Normal+AMC", variable=self.btype, value=2, font=(
-            "times new roman", 16, "bold"), bg=rust, bd=3, relief=GROOVE, height=2, width=15,
-            indicatoron=0).grid(
-            row=3, column=2, padx=5, pady=15, sticky=W)
+            "times new roman", 16, "bold"), bg=rust, bd=3, relief=GROOVE,
+            indicatoron=0).place(relx=0.7, rely=0.45, relwidth=0.2, relheight=0.07)
         Radiobutton(self.saleF, text="Normal + HSN", variable=self.btype, value=3, font=(
-            "times new roman", 16, "bold"), bg=rust, bd=3, relief=GROOVE, height=2, width=15,
-            indicatoron=0).grid(
-            row=3, column=3, padx=5, pady=15, sticky=W)
+            "times new roman", 16, "bold"), bg=rust, bd=3, relief=GROOVE,
+            indicatoron=0).place(relx=0.4, rely=0.55, relwidth=0.2, relheight=0.07)
         Radiobutton(self.saleF, text="Normal + IGST", variable=self.btype, value=4, font=(
-            "times new roman", 16, "bold"), bg=rust, bd=3, relief=GROOVE, height=2, width=15,
-            indicatoron=0).grid(
-            row=3, column=4, padx=5, pady=15, sticky=W)
+            "times new roman", 16, "bold"), bg=rust, bd=3, relief=GROOVE,
+            indicatoron=0).place(relx=0.7, rely=0.55, relwidth=0.2, relheight=0.07)
         Radiobutton(self.saleF, text="AMC + HSN", variable=self.btype, value=5, font=(
-            "times new roman", 16, "bold"), bg=rust, bd=3, relief=GROOVE, height=2, width=15,
-            indicatoron=0).grid(
-            row=3, column=5, padx=5, pady=15, sticky=W)
+            "times new roman", 16, "bold"), bg=rust, bd=3, relief=GROOVE,
+            indicatoron=0).place(relx=0.55, rely=0.65, relwidth=0.2, relheight=0.07)
 
-        # Add Client Details Button
-        add_client_btn = Button(self.saleF, text="Generate Bill", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=20, width=50, font=(
-            "arial", 18, "bold"), command=self.getBillData).place(x=400, y=420)
-
+        # Generate Excel Button
+        add_client_btn = Button(self.saleF, text="Create Excel Bill", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=20, width=50, font=(
+            "arial", 18, "bold"), command=self.getBillData).place(relx=0.1, rely=0.78, relwidth=0.35, relheight=0.08)
+        # Print Excel Button
+        add_client_btn = Button(self.saleF, text="Print Bill", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=20, width=50, font=(
+            "arial", 18, "bold"), command=self.getBillData).place(relx=0.55, rely=0.78, relwidth=0.35, relheight=0.08)
         # Home Button
         add_client_btn = Button(self.saleF, text="Home", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=20, width=50, font=(
-            "arial", 18, "bold"), command=lambda: controller.show_frame(Home)).place(x=400, y=570)
+            "arial", 18, "bold"), command=lambda: controller.show_frame(Home)).place(relx=0.3, rely=0.88, relwidth=0.4, relheight=0.08)
 
     def getBillData(self):
         b_year = self.byear.get()
@@ -1412,7 +1737,7 @@ class GenerateBill(Frame):
 
     def generateNormalBill(self, bill_info):
         try:
-            sqliteConnection = sqlite3.connect('test.db')
+            sqliteConnection = sqlite3.connect('Billing.db')
             cursor = sqliteConnection.cursor()
 
             cursor.execute(
@@ -1446,7 +1771,7 @@ class GenerateBill(Frame):
                 'font_size': 20})
             bold_12 = workbook.add_format({
                 'bold': 'bold',
-                'align': 'center',
+                # 'align': 'center',
                 'valign': 'bottom',
                 'font_name': 'Times New Roman',
                 'font_size': 12})
@@ -1626,7 +1951,7 @@ class GenerateBill(Frame):
                         gst += rows[ent][5]*rows[ent][4]*0.01
                         rem -= 1
                     if count < 23:
-                        for i in range(0, 9):
+                        for i in range(0, 8):
                             draw_frame_border(workbook, worksheet,
                                               count+7+pg, i, 23-count, 1)
                     break
@@ -1710,7 +2035,7 @@ class GenerateBill(Frame):
 
     def generateAMCBill(self, bill_info):
         try:
-            sqliteConnection = sqlite3.connect('test.db')
+            sqliteConnection = sqlite3.connect('Billing.db')
             cursor = sqliteConnection.cursor()
 
             cursor.execute(
@@ -2006,7 +2331,7 @@ class GenerateBill(Frame):
 
     def generateHSNBill(self, bill_info):
         try:
-            sqliteConnection = sqlite3.connect('test.db')
+            sqliteConnection = sqlite3.connect('Billing.db')
             cursor = sqliteConnection.cursor()
 
             cursor.execute(
@@ -2302,7 +2627,7 @@ class GenerateBill(Frame):
 
     def generateIGSTBill(self, bill_info):
         try:
-            sqliteConnection = sqlite3.connect('test.db')
+            sqliteConnection = sqlite3.connect('Billing.db')
             cursor = sqliteConnection.cursor()
 
             cursor.execute(
@@ -2578,7 +2903,7 @@ class GenerateBill(Frame):
 
     def generateAmcHsnBill(self, bill_info):
         try:
-            sqliteConnection = sqlite3.connect('test.db')
+            sqliteConnection = sqlite3.connect('Billing.db')
             cursor = sqliteConnection.cursor()
 
             cursor.execute(
@@ -2880,6 +3205,7 @@ class GenerateBill(Frame):
             if (sqliteConnection):
                 sqliteConnection.close()
 
+
 # ---------- PURCHASES FRAMES --------
 
 
@@ -2887,177 +3213,190 @@ class AddPurchaseBill(Frame):
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
         title = Label(self, text="F. K. PATANWALA & Co.", bd=8, relief=GROOVE, font=(
-            "times new roman", 42, "bold"), pady=2).place(x=1, y=2, relwidth=1)
+            "times new roman", 36, "bold"), pady=2).place(x=1, y=2, relwidth=1)
 
         # --------- Purchases Options ---------
         self.purchaseF = LabelFrame(self, text="Purchases", bd=6, relief=GROOVE, labelanchor=N, font=(
-            "times new roman", 30, "bold"), padx=100, pady=20)
-        self.purchaseF.place(x=1, y=100, relwidth=1, height=925)
+            "times new roman", 28, "bold"))
+        self.purchaseF.place(relx=0, rely=0.1, relwidth=1, relheight=0.9)
 
         Label(self.purchaseF, text="Bill Details", bd=4, relief=GROOVE, font=(
-            "times new roman", 26, "bold"), width=85, pady=10).place(x=1, y=1, relwidth=1, height=60)
+            "times new roman", 26, "bold")).place(relx=0.05, rely=0.01, relwidth=0.9, relheight=0.07)
 
         # -------- Purchaser's Details Frame ---------
         self.purchaseDF = LabelFrame(self.purchaseF, text="Purchaser's Details", bd=6, relief=GROOVE, labelanchor=NW, font=(
-            "times new roman", 22, "bold"), padx=20, pady=5)
-        self.purchaseDF.place(x=1, y=80, relwidth=1, height=150)
+            "times new roman", 22, "bold"))
+        self.purchaseDF.place(relx=0.01, rely=0.08,
+                              relwidth=0.98, relheight=0.15)
 
         # Purchaser's Name
         Label(self.purchaseDF, text="Purchaser's Name:", font=(
-            "times new roman", 18, "bold"), pady=10).grid(row=0, column=0, pady=15, sticky=E)
+            "times new roman", 18, "bold")).place(relx=0.01, rely=0.2, relwidth=0.16, relheight=0.6)
         self.pname = StringVar()
-        self.pnameC = ttk.Combobox(self.purchaseDF, width=30, font=(
+        self.pnameC = ttk.Combobox(self.purchaseDF, font=(
             "arial", 18, "bold"), textvariable=self.pname, postcommand=self.updatePurchaserList)
-        self.pnameC.grid(row=0, column=1,
-                         padx=30, pady=15, sticky=W)
+        self.pnameC.place(relx=0.18, rely=0.2, relwidth=0.32, relheight=0.6)
 
         # Purchaser's GST
-        Label(self.purchaseDF, text="Purchaser's GST No.:", font=(
-            "times new roman", 18, "bold"), pady=10).grid(row=0, column=2, pady=15, sticky=E)
-        self.gst = Entry(self.purchaseDF, width=30, bd=3, font=(
+        Label(self.purchaseDF, text="GST No.:", font=(
+            "times new roman", 18, "bold")).place(relx=0.5, rely=0.2, relwidth=0.1, relheight=0.6)
+        self.gst = Entry(self.purchaseDF, bd=3, relief=GROOVE, font=(
             "arial", 18, "bold"))
-        self.gst.grid(row=0, column=3,
-                      padx=30, pady=15, sticky=W)
+        self.gst.place(relx=0.6, rely=0.2, relwidth=0.2, relheight=0.6)
 
         # Add Purchaser Button
         Button(self.purchaseDF, text="Add Purchaser", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=10, width=20, font=(
-            "arial", 18, "bold"), command=self.addPurchaser).grid(row=0, column=4, padx=10, pady=15)
+            "arial", 18, "bold"), command=self.addPurchaser).place(relx=0.81, rely=0.15, relwidth=0.18, relheight=0.7)
 
         # -------- Purchase Bill Details Frame ---------
-        self.purchaseBF = LabelFrame(self.purchaseF, text="Purchaser's Details", bd=6, relief=GROOVE, labelanchor=NW, font=(
-            "times new roman", 22, "bold"), padx=100, pady=5)
-        self.purchaseBF.place(x=1, y=250, relwidth=1, height=580)
+        self.purchaseBF = LabelFrame(self.purchaseF, text="Purchase Bill Details", bd=6, relief=GROOVE, labelanchor=NW, font=(
+            "times new roman", 22, "bold"))
+        self.purchaseBF.place(relx=0.01, rely=0.23,
+                              relwidth=0.98, relheight=0.75)
+
+        # Bill No.
+        Label(self.purchaseBF, text="Bill No.:", font=(
+            "times new roman", 18, "bold")).place(relx=0.01, rely=0.01, relwidth=0.1, relheight=0.06)
+        self.bno = StringVar()
+        self.bnoE = Entry(self.purchaseBF, bd=3, relief=GROOVE, font=(
+            "arial", 18, "bold"), textvariable=self.bno)
+        self.bnoE.place(relx=0.11, rely=0.01, relwidth=0.15, relheight=0.07)
 
         # Billing Day
         Label(self.purchaseBF, text="Billing Day:", font=(
-            "times new roman", 22, "bold"), pady=10).grid(row=0, column=0, pady=15, sticky=E)
+            "times new roman", 18, "bold"),).place(relx=0.26, rely=0.01, relwidth=0.15, relheight=0.06)
         self.bday = IntVar()
-        self.bdayE = Entry(self.purchaseBF, width=15, bd=3, font=(
-            "arial", 22, "bold"), textvariable=self.bday)
-        self.bdayE.grid(row=0, column=1, padx=50, pady=15, sticky=W)
+        self.bdayE = Entry(self.purchaseBF, bd=3, relief=GROOVE, font=(
+            "arial", 18, "bold"), textvariable=self.bday)
+        self.bdayE.place(relx=0.41, rely=0.01, relwidth=0.05, relheight=0.07)
 
         # Billing Month
         Label(self.purchaseBF, text="Billing Month:", font=(
-            "times new roman", 22, "bold"), pady=10).grid(row=0, column=2, pady=15, sticky=E)
+            "times new roman", 18, "bold")).place(relx=0.48, rely=0.01, relwidth=0.15, relheight=0.06)
         self.bmonth = IntVar()
-        self.bmonthE = Entry(self.purchaseBF, width=15, bd=3, font=(
-            "arial", 22, "bold"), textvariable=self.bmonth)
-        self.bmonthE.grid(row=0, column=3, padx=50, pady=15, sticky=W)
+        self.bmonthE = Entry(self.purchaseBF, bd=3, relief=GROOVE, font=(
+            "arial", 18, "bold"), textvariable=self.bmonth)
+        self.bmonthE.place(relx=0.64, rely=0.01, relwidth=0.05, relheight=0.07)
 
         # Billing Year
         Label(self.purchaseBF, text="Billing Year:", font=(
-            "times new roman", 22, "bold"), pady=10).grid(row=0, column=4, pady=15, sticky=E)
+            "times new roman", 18, "bold"), pady=10).place(relx=0.71, rely=0.01, relwidth=0.15, relheight=0.06)
         self.byear = IntVar()
-        self.byearE = Entry(self.purchaseBF, width=15, bd=3, font=(
-            "arial", 22, "bold"), textvariable=self.byear)
-        self.byearE.grid(row=0, column=5, padx=50, pady=15, sticky=W)
+        self.byearE = Entry(self.purchaseBF, width=15, bd=3, relief=GROOVE, font=(
+            "arial", 18, "bold"), textvariable=self.byear)
+        self.byearE.place(relx=0.86, rely=0.01, relwidth=0.1, relheight=0.07)
 
         # Taxes Frame
         self.taxF = LabelFrame(self.purchaseBF, text="Taxes", bd=6, relief=GROOVE, labelanchor=NW, font=(
-            "times new roman", 22, "bold"), padx=55, pady=5)
-        self.taxF.place(x=1, y=100, width=1100, height=395)
+            "times new roman", 18, "bold"))
+        self.taxF.place(relx=0.01, rely=0.09, relwidth=0.7, relheight=0.89)
 
         # Columns
-        Label(self.taxF, text="", font=(
-            "times new roman", 20, "bold"), pady=10, padx=15).grid(row=0, column=0, pady=10, padx=25)
         Label(self.taxF, text="Taxable Amount", font=(
-            "times new roman", 20, "bold"), pady=10, padx=15).grid(row=0, column=1, pady=10, padx=25)
+            "times new roman", 20, "bold")).place(relx=0.1, rely=0.01, relwidth=0.24, relheight=0.1)
         Label(self.taxF, text="CGST", font=(
-            "times new roman", 20, "bold"), pady=10, padx=15).grid(row=0, column=2, pady=10, padx=25)
+            "times new roman", 20, "bold")).place(relx=0.36, rely=0.01, relwidth=0.2, relheight=0.1)
         Label(self.taxF, text="SGST", font=(
-            "times new roman", 20, "bold"), pady=10, padx=15).grid(row=0, column=3, pady=10, padx=25)
+            "times new roman", 20, "bold")).place(relx=0.58, rely=0.01, relwidth=0.2, relheight=0.1)
         Label(self.taxF, text="IGST", font=(
-            "times new roman", 20, "bold"), pady=10, padx=15).grid(row=0, column=4, pady=10, padx=25)
+            "times new roman", 20, "bold")).place(relx=0.8, rely=0.01, relwidth=0.2, relheight=0.1)
 
         # Rows
         Label(self.taxF, text="5%", font=(
-            "times new roman", 20, "bold"), pady=10).grid(row=1, column=0, pady=5)
+            "times new roman", 20, "bold")).place(relx=0, rely=0.15, relwidth=0.1, relheight=0.2)
         Label(self.taxF, text="12%", font=(
-            "times new roman", 20, "bold"), pady=10).grid(row=2, column=0, pady=5)
+            "times new roman", 20, "bold")).place(relx=0, rely=0.35, relwidth=0.1, relheight=0.2)
         Label(self.taxF, text="18%", font=(
-            "times new roman", 20, "bold"), pady=10).grid(row=3, column=0, pady=5)
+            "times new roman", 20, "bold")).place(relx=0, rely=0.55, relwidth=0.1, relheight=0.2)
         Label(self.taxF, text="28%", font=(
-            "times new roman", 20, "bold"), pady=10).grid(row=4, column=0, pady=5)
+            "times new roman", 20, "bold")).place(relx=0, rely=0.75, relwidth=0.1, relheight=0.2)
 
         # GST 5%
         self.bamt_5 = DoubleVar()
-        self.bamt_5E = Entry(self.taxF, width=15, bd=3, font=(
+        self.bamt_5E = Entry(self.taxF, width=15, bd=3, relief=GROOVE, font=(
             "arial", 20, "bold"), textvariable=self.bamt_5)
-        self.bamt_5E.grid(row=1, column=1, padx=25, pady=10)
+        self.bamt_5E.place(relx=0.12, rely=0.2, relwidth=0.2, relheight=0.1)
         self.bgst_5 = DoubleVar()
         Entry(self.taxF, width=10, bd=2, font=(
-            "arial", 20, "bold"), textvariable=self.bgst_5).grid(row=1, column=2, padx=25, pady=10)
+            "arial", 20, "bold"), textvariable=self.bgst_5).place(relx=0.38, rely=0.2, relwidth=0.16, relheight=0.1)
         Entry(self.taxF, width=10, bd=2, font=(
-            "arial", 20, "bold"), textvariable=self.bgst_5).grid(row=1, column=3, padx=25, pady=10)
+            "arial", 20, "bold"), textvariable=self.bgst_5).place(relx=0.6, rely=0.2, relwidth=0.16, relheight=0.1)
         self.bigst_5 = DoubleVar()
         Entry(self.taxF, width=10, bd=2, font=(
-            "arial", 20, "bold"), textvariable=self.bigst_5).grid(row=1, column=4, padx=25, pady=10)
+            "arial", 20, "bold"), textvariable=self.bigst_5).place(relx=0.82, rely=0.2, relwidth=0.16, relheight=0.1)
         self.bamt_5E.bind('<Return>', self.updateGST_5)
 
         # GST 12%
         self.bamt_12 = DoubleVar()
-        self.bamt_12E = Entry(self.taxF, width=15, bd=3, font=(
+        self.bamt_12E = Entry(self.taxF, width=15, bd=3, relief=GROOVE, font=(
             "arial", 20, "bold"), textvariable=self.bamt_12)
-        self.bamt_12E.grid(row=2, column=1, padx=25, pady=10)
+        self.bamt_12E.place(relx=0.12, rely=0.4, relwidth=0.2, relheight=0.1)
         self.bgst_12 = DoubleVar()
         Entry(self.taxF, width=10, bd=2, font=(
-            "arial", 20, "bold"), textvariable=self.bgst_12).grid(row=2, column=2, padx=25, pady=10)
+            "arial", 20, "bold"), textvariable=self.bgst_12).place(relx=0.38, rely=0.4, relwidth=0.16, relheight=0.1)
         Entry(self.taxF, width=10, bd=2, font=(
-            "arial", 20, "bold"), textvariable=self.bgst_12).grid(row=2, column=3, padx=25, pady=10)
+            "arial", 20, "bold"), textvariable=self.bgst_12).place(relx=0.6, rely=0.4, relwidth=0.16, relheight=0.1)
         self.bigst_12 = DoubleVar()
         Entry(self.taxF, width=10, bd=2, font=(
-            "arial", 20, "bold"), textvariable=self.bigst_12).grid(row=2, column=4, padx=25, pady=10)
+            "arial", 20, "bold"), textvariable=self.bigst_12).place(relx=0.82, rely=0.4, relwidth=0.16, relheight=0.1)
         self.bamt_12E.bind('<Return>', self.updateGST_12)
 
         # GST 18%
         self.bamt_18 = DoubleVar()
-        self.bamt_18E = Entry(self.taxF, width=15, bd=3, font=(
+        self.bamt_18E = Entry(self.taxF, width=15, bd=3, relief=GROOVE, font=(
             "arial", 20, "bold"), textvariable=self.bamt_18)
-        self.bamt_18E.grid(row=3, column=1, padx=25, pady=10)
+        self.bamt_18E.place(relx=0.12, rely=0.6, relwidth=0.2, relheight=0.1)
         self.bgst_18 = DoubleVar()
         Entry(self.taxF, width=10, bd=2, font=(
-            "arial", 20, "bold"), textvariable=self.bgst_18).grid(row=3, column=2, padx=25, pady=10)
+            "arial", 20, "bold"), textvariable=self.bgst_18).place(relx=0.38, rely=0.6, relwidth=0.16, relheight=0.1)
         Entry(self.taxF, width=10, bd=2, font=(
-            "arial", 20, "bold"), textvariable=self.bgst_18).grid(row=3, column=3, padx=25, pady=10)
+            "arial", 20, "bold"), textvariable=self.bgst_18).place(relx=0.6, rely=0.6, relwidth=0.16, relheight=0.1)
         self.bigst_18 = DoubleVar()
         Entry(self.taxF, width=10, bd=2, font=(
-            "arial", 20, "bold"), textvariable=self.bigst_18).grid(row=3, column=4, padx=25, pady=10)
+            "arial", 20, "bold"), textvariable=self.bigst_18).place(relx=0.82, rely=0.6, relwidth=0.16, relheight=0.1)
         self.bamt_18E.bind('<Return>', self.updateGST_18)
 
         # GST 28%
         self.bamt_28 = DoubleVar()
-        self.bamt_28E = Entry(self.taxF, width=15, bd=3, font=(
+        self.bamt_28E = Entry(self.taxF, width=15, bd=3, relief=GROOVE, font=(
             "arial", 20, "bold"), textvariable=self.bamt_28)
-        self.bamt_28E.grid(row=4, column=1, padx=25, pady=10)
+        self.bamt_28E.place(relx=0.12, rely=0.8, relwidth=0.2, relheight=0.1)
         self.bgst_28 = DoubleVar()
         Entry(self.taxF, width=10, bd=2, font=(
-            "arial", 20, "bold"), textvariable=self.bgst_28).grid(row=4, column=2, padx=25, pady=10)
+            "arial", 20, "bold"), textvariable=self.bgst_28).place(relx=0.38, rely=0.8, relwidth=0.16, relheight=0.1)
         Entry(self.taxF, width=10, bd=2, font=(
-            "arial", 20, "bold"), textvariable=self.bgst_28).grid(row=4, column=3, padx=25, pady=10)
+            "arial", 20, "bold"), textvariable=self.bgst_28).place(relx=0.6, rely=0.8, relwidth=0.16, relheight=0.1)
         self.bigst_28 = DoubleVar()
         Entry(self.taxF, width=10, bd=2, font=(
-            "arial", 20, "bold"), textvariable=self.bigst_28).grid(row=4, column=4, padx=25, pady=10)
+            "arial", 20, "bold"), textvariable=self.bigst_28).place(relx=0.82, rely=0.8, relwidth=0.16, relheight=0.1)
         self.bamt_28E.bind('<Return>', self.updateGST_28)
 
         # Total Amount
         Label(self.purchaseBF, text="Total Amount:", font=(
-            "times new roman", 22, "bold"), pady=10).place(x=1260, y=100)
+            "times new roman", 18, "bold")).place(relx=0.71, rely=0.1, relwidth=0.27, relheight=0.07)
         self.btamt = IntVar()
-        self.btamtE = Label(self.purchaseBF, width=15, bd=3, fg=navy, font=(
-            "arial", 22, "bold"), textvariable=self.btamt)
-        self.btamtE.place(x=1220, y=165)
+        self.btamtE = Label(self.purchaseBF, width=15, bd=3, relief=GROOVE, fg=navy, font=(
+            "arial", 18, "bold"), textvariable=self.btamt)
+        self.btamtE.place(relx=0.72, rely=0.17, relwidth=0.27, relheight=0.1)
+
+        # Status
+        Label(self.purchaseBF, text="Status:", font=(
+            "times new roman", 18, "bold")).place(relx=0.71, rely=0.3, relwidth=0.27, relheight=0.07)
+        self.bstatus = Entry(self.purchaseBF, width=15, bd=3, relief=GROOVE, fg=navy, font=(
+            "arial", 18, "bold"))
+        self.bstatus.place(relx=0.72, rely=0.37, relwidth=0.27, relheight=0.1)
 
         # Total Amount Button
         Button(self.purchaseBF, text="Total Amount", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=10, width=20, font=(
-            "arial", 18, "bold"), command=self.totalBill).place(x=1200, y=240)
+            "arial", 18, "bold"), command=self.totalBill).place(relx=0.72, rely=0.54, relwidth=0.27, relheight=0.1)
 
         # Add Bill Button
         Button(self.purchaseBF, text="Add Bill", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=10, width=20, font=(
-            "arial", 18, "bold"), command=self.createBill).place(x=1200, y=335)
+            "arial", 18, "bold"), command=self.createBill).place(relx=0.72, rely=0.71, relwidth=0.27, relheight=0.1)
 
         # Home Button
         add_client_btn = Button(self.purchaseBF, text="Home", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=10, width=20, font=(
-            "arial", 18, "bold"), command=lambda: controller.show_frame(Home)).place(x=1200, y=430)
+            "arial", 18, "bold"), command=lambda: controller.show_frame(Home)).place(relx=0.72, rely=0.88, relwidth=0.27, relheight=0.1)
 
     def addPurchaser(self):
         getPurchaserList()
@@ -3079,7 +3418,7 @@ class AddPurchaseBill(Frame):
 
     def insertPurchaser(self, constraints):
         try:
-            sqliteConnection = sqlite3.connect('test.db')
+            sqliteConnection = sqlite3.connect('Billing.db')
             cursor = sqliteConnection.cursor()
 
             cursor.execute(
@@ -3107,6 +3446,11 @@ class AddPurchaseBill(Frame):
             messagebox.showerror(
                 title="Error", message="Add Client to the database First or Select from Dropdown List!!")
             return
+        bill_no = self.bno.get()
+        if not name:
+            messagebox.showerror(
+                title="Error", message="Bill No. Field cannot be empty!!")
+            return
         day = self.bday.get()
         if not day:
             messagebox.showerror(
@@ -3125,12 +3469,12 @@ class AddPurchaseBill(Frame):
             messagebox.showerror(
                 title="Error", message="Incorrect Month!!")
             return
-        year = self.byear.get()
+        year = int(self.byear.get())
         if not year:
             messagebox.showerror(
                 title="Error", message="Enter a Year!!")
             return
-        if not (2000 < years < 2040):
+        if not (2019 < year < 2030):
             messagebox.showerror(
                 title="Error", message="Incorrect Year!!")
             return
@@ -3149,34 +3493,37 @@ class AddPurchaseBill(Frame):
             messagebox.showerror(
                 title="Error", message="Enter Taxable Amount!!")
             return
+        status = self.bstatus.get()
+        if not status:
+            status = "Pending"
         constraints = [year, month, day, tax_amt, bgst_5, bigst_5,
-                       bgst_12, bigst_12, bgst_18, bigst_18, bgst_28, bigst_28, total_amt]
+                       bgst_12, bigst_12, bgst_18, bigst_18, bgst_28, bigst_28, total_amt, bill_no, status]
         self.insertBill(name, constraints)
 
     def insertBill(self, name, constraints):
         try:
-            sqliteConnection = sqlite3.connect('test.db')
+            sqliteConnection = sqlite3.connect('Billing.db')
             cursor = sqliteConnection.cursor()
 
             cursor.execute(
                 """SELECT MAX(pb_no) FROM purchase_bill WHERE pb_year=?;""", (constraints[0],))
             val = cursor.fetchall()
             if val[0][0] == None:
-                bill_no = 1
+                b_no = 1
             else:
-                bill_no = val[0][0]+1
+                b_no = val[0][0]+1
             cursor.execute(
                 """SELECT p_id FROM purchaser WHERE p_name=?;""", (name,))
             val = cursor.fetchall()
             p_id = val[0][0]
             constraints.insert(0, p_id)
-            constraints.insert(0, bill_no)
+            constraints.insert(0, b_no)
             cursor.execute(
-                """INSERT INTO purchase_bill (pb_no, p_id, pb_year, pb_month, pb_day, pb_tax_amt, pb_gst_5, pb_igst_5, pb_gst_12, pb_igst_12, pb_gst_18, pb_igst_18, pb_gst_28, pb_igst_28, pb_total_amt)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);""", tuple(constraints))
+                """INSERT INTO purchase_bill (pb_no, p_id, pb_year, pb_month, pb_day, pb_tax_amt, pb_gst_5, pb_igst_5, pb_gst_12, pb_igst_12, pb_gst_18, pb_igst_18, pb_gst_28, pb_igst_28, pb_total_amt, pb_bill_no, pb_status)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);""", tuple(constraints))
             sqliteConnection.commit()
             messagebox.showinfo(title="Successful",
-                                message="Bill added successfully with Bill No:"+str(bill_no)+"!!")
+                                message="Bill added successfully with Bill Sr. No:"+str(b_no)+"!!")
             cursor.close()
 
         except sqlite3.Error as error:
@@ -3211,77 +3558,89 @@ class UpdatePurchaseStatus(Frame):
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
         title = Label(self, text="F. K. PATANWALA & Co.", bd=8, relief=GROOVE, font=(
-            "times new roman", 42, "bold"), pady=2).place(x=1, y=2, relwidth=1)
+            "times new roman", 36, "bold"), pady=2).place(x=1, y=2, relwidth=1)
 
-        # --------- Sales Options ---------
+        # --------- Purchases Options ---------
         self.purchaseF = LabelFrame(self, text="Purchases", bd=6, relief=GROOVE, labelanchor=N, font=(
-            "times new roman", 30, "bold"), padx=220, pady=10)
-        self.purchaseF.place(x=1, y=130, relwidth=1, height=895)
+            "times new roman", 28, "bold"))
+        self.purchaseF.place(relx=0, rely=0.1, relwidth=1, relheight=0.9)
 
         Label(self.purchaseF, text="Check & Edit Bill Payment", bd=4, relief=GROOVE, font=(
-            "times new roman", 26, "bold"), width=85, pady=10).place(x=20, y=20, relwidth=1, height=60)
+            "times new roman", 26, "bold")).place(relx=0.05, rely=0.01, relwidth=0.9, relheight=0.07)
 
         # --------- Check Bill Status Frame ------------
-        self.selectBillF = LabelFrame(self.purchaseF, text="  Search Bill Payment  ", bd=6, relief=GROOVE, labelanchor=NW, font=(
-            "times new roman", 22, "bold"), padx=20, pady=20)
-        self.selectBillF.place(x=30, y=100, width=700, height=320)
-
-        # Billing Month
-        Label(self.selectBillF, text="Billing Month:", font=(
-            "times new roman", 18, "bold"), pady=10).place(x=20, y=10)
-        self.bmonth = Entry(self.selectBillF, width=5, bd=3, font=(
-            "arial", 18, "bold"))
-        self.bmonth.place(x=190, y=15)
+        self.selectBillF = LabelFrame(self.purchaseF, text="  Search & Generate Excel Bill   ", bd=6, relief=GROOVE, labelanchor=NW, font=(
+            "times new roman", 22, "bold"))
+        self.selectBillF.place(relx=0.01, rely=0.09,
+                               relwidth=0.48, relheight=0.3)
 
         # Billing Year
-        Label(self.selectBillF, text="Billing Year:", font=(
-            "times new roman", 18, "bold"), pady=10).place(x=320, y=10)
-        self.byear = Entry(self.selectBillF, width=10, bd=3, font=(
+        Label(self.selectBillF, text="Bill Year:", font=(
+            "times new roman", 18, "bold")).place(relx=0.01, rely=0.01, relwidth=0.24, relheight=0.2)
+        self.byear = Entry(self.selectBillF, bd=3, relief=GROOVE, font=(
             "arial", 18, "bold"))
-        self.byear.place(x=480, y=15)
+        self.byear.place(relx=0.25, rely=0.02, relwidth=0.24, relheight=0.2)
+
+        # Billing Month
+        Label(self.selectBillF, text="Bill Month:", font=(
+            "times new roman", 18, "bold")).place(relx=0.51, rely=0.01, relwidth=0.24, relheight=0.2)
+        self.bmonth = Entry(self.selectBillF, bd=3, relief=GROOVE, font=(
+            "arial", 18, "bold"))
+        self.bmonth.place(relx=0.75, rely=0.02, relwidth=0.2, relheight=0.2)
 
         # Purchaser's Name
         Label(self.selectBillF, text="Purchaser's Name:", font=(
-            "times new roman", 18, "bold"), pady=10).place(x=20, y=80)
+            "times new roman", 18, "bold")).place(relx=0.01, rely=0.31, relwidth=0.44, relheight=0.2)
         self.pname = StringVar()
         self.pnameC = ttk.Combobox(self.selectBillF, width=28, font=(
             "arial", 18, "bold"), textvariable=self.pname, postcommand=self.updatePurchaserList)
-        self.pnameC.place(x=240, y=85)
+        self.pnameC.place(relx=0.41, rely=0.31, relwidth=0.54, relheight=0.2)
 
         # Search Bills Button
-        Button(self.selectBillF, text="Search Bill", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=10, width=30, font=(
-            "arial", 18, "bold"), command=self.searchBill).place(x=120, y=150)
+        Button(self.selectBillF, text="Search Bill", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+            "arial", 18, "bold"), command=self.searchBill).place(relx=0.1, rely=0.61, relwidth=0.35, relheight=0.3)
 
-        # --------- Edit Bill Status Frame ------------
+        # Generate Excel Button
+        Button(self.selectBillF, text="Add to Excel", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", width=25, pady=20, font=(
+            "arial", 18, "bold"), command=lambda: controller.show_frame(Home)).place(relx=0.55, rely=0.61, relwidth=0.35, relheight=0.3)
+
+        # # --------- Edit Bill Status Frame ------------
         self.editStatusF = LabelFrame(self.purchaseF, text="  Update Bill Payment  ", bd=6, relief=GROOVE, labelanchor=NW, font=(
-            "times new roman", 22, "bold"), padx=20, pady=20)
-        self.editStatusF.place(x=780, y=100, width=700, height=320)
+            "times new roman", 22, "bold"))
+        self.editStatusF.place(relx=0.51, rely=0.09,
+                               relwidth=0.48, relheight=0.3)
 
         # Bill No.
         Label(self.editStatusF, text="Billing No:", font=(
-            "times new roman", 18, "bold")).grid(row=0, column=0, padx=10, pady=10, sticky=E)
+            "times new roman", 18, "bold")).place(relx=0.01, rely=0.01, relwidth=0.36, relheight=0.3)
         self.bno = StringVar()
-        self.bnoC = Entry(self.editStatusF, width=30, bd=3, font=(
+        self.bnoC = Entry(self.editStatusF, bd=3, relief=GROOVE, font=(
             "arial", 18, "bold"), textvariable=self.bno)
-        self.bnoC.grid(row=0, column=1, padx=10, pady=10)
+        self.bnoC.place(relx=0.38, rely=0.01, relwidth=0.38, relheight=0.2)
 
         # Payment Status
         Label(self.editStatusF, text="Payment Status:", font=(
-            "times new roman", 18, "bold")).grid(row=1, column=0, padx=15, pady=20, sticky=E)
-        self.estatus = Entry(self.editStatusF, width=30, bd=3, font=(
+            "times new roman", 18, "bold")).place(relx=0.01, rely=0.31, relwidth=0.36, relheight=0.3)
+        self.estatus = Entry(self.editStatusF, width=30, bd=3, relief=GROOVE, font=(
             "arial", 18, "bold"))
-        self.estatus.grid(row=1, column=1, padx=10, pady=10)
+        self.estatus.place(relx=0.38, rely=0.31, relwidth=0.38, relheight=0.2)
 
         # Current Bill Details Button
-        Button(self.editStatusF, text="Update Status", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=10, width=30, font=(
-            "arial", 18, "bold"), command=self.editStatus).place(x=120, y=150)
+        Button(self.editStatusF, text="Update Status", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+            "arial", 18, "bold"), command=self.editStatus).place(relx=0.1, rely=0.61, relwidth=0.35, relheight=0.3)
+
+        # Home Button
+        Button(self.editStatusF, text="Home", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+            "arial", 18, "bold"), command=lambda: controller.show_frame(Home)).place(relx=0.55, rely=0.61, relwidth=0.35, relheight=0.3)
 
         # --------- View Bill Detials Frame ------------
         self.viewBillF = LabelFrame(self.purchaseF, text="View Bill Detials", bd=6, relief=GROOVE, labelanchor=NW, font=(
-            "times new roman", 18, "bold"), padx=10, pady=10)
-        self.viewBillF.place(x=30, y=440, width=1000, height=360)
+            "times new roman", 18, "bold"))
+        self.viewBillF.place(relx=0.01, rely=0.4,
+                             relwidth=0.98, relheight=0.59)
         self.displayBillF = Frame(self.viewBillF)
-        self.displayBillF.place(x=10, y=20, width=950, height=280)
+        self.displayBillF.place(relx=0.01, rely=0.05,
+                                relwidth=0.98, relheight=0.9)
         self.displayText = scrolledtext.ScrolledText(
             self.displayBillF, height=280, font=("Courier",
                                                  12, "bold"), padx=10, pady=10)
@@ -3289,12 +3648,8 @@ class UpdatePurchaseStatus(Frame):
                                 "\n\n\n\n\n\n\t\tSelect Billing Year or Purchaser's Name to see the entries!! ")
         self.displayText.configure(state='disabled')
         self.displayText.pack(side="left", fill="both", expand=True)
-        Label(self.viewBillF, text="Bill No.\tYear\t\t            Purchaser's Name\t\t\tAmount\t              Payment", font=(
-            "times new roman", 15, "bold")).place(x=30, y=0)
-
-        # Home Button
-        Button(self.purchaseF, text="Home", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", width=25, pady=20, font=(
-            "arial", 18, "bold"), command=lambda: controller.show_frame(Home)).place(x=1080, y=600)
+        Label(self.viewBillF, text="Bill No.\tYear\t\t            Purchaser's Name\t\t\t Amount\t              Payment", font=(
+            "times new roman", 15, "bold")).place(relx=0.02, rely=0.01)
 
     def searchBill(self):
         constraints = []
@@ -3320,7 +3675,7 @@ class UpdatePurchaseStatus(Frame):
 
     def selectBill(self, constraints):
         try:
-            sqliteConnection = sqlite3.connect('test.db')
+            sqliteConnection = sqlite3.connect('Billing.db')
             cursor = sqliteConnection.cursor()
 
             s = ""
@@ -3347,10 +3702,10 @@ class UpdatePurchaseStatus(Frame):
                     s += str(row[3]).center(17)
             else:
                 if len(constraints) == 1:
-                    cursor.execute("SELECT pb_no, pb_year, p_id, pb_tax_amt, pb_status FROM purchase_bill WHERE pb_year=?;",
+                    cursor.execute("SELECT pb_no, pb_year, p_id, pb_total_amt, pb_status FROM purchase_bill WHERE pb_year=?;",
                                    (constraints[0],))
                 else:
-                    cursor.execute("SELECT pb_no, pb_year, p_id, pb_tax_amt, pb_status FROM purchase_bill WHERE pb_year=? AND pb_month=?;",
+                    cursor.execute("SELECT pb_no, pb_year, p_id, pb_total_amt, pb_status FROM purchase_bill WHERE pb_year=? AND pb_month=?;",
                                    (constraints[0], constraints[1]))
                 rows = cursor.fetchall()
                 for row in rows:
@@ -3396,7 +3751,7 @@ class UpdatePurchaseStatus(Frame):
 
     def updateStatus(self, constraints):
         try:
-            sqliteConnection = sqlite3.connect('test.db')
+            sqliteConnection = sqlite3.connect('Billing.db')
             cursor = sqliteConnection.cursor()
 
             cursor.execute(
@@ -3470,11 +3825,10 @@ class AutocompleteEntry(Entry):
             if words:
                 if not self.listboxUp:
                     self.listbox = Listbox(
-                        width=20, height=self.listboxLength, font=("arial", 11))
+                        width=40, height=self.listboxLength, font=("arial", 11))
                     self.listbox.bind("<Button-1>", self.selection)
                     self.listbox.bind("<Return>", self.selection)
-                    self.listbox.place(
-                        x=self.winfo_x(), y=self.winfo_y() + self.winfo_height())
+                    self.listbox.place(relx=0.09, rely=0.35)
                     self.listboxUp = True
 
                 self.listbox.delete(0, END)
@@ -3577,8 +3931,7 @@ class AutocompleteAddEntry(Entry):
                         width=33, height=self.listboxLength, font=("arial", 18))
                     self.listbox.bind("<Button-1>", self.selection)
                     self.listbox.bind("<Return>", self.selection)
-                    self.listbox.place(
-                        x=self.winfo_x(), y=self.winfo_y() + self.winfo_height())
+                    self.listbox.place(relx=0.11, rely=0.31)
                     self.listboxUp = True
 
                 self.listbox.delete(0, END)
@@ -3633,7 +3986,7 @@ class AutocompleteAddEntry(Entry):
 
 
 def getCientList():
-    sqliteConnection = sqlite3.connect('test.db')
+    sqliteConnection = sqlite3.connect('Billing.db')
     cursor = sqliteConnection.cursor()
     cursor.execute("""SELECT c_name FROM client;""")
     rows = cursor.fetchall()
@@ -3648,7 +4001,7 @@ def getCientList():
 
 
 def getPurchaserList():
-    sqliteConnection = sqlite3.connect('test.db')
+    sqliteConnection = sqlite3.connect('Billing.db')
     cursor = sqliteConnection.cursor()
     cursor.execute("""SELECT p_name FROM purchaser;""")
     rows = cursor.fetchall()
@@ -3663,7 +4016,7 @@ def getPurchaserList():
 
 
 def addProduct(name):
-    sqliteConnection = sqlite3.connect('test.db')
+    sqliteConnection = sqlite3.connect('Billing.db')
     cursor = sqliteConnection.cursor()
     cursor.execute("INSERT INTO product VALUES (?)", (name,))
     sqliteConnection.commit()
@@ -3674,7 +4027,7 @@ def addProduct(name):
 
 
 def getProductList():
-    sqliteConnection = sqlite3.connect('test.db')
+    sqliteConnection = sqlite3.connect('Billing.db')
     cursor = sqliteConnection.cursor()
     cursor.execute("""SELECT pr_name FROM product;""")
     rows = cursor.fetchall()
@@ -3717,4 +4070,3 @@ if __name__ == "__main__":
     getProductList()
     app = App()
     app.mainloop()
-
