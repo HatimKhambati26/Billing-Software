@@ -12,7 +12,7 @@ teal = '#1E656D'
 clients = []
 purchasers = []
 products = []
-years = ["2019-2020", "2020-2021", "2021-2022", "2022-2023",  "2023-2024",
+years = ["2020-2021", "2021-2022", "2022-2023",  "2023-2024",
          "2024-2025", "2025-2026", "2026-2027", "2027-2028", "2028-2029", "2029-2030"]
 one = ["", "One ", "Two ", "Three ", "Four ", "Five ", "Six ", "Seven ", "Eight ", "Nine ", "Ten ", "Eleven ",
        "Twelve ", "Thirteen ", "Fourteen ", "Fifteen ", "Sixteen ", "Seventeen ", "Eighteen ", "Nineteen "]
@@ -1759,9 +1759,8 @@ class GenerateBill(Frame):
             worksheet.set_paper(9)
             worksheet.set_portrait()
             worksheet.center_horizontally()
-            worksheet.set_margins(0.1, 0.1, 1.6, 0.25)
-            worksheet.set_default_row(16)
-            worksheet.fit_to_pages(1, 0)
+            worksheet.set_margins(0.05, 0.05, 1.9, 0.2)
+            worksheet.set_default_row(15)
             worksheet.set_header(header)
             merge_head = workbook.add_format({
                 'bold': 'bold',
@@ -1769,6 +1768,12 @@ class GenerateBill(Frame):
                 'align': 'center',
                 'font_name': 'Times New Roman',
                 'font_size': 20})
+            bold_11 = workbook.add_format({
+                'bold': 'bold',
+                'align': 'center',
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 11})
             bold_12 = workbook.add_format({
                 'bold': 'bold',
                 # 'align': 'center',
@@ -1805,7 +1810,7 @@ class GenerateBill(Frame):
                 'align': 'center',
                 'valign': 'bottom',
                 'font_name': 'Times New Roman',
-                'font_size': 14})
+                'font_size': 12})
             table_data = workbook.add_format({
                 'border': 1,
                 'valign': 'bottom',
@@ -1817,17 +1822,17 @@ class GenerateBill(Frame):
             # Sr. No.
             worksheet.set_column(0, 0, 5)
             # PARTICULARS / PRODUCT
-            worksheet.set_column(1, 1, 40)
+            worksheet.set_column(1, 1, 42)
             # Quantity
             worksheet.set_column(2, 2, 5)
             # Rate
             worksheet.set_column(3, 3, 7)
             # GST
-            worksheet.set_column(4, 4, 7)
+            worksheet.set_column(4, 4, 8)
             # CGST
-            worksheet.set_column(5, 5, 7)
+            worksheet.set_column(5, 5, 8)
             # SGST
-            worksheet.set_column(6, 6, 7)
+            worksheet.set_column(6, 6, 8)
             # Amount
             worksheet.set_column(7, 7, 10)
 
@@ -1837,18 +1842,18 @@ class GenerateBill(Frame):
             pgs = 0
             total = 0
             gst = 0
-            if len_entries > 46:
-                pgs = int(len_entries/46)
-                len_entries %= 46
-            if len_entries > 23:
+            if len_entries > 40:
+                pgs = int(len_entries/40)
+                len_entries %= 40
+            if len_entries > 20:
                 pgs += 2
             else:
                 pgs += 1
             len_entries = rem
             for p in range(0, pgs):
-                pg = p*50
+                pg = p*47
                 worksheet.merge_range('A' + str(1+pg)+':H' + str(
-                    1+pg), "GST No:- 27AADPP0622L1ZQ            Tel. No: +919820552008 / +919004023428            Email:aqpatanwala@hotmail.com", bold_12)
+                    1+pg), "GST No:- 27AADPP0622L1ZQ   Tel. No: +919820552008 / +919004023428   Email:aqpatanwala@hotmail.com", bold_11)
                 worksheet.write(
                     'A' + str(3+pg), "To:- " + c_name, bold_14_u)
                 worksheet.merge_range(
@@ -1881,8 +1886,8 @@ class GenerateBill(Frame):
                     'G' + str(7+pg), "SGST%", table_header)
                 worksheet.write(
                     'H' + str(7+pg), "AMOUNT", table_header)
-                if rem > 46:
-                    for i in range(pg+8, pg+51):
+                if rem > 40:
+                    for i in range(pg+8, pg+48):
                         ent = len_entries-rem
                         worksheet.write_number(
                             'A' + str(i), rows[ent][0], table_data)
@@ -1903,8 +1908,8 @@ class GenerateBill(Frame):
                         total += rows[ent][5]
                         gst += rows[ent][5]*rows[ent][4]*0.01
                         rem -= 1
-                elif rem > 23:
-                    for i in range(pg+8, pg+31):
+                elif rem > 20:
+                    for i in range(pg+8, pg+28):
                         ent = len_entries-rem
                         worksheet.write_number(
                             'A' + str(i), rows[ent][0], table_data)
@@ -1927,7 +1932,7 @@ class GenerateBill(Frame):
                         rem -= 1
                 else:
                     count = rem
-                    for i in range(pg+8, pg+31):
+                    for i in range(pg+8, pg+28):
                         if rem == 0:
                             break
                         ent = len_entries-rem
@@ -1950,61 +1955,61 @@ class GenerateBill(Frame):
                         total += rows[ent][5]
                         gst += rows[ent][5]*rows[ent][4]*0.01
                         rem -= 1
-                    if count < 23:
+                    if count < 20:
                         for i in range(0, 8):
                             draw_frame_border(workbook, worksheet,
-                                              count+7+pg, i, 23-count, 1)
+                                              count+7+pg, i, 20-count, 1)
                     break
 
             # TOTAL
             gst = round(gst, 2)
+            worksheet.merge_range('E' + str(28+pg)+':G' +
+                                  str(28+pg), "TOTAL AMOUNT", table_header)
+            worksheet.write_number('H' + str(28+pg), total, table_header)
+            worksheet.merge_range('E' + str(29+pg)+':G' +
+                                  str(29+pg), "TOTAL CGST", table_header)
+            worksheet.write_number('H' + str(29+pg), gst, table_header)
+            worksheet.merge_range('E' + str(30+pg)+':G' +
+                                  str(30+pg), "TOTAL SGST", table_header)
+            worksheet.write_number('H' + str(30+pg), gst, table_header)
             worksheet.merge_range('E' + str(31+pg)+':G' +
-                                  str(31+pg), "TOTAL AMOUNT", table_header)
-            worksheet.write_number('H' + str(31+pg), total, table_header)
-            worksheet.merge_range('E' + str(32+pg)+':G' +
-                                  str(32+pg), "TOTAL CGST", table_header)
-            worksheet.write_number('H' + str(32+pg), gst, table_header)
-            worksheet.merge_range('E' + str(33+pg)+':G' +
-                                  str(33+pg), "TOTAL SGST", table_header)
-            worksheet.write_number('H' + str(33+pg), gst, table_header)
-            worksheet.merge_range('E' + str(34+pg)+':G' +
-                                  str(34+pg), "Round off + / -", table_header)
+                                  str(31+pg), "Round off + / -", table_header)
             grand_total = total+(2*gst)
             total_roundup = int(
                 Decimal(grand_total).quantize(0, ROUND_HALF_UP))
-            worksheet.write_number('H' + str(34+pg), abs(
+            worksheet.write_number('H' + str(31+pg), abs(
                 total_roundup - grand_total), table_header)
-            worksheet.merge_range('E' + str(35+pg)+':G' +
-                                  str(35+pg), "GRAND TOTAL", table_header)
+            worksheet.merge_range('E' + str(32+pg)+':G' +
+                                  str(32+pg), "GRAND TOTAL", table_header)
             worksheet.write_number(
-                'H' + str(35+pg), total_roundup, table_header)
+                'H' + str(32+pg), total_roundup, table_header)
 
-            worksheet.write('A' + str(37+pg), "Rupees:- " +
+            worksheet.write('A' + str(34+pg), "Rupees:- " +
                             convertToWords(total_roundup), normal_12)
             worksheet.write(
-                'A' + str(39+pg), "Note:- Goods once sold cannot be taken back.", normal_12)
+                'A' + str(36+pg), "Note:- Goods once sold cannot be taken back.", normal_12)
             worksheet.write(
-                'A' + str(40+pg), "Guarantee & Warranty applicable as per the original component suppliers terms & condition only.", normal_12)
+                'A' + str(37+pg), "Guarantee & Warranty applicable as per the original component suppliers terms & condition only.", normal_12)
 
             # Bank Details
-            worksheet.write('A' + str(43+pg), "Bank details:-", normal_12)
-            worksheet.write('A' + str(44+pg),
+            worksheet.write('A' + str(40+pg), "Bank details:-", normal_12)
+            worksheet.write('A' + str(41+pg),
                             "Bank Name:- Bank of India", normal_12)
-            worksheet.write('A' + str(45+pg),
+            worksheet.write('A' + str(42+pg),
                             "Branch :- Kalbadevi Branch", normal_12)
-            worksheet.write('A' + str(46+pg),
+            worksheet.write('A' + str(43+pg),
                             "A/C No:- 002420110001459", normal_12)
             worksheet.write(
-                'A' + str(47+pg), "RTGS/NEFT/IFSC Code: BKID0000024", normal_12)
+                'A' + str(44+pg), "RTGS/NEFT/IFSC Code: BKID0000024", normal_12)
 
             # Proprietery Signature
             worksheet.merge_range(
-                'E' + str(42+pg)+':H' + str(42+pg), "FOR F.K. PATANWALA & Co.", bold_14)
+                'E' + str(39+pg)+':H' + str(39+pg), "FOR F.K. PATANWALA & Co.", bold_14)
             worksheet.merge_range(
-                'E' + str(48+pg)+':H' + str(48+pg), "Proprietor/Authorized signatory", bold_14)
+                'E' + str(45+pg)+':H' + str(45+pg), "Proprietor/Authorized signatory", bold_14)
 
             worksheet.conditional_format(
-                'E' + str(31+pg)+':H' + str(35+pg), {'type': 'no_blanks', 'format': border})
+                'E' + str(28+pg)+':H' + str(32+pg), {'type': 'no_blanks', 'format': border})
             cursor.execute(
                 "SELECT bd_ch_no FROM bill_detail WHERE b_year=? AND b_no=? AND bd_ch_no IS NOT ''", bill_info)
             rows = cursor.fetchall()
@@ -2057,9 +2062,8 @@ class GenerateBill(Frame):
             worksheet.set_paper(9)
             worksheet.set_portrait()
             worksheet.center_horizontally()
-            worksheet.set_margins(0.1, 0.1, 1.6, 0.25)
-            worksheet.set_default_row(16)
-            worksheet.fit_to_pages(1, 0)
+            worksheet.set_margins(0.05, 0.05, 1.9, 0.2)
+            worksheet.set_default_row(15)
             worksheet.set_header(header)
             merge_head = workbook.add_format({
                 'bold': 'bold',
@@ -2067,9 +2071,15 @@ class GenerateBill(Frame):
                 'align': 'center',
                 'font_name': 'Times New Roman',
                 'font_size': 20})
-            bold_12 = workbook.add_format({
+            bold_11 = workbook.add_format({
                 'bold': 'bold',
                 'align': 'center',
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 11})
+            bold_12 = workbook.add_format({
+                'bold': 'bold',
+                # 'align': 'center',
                 'valign': 'bottom',
                 'font_name': 'Times New Roman',
                 'font_size': 12})
@@ -2103,7 +2113,7 @@ class GenerateBill(Frame):
                 'align': 'center',
                 'valign': 'bottom',
                 'font_name': 'Times New Roman',
-                'font_size': 14})
+                'font_size': 12})
             table_data = workbook.add_format({
                 'border': 1,
                 'valign': 'bottom',
@@ -2114,12 +2124,12 @@ class GenerateBill(Frame):
             # ------ Set column Width -----
             worksheet.set_column(0, 0, 5)  # Sr. No.
             worksheet.set_column(1, 1, 6)  # Amc No.
-            worksheet.set_column(2, 2, 31)  # PARTICULARS / PRODUCT
+            worksheet.set_column(2, 2, 36)  # PARTICULARS / PRODUCT
             worksheet.set_column(3, 3, 5)  # Quantity
             worksheet.set_column(4, 4, 7)  # Rate
-            worksheet.set_column(5, 5, 7)  # GST
-            worksheet.set_column(6, 6, 7)  # CGST
-            worksheet.set_column(7, 7, 7)  # SGST
+            worksheet.set_column(5, 5, 8)  # GST
+            worksheet.set_column(6, 6, 8)  # CGST
+            worksheet.set_column(7, 7, 8)  # SGST
             worksheet.set_column(8, 8, 10)  # Amount
 
             # -------- Excelsheet --------
@@ -2128,18 +2138,18 @@ class GenerateBill(Frame):
             pgs = 0
             total = 0
             gst = 0
-            if len_entries > 46:
-                pgs = int(len_entries/46)
-                len_entries %= 46
-            if len_entries > 23:
+            if len_entries > 40:
+                pgs = int(len_entries/40)
+                len_entries %= 40
+            if len_entries > 20:
                 pgs += 2
             else:
                 pgs += 1
             len_entries = rem
             for p in range(0, pgs):
-                pg = p*50
+                pg = p*47
                 worksheet.merge_range('A' + str(1+pg)+':I' + str(
-                    1+pg), "GST No:- 27AADPP0622L1ZQ            Tel. No: +919820552008 / +919004023428            Email:aqpatanwala@hotmail.com", bold_12)
+                    1+pg), "GST No:- 27AADPP0622L1ZQ   Tel. No: +919820552008 / +919004022828   Email:aqpatanwala@hotmail.com", bold_11)
                 worksheet.write(
                     'A' + str(3+pg), "To:- " + c_name, bold_14_u)
                 worksheet.merge_range(
@@ -2174,8 +2184,8 @@ class GenerateBill(Frame):
                     'H' + str(7+pg), "SGST%", table_header)
                 worksheet.write(
                     'I' + str(7+pg), "AMOUNT", table_header)
-                if rem > 46:
-                    for i in range(pg+8, pg+51):
+                if rem > 40:
+                    for i in range(pg+8, pg+48):
                         ent = len_entries-rem
                         worksheet.write_number(
                             'A' + str(i), rows[ent][0], table_data)
@@ -2198,8 +2208,8 @@ class GenerateBill(Frame):
                         total += rows[ent][6]
                         gst += rows[ent][6]*rows[ent][5]*0.01
                         rem -= 1
-                elif rem > 23:
-                    for i in range(pg+8, pg+31):
+                elif rem > 20:
+                    for i in range(pg+8, pg+28):
                         ent = len_entries-rem
                         worksheet.write_number(
                             'A' + str(i), rows[ent][0], table_data)
@@ -2224,7 +2234,7 @@ class GenerateBill(Frame):
                         rem -= 1
                 else:
                     count = rem
-                    for i in range(pg+8, pg+31):
+                    for i in range(pg+8, pg+28):
                         if rem == 0:
                             break
                         ent = len_entries-rem
@@ -2249,58 +2259,58 @@ class GenerateBill(Frame):
                         total += rows[ent][6]
                         gst += rows[ent][6]*rows[ent][5]*0.01
                         rem -= 1
-                    if count < 23:
-                        for i in range(0, 10):
+                    if count < 20:
+                        for i in range(0, 9):
                             draw_frame_border(workbook, worksheet,
-                                              count+7+pg, i, 23-count, 1)
+                                              count+7+pg, i, 20-count, 1)
                     break
 
             # TOTAL
             gst = round(gst, 2)
+            worksheet.merge_range('F' + str(28+pg)+':H' +
+                                  str(28+pg), "TOTAL AMOUNT", table_header)
+            worksheet.write_number('I' + str(28+pg), total, table_header)
+            worksheet.merge_range('F' + str(29+pg)+':H' +
+                                  str(29+pg), "TOTAL CGST", table_header)
+            worksheet.write_number('I' + str(29+pg), gst, table_header)
+            worksheet.merge_range('F' + str(30+pg)+':H' +
+                                  str(30+pg), "TOTAL SGST", table_header)
+            worksheet.write_number('I' + str(30+pg), gst, table_header)
             worksheet.merge_range('F' + str(31+pg)+':H' +
-                                  str(31+pg), "TOTAL AMOUNT", table_header)
-            worksheet.write_number('I' + str(31+pg), total, table_header)
-            worksheet.merge_range('F' + str(32+pg)+':H' +
-                                  str(32+pg), "TOTAL CGST", table_header)
-            worksheet.write_number('I' + str(32+pg), gst, table_header)
-            worksheet.merge_range('F' + str(33+pg)+':H' +
-                                  str(33+pg), "TOTAL SGST", table_header)
-            worksheet.write_number('I' + str(33+pg), gst, table_header)
-            worksheet.merge_range('F' + str(34+pg)+':H' +
-                                  str(34+pg), "Round off + / -", table_header)
+                                  str(31+pg), "Round off + / -", table_header)
             grand_total = total+(2*gst)
             total_roundup = int(
                 Decimal(grand_total).quantize(0, ROUND_HALF_UP))
-            worksheet.write_number('I' + str(34+pg), abs(
-                total_roundup - grand_total), table_header)
-            worksheet.merge_range('F' + str(35+pg)+':H' +
-                                  str(35+pg), "GRAND TOTAL", table_header)
             worksheet.write_number(
-                'I' + str(35+pg), total_roundup, table_header)
+                'I' + str(31+pg), abs(total_roundup - grand_total), table_header)
+            worksheet.merge_range('F' + str(32+pg)+':H' +
+                                  str(32+pg), "GRAND TOTAL", table_header)
+            worksheet.write_number(
+                'I' + str(32+pg), total_roundup, table_header)
 
-            worksheet.write('A' + str(37+pg), "Rupees:- " +
+            worksheet.write('A' + str(34+pg), "Rupees:- " +
                             convertToWords(total_roundup), normal_12)
             worksheet.write(
-                'A' + str(39+pg), "Note:- Goods once sold cannot be taken back.", normal_12)
+                'A' + str(36+pg), "Note:- Goods once sold cannot be taken back.", normal_12)
             worksheet.write(
-                'A' + str(40+pg), "Guarantee & Warranty applicable as per the original component suppliers terms & condition only.", normal_12)
+                'A' + str(37+pg), "Guarantee & Warranty applicable as per the original component suppliers terms & condition only.", normal_12)
 
             # Bank Details
-            worksheet.write('A' + str(43+pg), "Bank details:-", normal_12)
-            worksheet.write('A' + str(44+pg),
+            worksheet.write('A' + str(40+pg), "Bank details:-", normal_12)
+            worksheet.write('A' + str(41+pg),
                             "Bank Name:- Bank of India", normal_12)
-            worksheet.write('A' + str(45+pg),
+            worksheet.write('A' + str(42+pg),
                             "Branch :- Kalbadevi Branch", normal_12)
-            worksheet.write('A' + str(46+pg),
+            worksheet.write('A' + str(43+pg),
                             "A/C No:- 002420110001459", normal_12)
             worksheet.write(
-                'A' + str(47+pg), "RTGS/NEFT/IFSC Code: BKID0000024", normal_12)
+                'A' + str(44+pg), "RTGS/NEFT/IFSC Code: BKID0000024", normal_12)
 
             # Proprietery Signature
             worksheet.merge_range(
-                'E' + str(42+pg)+':I' + str(42+pg), "FOR F.K. PATANWALA & Co.", bold_14)
+                'E' + str(39+pg)+':I' + str(39+pg), "FOR F.K. PATANWALA & Co.", bold_14)
             worksheet.merge_range(
-                'E' + str(48+pg)+':I' + str(48+pg), "Proprietor/Authorized signatory", bold_14)
+                'E' + str(45+pg)+':I' + str(45+pg), "Proprietor/Authorized signatory", bold_14)
             cursor.execute(
                 "SELECT bd_ch_no FROM bill_detail WHERE b_year=? AND b_no=? AND bd_ch_no IS NOT ''", bill_info)
             rows = cursor.fetchall()
@@ -2353,9 +2363,8 @@ class GenerateBill(Frame):
             worksheet.set_paper(9)
             worksheet.set_portrait()
             worksheet.center_horizontally()
-            worksheet.set_margins(0.1, 0.1, 1.6, 0.25)
-            worksheet.set_default_row(16)
-            worksheet.fit_to_pages(1, 0)
+            worksheet.set_margins(0.05, 0.05, 1.9, 0.2)
+            worksheet.set_default_row(15)
             worksheet.set_header(header)
             merge_head = workbook.add_format({
                 'bold': 'bold',
@@ -2363,9 +2372,15 @@ class GenerateBill(Frame):
                 'align': 'center',
                 'font_name': 'Times New Roman',
                 'font_size': 20})
-            bold_12 = workbook.add_format({
+            bold_11 = workbook.add_format({
                 'bold': 'bold',
                 'align': 'center',
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 11})
+            bold_12 = workbook.add_format({
+                'bold': 'bold',
+                # 'align': 'center',
                 'valign': 'bottom',
                 'font_name': 'Times New Roman',
                 'font_size': 12})
@@ -2399,7 +2414,7 @@ class GenerateBill(Frame):
                 'align': 'center',
                 'valign': 'bottom',
                 'font_name': 'Times New Roman',
-                'font_size': 14})
+                'font_size': 12})
             table_data = workbook.add_format({
                 'border': 1,
                 'valign': 'bottom',
@@ -2409,13 +2424,13 @@ class GenerateBill(Frame):
 
             # ------ Set column Width -----
             worksheet.set_column(0, 0, 5)  # Sr. No.
-            worksheet.set_column(1, 1, 31)  # PARTICULARS / PRODUCT
+            worksheet.set_column(1, 1, 36)  # PARTICULARS / PRODUCT
             worksheet.set_column(2, 2, 6)  # HSN
             worksheet.set_column(3, 3, 5)  # Quantity
             worksheet.set_column(4, 4, 7)  # Rate
-            worksheet.set_column(5, 5, 7)  # GST
-            worksheet.set_column(6, 6, 7)  # CGST
-            worksheet.set_column(7, 7, 7)  # SGST
+            worksheet.set_column(5, 5, 8)  # GST
+            worksheet.set_column(6, 6, 8)  # CGST
+            worksheet.set_column(7, 7, 8)  # SGST
             worksheet.set_column(8, 8, 10)  # Amount
 
             # -------- Excelsheet --------
@@ -2424,18 +2439,18 @@ class GenerateBill(Frame):
             pgs = 0
             total = 0
             gst = 0
-            if len_entries > 46:
-                pgs = int(len_entries/46)
-                len_entries %= 46
-            if len_entries > 23:
+            if len_entries > 40:
+                pgs = int(len_entries/40)
+                len_entries %= 40
+            if len_entries > 20:
                 pgs += 2
             else:
                 pgs += 1
             len_entries = rem
             for p in range(0, pgs):
-                pg = p*50
+                pg = p*47
                 worksheet.merge_range('A' + str(1+pg)+':I' + str(
-                    1+pg), "GST No:- 27AADPP0622L1ZQ            Tel. No: +919820552008 / +919004023428            Email:aqpatanwala@hotmail.com", bold_12)
+                    1+pg), "GST No:- 27AADPP0622L1ZQ   Tel. No: +919820552008 / +919004023128   Email:aqpatanwala@hotmail.com", bold_11)
                 worksheet.write(
                     'A' + str(3+pg), "To:- " + c_name, bold_14_u)
                 worksheet.merge_range(
@@ -2470,8 +2485,8 @@ class GenerateBill(Frame):
                     'H' + str(7+pg), "SGST%", table_header)
                 worksheet.write(
                     'I' + str(7+pg), "AMOUNT", table_header)
-                if rem > 46:
-                    for i in range(pg+8, pg+51):
+                if rem > 40:
+                    for i in range(pg+8, pg+48):
                         ent = len_entries-rem
                         worksheet.write_number(
                             'A' + str(i), rows[ent][0], table_data)
@@ -2494,8 +2509,8 @@ class GenerateBill(Frame):
                         total += rows[ent][6]
                         gst += rows[ent][6]*rows[ent][5]*0.01
                         rem -= 1
-                elif rem > 23:
-                    for i in range(pg+8, pg+31):
+                elif rem > 20:
+                    for i in range(pg+8, pg+28):
                         ent = len_entries-rem
                         worksheet.write_number(
                             'A' + str(i), rows[ent][0], table_data)
@@ -2520,7 +2535,7 @@ class GenerateBill(Frame):
                         rem -= 1
                 else:
                     count = rem
-                    for i in range(pg+8, pg+31):
+                    for i in range(pg+8, pg+28):
                         if rem == 0:
                             break
                         ent = len_entries-rem
@@ -2545,58 +2560,58 @@ class GenerateBill(Frame):
                         total += rows[ent][6]
                         gst += rows[ent][6]*rows[ent][5]*0.01
                         rem -= 1
-                    if count < 23:
-                        for i in range(0, 10):
+                    if count < 20:
+                        for i in range(0, 9):
                             draw_frame_border(workbook, worksheet,
-                                              count+7+pg, i, 23-count, 1)
+                                              count+7+pg, i, 20-count, 1)
                     break
 
             # TOTAL
             gst = round(gst, 2)
+            worksheet.merge_range('F' + str(28+pg)+':H' +
+                                  str(28+pg), "TOTAL AMOUNT", table_header)
+            worksheet.write_number('I' + str(28+pg), total, table_header)
+            worksheet.merge_range('F' + str(29+pg)+':H' +
+                                  str(29+pg), "TOTAL CGST", table_header)
+            worksheet.write_number('I' + str(29+pg), gst, table_header)
+            worksheet.merge_range('F' + str(30+pg)+':H' +
+                                  str(30+pg), "TOTAL SGST", table_header)
+            worksheet.write_number('I' + str(30+pg), gst, table_header)
             worksheet.merge_range('F' + str(31+pg)+':H' +
-                                  str(31+pg), "TOTAL AMOUNT", table_header)
-            worksheet.write_number('I' + str(31+pg), total, table_header)
-            worksheet.merge_range('F' + str(32+pg)+':H' +
-                                  str(32+pg), "TOTAL CGST", table_header)
-            worksheet.write_number('I' + str(32+pg), gst, table_header)
-            worksheet.merge_range('F' + str(33+pg)+':H' +
-                                  str(33+pg), "TOTAL SGST", table_header)
-            worksheet.write_number('I' + str(33+pg), gst, table_header)
-            worksheet.merge_range('F' + str(34+pg)+':H' +
-                                  str(34+pg), "Round off + / -", table_header)
+                                  str(31+pg), "Round off + / -", table_header)
             grand_total = total+(2*gst)
             total_roundup = int(
                 Decimal(grand_total).quantize(0, ROUND_HALF_UP))
             worksheet.write_number(
-                'I' + str(34+pg), abs(total_roundup - grand_total), table_header)
-            worksheet.merge_range('F' + str(35+pg)+':H' +
-                                  str(35+pg), "GRAND TOTAL", table_header)
+                'I' + str(31+pg), abs(total_roundup - grand_total), table_header)
+            worksheet.merge_range('F' + str(32+pg)+':H' +
+                                  str(32+pg), "GRAND TOTAL", table_header)
             worksheet.write_number(
-                'I' + str(35+pg), total_roundup, table_header)
+                'I' + str(32+pg), total_roundup, table_header)
 
             worksheet.write('A' + str(37+pg), "Rupees:- " +
                             convertToWords(total_roundup), normal_12)
             worksheet.write(
-                'A' + str(39+pg), "Note:- Goods once sold cannot be taken back.", normal_12)
+                'A' + str(36+pg), "Note:- Goods once sold cannot be taken back.", normal_12)
             worksheet.write(
-                'A' + str(40+pg), "Guarantee & Warranty applicable as per the original component suppliers terms & condition only.", normal_12)
+                'A' + str(37+pg), "Guarantee & Warranty applicable as per the original component suppliers terms & condition only.", normal_12)
 
             # Bank Details
-            worksheet.write('A' + str(43+pg), "Bank details:-", normal_12)
-            worksheet.write('A' + str(44+pg),
+            worksheet.write('A' + str(40+pg), "Bank details:-", normal_12)
+            worksheet.write('A' + str(41+pg),
                             "Bank Name:- Bank of India", normal_12)
-            worksheet.write('A' + str(45+pg),
+            worksheet.write('A' + str(42+pg),
                             "Branch :- Kalbadevi Branch", normal_12)
-            worksheet.write('A' + str(46+pg),
+            worksheet.write('A' + str(43+pg),
                             "A/C No:- 002420110001459", normal_12)
             worksheet.write(
-                'A' + str(47+pg), "RTGS/NEFT/IFSC Code: BKID0000024", normal_12)
+                'A' + str(44+pg), "RTGS/NEFT/IFSC Code: BKID0000024", normal_12)
 
             # Proprietery Signature
             worksheet.merge_range(
-                'E' + str(42+pg)+':I' + str(42+pg), "FOR F.K. PATANWALA & Co.", bold_14)
+                'E' + str(39+pg)+':I' + str(39+pg), "FOR F.K. PATANWALA & Co.", bold_14)
             worksheet.merge_range(
-                'E' + str(48+pg)+':I' + str(48+pg), "Proprietor/Authorized signatory", bold_14)
+                'E' + str(45+pg)+':I' + str(45+pg), "Proprietor/Authorized signatory", bold_14)
             cursor.execute(
                 "SELECT bd_ch_no FROM bill_detail WHERE b_year=? AND b_no=? AND bd_ch_no IS NOT ''", bill_info)
             rows = cursor.fetchall()
@@ -2649,9 +2664,8 @@ class GenerateBill(Frame):
             worksheet.set_paper(9)
             worksheet.set_portrait()
             worksheet.center_horizontally()
-            worksheet.set_margins(0.1, 0.1, 1.6, 0.25)
-            worksheet.set_default_row(16)
-            worksheet.fit_to_pages(1, 0)
+            worksheet.set_margins(0.05, 0.05, 1.9, 0.2)
+            worksheet.set_default_row(15)
             worksheet.set_header(header)
             merge_head = workbook.add_format({
                 'bold': 'bold',
@@ -2659,9 +2673,15 @@ class GenerateBill(Frame):
                 'align': 'center',
                 'font_name': 'Times New Roman',
                 'font_size': 20})
-            bold_12 = workbook.add_format({
+            bold_11 = workbook.add_format({
                 'bold': 'bold',
                 'align': 'center',
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 11})
+            bold_12 = workbook.add_format({
+                'bold': 'bold',
+                # 'align': 'center',
                 'valign': 'bottom',
                 'font_name': 'Times New Roman',
                 'font_size': 12})
@@ -2695,7 +2715,7 @@ class GenerateBill(Frame):
                 'align': 'center',
                 'valign': 'bottom',
                 'font_name': 'Times New Roman',
-                'font_size': 14})
+                'font_size': 12})
             table_data = workbook.add_format({
                 'border': 1,
                 'valign': 'bottom',
@@ -2705,11 +2725,11 @@ class GenerateBill(Frame):
 
             # ------ Set column Width -----
             worksheet.set_column(0, 0, 5)  # Sr. No.
-            worksheet.set_column(1, 1, 46)  # PARTICULARS / PRODUCT
+            worksheet.set_column(1, 1, 50)  # PARTICULARS / PRODUCT
             worksheet.set_column(2, 2, 5)  # Quantity
             worksheet.set_column(3, 3, 7)  # Rate
-            worksheet.set_column(4, 4, 7)  # GST
-            worksheet.set_column(5, 5, 7)  # IGST
+            worksheet.set_column(4, 4, 8)  # GST
+            worksheet.set_column(5, 5, 8)  # IGST
             worksheet.set_column(6, 6, 10)  # Amount
 
             # -------- Excelsheet --------
@@ -2719,28 +2739,25 @@ class GenerateBill(Frame):
             total = 0
             gst = 0
             igst = 0
-            if len_entries > 46:
-                pgs = int(len_entries/46)
-                len_entries %= 46
-            if len_entries > 23:
+            if len_entries > 40:
+                pgs = int(len_entries/40)
+                len_entries %= 40
+            if len_entries > 20:
                 pgs += 2
             else:
                 pgs += 1
             len_entries = rem
             for p in range(0, pgs):
-                pg = p*50
+                pg = p*47
                 worksheet.merge_range('A' + str(1+pg)+':G' + str(
-                    1+pg), "GST No:- 27AADPP0622L1ZQ            Tel. No: +919820552008 / +919004023428            Email:aqpatanwala@hotmail.com", bold_12)
+                    1+pg), "GST No:- 27AADPP0622L1ZQ   Tel. No: +919820552008 / +919004020428   Email:aqpatanwala@hotmail.com", bold_11)
                 worksheet.write(
                     'A' + str(3+pg), "To:- " + c_name, bold_14_u)
                 worksheet.merge_range(
                     'A' + str(4+pg)+':G' + str(4+pg), "Address :- "+c_address, normal_12)
-                worksheet.write(
-                    'A' + str(5+pg), "GST:- " + c_gst, bold_12_u)
-
                 # Bill No.
                 worksheet.write_rich_string(
-                    'D' + str(5+pg), bold_12, "Bill No.: ", normal_12, bill_no)
+                    'A' + str(5+pg), bold_12_u, "GST:- " + c_gst, bold_12, "              Bill No.: ", normal_12, bill_no)
 
                 # Date
                 worksheet.write_rich_string(
@@ -2761,8 +2778,8 @@ class GenerateBill(Frame):
                     'F' + str(7+pg), "IGST%", table_header)
                 worksheet.write(
                     'G' + str(7+pg), "AMOUNT", table_header)
-                if rem > 46:
-                    for i in range(pg+8, pg+51):
+                if rem > 40:
+                    for i in range(pg+8, pg+48):
                         ent = len_entries-rem
                         worksheet.write_number(
                             'A' + str(i), rows[ent][0], table_data)
@@ -2781,8 +2798,8 @@ class GenerateBill(Frame):
                         total += rows[ent][5]
                         igst += rows[ent][5]*rows[ent][4]*0.01
                         rem -= 1
-                elif rem > 23:
-                    for i in range(pg+8, pg+31):
+                elif rem > 20:
+                    for i in range(pg+8, pg+28):
                         ent = len_entries-rem
                         worksheet.write_number(
                             'A' + str(i), rows[ent][0], table_data)
@@ -2803,7 +2820,7 @@ class GenerateBill(Frame):
                         rem -= 1
                 else:
                     count = rem
-                    for i in range(pg+8, pg+31):
+                    for i in range(pg+8, pg+28):
                         if rem == 0:
                             break
                         ent = len_entries-rem
@@ -2824,55 +2841,55 @@ class GenerateBill(Frame):
                         total += rows[ent][5]
                         igst += rows[ent][5]*rows[ent][4]*0.01
                         rem -= 1
-                    if count < 23:
+                    if count < 20:
                         for i in range(0, 10):
                             draw_frame_border(workbook, worksheet,
-                                              count+7+pg, i, 23-count, 1)
+                                              count+7+pg, i, 20-count, 1)
                     break
 
             # TOTAL
             igst = round(igst, 2)
-            worksheet.merge_range('D' + str(31+pg)+':F' +
-                                  str(31+pg), "TOTAL AMOUNT", table_header)
-            worksheet.write_number('G' + str(31+pg), total, table_header)
-            worksheet.merge_range('D' + str(32+pg)+':F' +
-                                  str(32+pg), "TOTAL IGST", table_header)
-            worksheet.write_number('G' + str(32+pg), igst, table_header)
-            worksheet.merge_range('D' + str(33+pg)+':F' +
-                                  str(33+pg), "Round off + / -", table_header)
+            worksheet.merge_range('D' + str(28+pg)+':F' +
+                                  str(28+pg), "TOTAL AMOUNT", table_header)
+            worksheet.write_number('G' + str(28+pg), total, table_header)
+            worksheet.merge_range('D' + str(29+pg)+':F' +
+                                  str(29+pg), "TOTAL IGST", table_header)
+            worksheet.write_number('G' + str(29+pg), igst, table_header)
+            worksheet.merge_range('D' + str(30+pg)+':F' +
+                                  str(30+pg), "Round off + / -", table_header)
             grand_total = total + igst
             total_roundup = int(
                 Decimal(grand_total).quantize(0, ROUND_HALF_UP))
             worksheet.write_number(
-                'G' + str(33+pg), abs(total_roundup - grand_total), table_header)
-            worksheet.merge_range('D' + str(34+pg)+':F' +
-                                  str(34+pg), "GRAND TOTAL", table_header)
+                'G' + str(30+pg), abs(total_roundup - grand_total), table_header)
+            worksheet.merge_range('D' + str(31+pg)+':F' +
+                                  str(31+pg), "GRAND TOTAL", table_header)
             worksheet.write_number(
-                'G' + str(34+pg), total_roundup, table_header)
+                'G' + str(31+pg), total_roundup, table_header)
 
-            worksheet.write('A' + str(36+pg), "Rupees:- " +
+            worksheet.write('A' + str(33+pg), "Rupees:- " +
                             convertToWords(total_roundup), normal_12)
             worksheet.write(
-                'A' + str(39+pg), "Note:- Goods once sold cannot be taken back.", normal_12)
+                'A' + str(36+pg), "Note:- Goods once sold cannot be taken back.", normal_12)
             worksheet.write(
-                'A' + str(40+pg), "Guarantee & Warranty applicable as per the original component suppliers terms & condition only.", normal_12)
+                'A' + str(37+pg), "Guarantee & Warranty applicable as per the original component suppliers terms & condition only.", normal_12)
 
             # Bank Details
-            worksheet.write('A' + str(43+pg), "Bank details:-", normal_12)
-            worksheet.write('A' + str(44+pg),
+            worksheet.write('A' + str(40+pg), "Bank details:-", normal_12)
+            worksheet.write('A' + str(41+pg),
                             "Bank Name:- Bank of India", normal_12)
-            worksheet.write('A' + str(45+pg),
+            worksheet.write('A' + str(42+pg),
                             "Branch :- Kalbadevi Branch", normal_12)
-            worksheet.write('A' + str(46+pg),
+            worksheet.write('A' + str(43+pg),
                             "A/C No:- 002420110001459", normal_12)
             worksheet.write(
-                'A' + str(47+pg), "RTGS/NEFT/IFSC Code: BKID0000024", normal_12)
+                'A' + str(44+pg), "RTGS/NEFT/IFSC Code: BKID0000024", normal_12)
 
             # Proprietery Signature
             worksheet.merge_range(
-                'D' + str(42+pg)+':G' + str(42+pg), "FOR F.K. PATANWALA & Co.", bold_14)
+                'D' + str(39+pg)+':G' + str(39+pg), "FOR F.K. PATANWALA & Co.", bold_14)
             worksheet.merge_range(
-                'D' + str(48+pg)+':G' + str(48+pg), "Proprietor/Authorized signatory", bold_14)
+                'D' + str(45+pg)+':G' + str(45+pg), "Proprietor/Authorized signatory", bold_14)
             cursor.execute(
                 "SELECT bd_ch_no FROM bill_detail WHERE b_year=? AND b_no=? AND bd_ch_no IS NOT ''", bill_info)
             rows = cursor.fetchall()
@@ -2925,9 +2942,8 @@ class GenerateBill(Frame):
             worksheet.set_paper(9)
             worksheet.set_portrait()
             worksheet.center_horizontally()
-            worksheet.set_margins(0.1, 0.1, 1.6, 0.25)
-            worksheet.set_default_row(16)
-            worksheet.fit_to_pages(1, 0)
+            worksheet.set_margins(0.05, 0.05, 1.9, 0.2)
+            worksheet.set_default_row(15)
             worksheet.set_header(header)
             merge_head = workbook.add_format({
                 'bold': 'bold',
@@ -2935,9 +2951,15 @@ class GenerateBill(Frame):
                 'align': 'center',
                 'font_name': 'Times New Roman',
                 'font_size': 20})
-            bold_12 = workbook.add_format({
+            bold_11 = workbook.add_format({
                 'bold': 'bold',
                 'align': 'center',
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 11})
+            bold_12 = workbook.add_format({
+                'bold': 'bold',
+                # 'align': 'center',
                 'valign': 'bottom',
                 'font_name': 'Times New Roman',
                 'font_size': 12})
@@ -2971,7 +2993,7 @@ class GenerateBill(Frame):
                 'align': 'center',
                 'valign': 'bottom',
                 'font_name': 'Times New Roman',
-                'font_size': 14})
+                'font_size': 12})
             table_data = workbook.add_format({
                 'border': 1,
                 'valign': 'bottom',
@@ -2982,13 +3004,13 @@ class GenerateBill(Frame):
             # ------ Set column Width -----
             worksheet.set_column(0, 0, 5)  # Sr. No.
             worksheet.set_column(1, 1, 6)  # Amc No.
-            worksheet.set_column(2, 2, 27)  # PARTICULARS / PRODUCT
-            worksheet.set_column(3, 3, 4)  # HSN
+            worksheet.set_column(2, 2, 31)  # PARTICULARS / PRODUCT
+            worksheet.set_column(3, 3, 5)  # HSN
             worksheet.set_column(4, 4, 5)  # Quantity
             worksheet.set_column(5, 5, 7)  # Rate
-            worksheet.set_column(6, 6, 7)  # GST
-            worksheet.set_column(7, 7, 7)  # CGST
-            worksheet.set_column(8, 8, 7)  # SGST
+            worksheet.set_column(6, 6, 8)  # GST
+            worksheet.set_column(7, 7, 8)  # CGST
+            worksheet.set_column(8, 8, 8)  # SGST
             worksheet.set_column(9, 9, 10)  # Amount
             # -------- Excelsheet --------
             len_entries = len(rows)
@@ -2996,18 +3018,18 @@ class GenerateBill(Frame):
             pgs = 0
             total = 0
             gst = 0
-            if len_entries > 46:
-                pgs = int(len_entries/46)
-                len_entries %= 46
-            if len_entries > 23:
+            if len_entries > 40:
+                pgs = int(len_entries/40)
+                len_entries %= 40
+            if len_entries > 20:
                 pgs += 2
             else:
                 pgs += 1
             len_entries = rem
             for p in range(0, pgs):
-                pg = p*50
+                pg = p*47
                 worksheet.merge_range('A' + str(1+pg)+':J' + str(
-                    1+pg), "GST No:- 27AADPP0622L1ZQ            Tel. No: +919820552008 / +919004023428            Email:aqpatanwala@hotmail.com", bold_12)
+                    1+pg), "GST No:- 27AADPP0622L1ZQ   Tel. No: +919820552008 / +919004023128   Email:aqpatanwala@hotmail.com", bold_11)
                 worksheet.write(
                     'A' + str(3+pg), "To:- " + c_name, bold_14_u)
                 worksheet.merge_range(
@@ -3044,8 +3066,8 @@ class GenerateBill(Frame):
                     'I' + str(7+pg), "SGST%", table_header)
                 worksheet.write(
                     'J' + str(7+pg), "AMOUNT", table_header)
-                if rem > 46:
-                    for i in range(pg+8, pg+51):
+                if rem > 40:
+                    for i in range(pg+8, pg+48):
                         ent = len_entries-rem
                         worksheet.write_number(
                             'A' + str(i), rows[ent][0], table_data)
@@ -3070,8 +3092,8 @@ class GenerateBill(Frame):
                         total += rows[ent][7]
                         gst += rows[ent][7]*rows[ent][6]*0.01
                         rem -= 1
-                elif rem > 23:
-                    for i in range(pg+8, pg+31):
+                elif rem > 20:
+                    for i in range(pg+8, pg+28):
                         ent = len_entries-rem
                         worksheet.write_number(
                             'A' + str(i), rows[ent][0], table_data)
@@ -3098,7 +3120,7 @@ class GenerateBill(Frame):
                         rem -= 1
                 else:
                     count = rem
-                    for i in range(pg+8, pg+31):
+                    for i in range(pg+8, pg+28):
                         if rem == 0:
                             break
                         ent = len_entries-rem
@@ -3125,58 +3147,58 @@ class GenerateBill(Frame):
                         total += rows[ent][7]
                         gst += rows[ent][7]*rows[ent][6]*0.01
                         rem -= 1
-                    if count < 23:
+                    if count < 20:
                         for i in range(0, 10):
                             draw_frame_border(workbook, worksheet,
-                                              count+7+pg, i, 23-count, 1)
+                                              count+7+pg, i, 20-count, 1)
                     break
 
             # TOTAL
             gst = round(gst, 2)
+            worksheet.merge_range('G' + str(28+pg)+':I' +
+                                  str(28+pg), "TOTAL AMOUNT", table_header)
+            worksheet.write_number('J' + str(28+pg), total, table_header)
+            worksheet.merge_range('G' + str(29+pg)+':I' +
+                                  str(29+pg), "TOTAL CGST", table_header)
+            worksheet.write_number('J' + str(29+pg), gst, table_header)
+            worksheet.merge_range('G' + str(30+pg)+':I' +
+                                  str(30+pg), "TOTAL SGST", table_header)
+            worksheet.write_number('J' + str(30+pg), gst, table_header)
             worksheet.merge_range('G' + str(31+pg)+':I' +
-                                  str(31+pg), "TOTAL AMOUNT", table_header)
-            worksheet.write_number('J' + str(31+pg), total, table_header)
-            worksheet.merge_range('G' + str(32+pg)+':I' +
-                                  str(32+pg), "TOTAL CGST", table_header)
-            worksheet.write_number('J' + str(32+pg), gst, table_header)
-            worksheet.merge_range('G' + str(33+pg)+':I' +
-                                  str(33+pg), "TOTAL SGST", table_header)
-            worksheet.write_number('J' + str(33+pg), gst, table_header)
-            worksheet.merge_range('G' + str(34+pg)+':I' +
-                                  str(34+pg), "Round off + / -", table_header)
+                                  str(31+pg), "Round off + / -", table_header)
             grand_total = total+(2*gst)
             total_roundup = int(
                 Decimal(grand_total).quantize(0, ROUND_HALF_UP))
             worksheet.write_number(
-                'J' + str(34+pg), abs(total_roundup - grand_total), table_header)
-            worksheet.merge_range('G' + str(35+pg)+':I' +
-                                  str(35+pg), "GRAND TOTAL", table_header)
+                'J' + str(31+pg), abs(total_roundup - grand_total), table_header)
+            worksheet.merge_range('G' + str(32+pg)+':I' +
+                                  str(32+pg), "GRAND TOTAL", table_header)
             worksheet.write_number(
-                'J' + str(35+pg), total_roundup, table_header)
+                'J' + str(32+pg), total_roundup, table_header)
 
-            worksheet.write('A' + str(37+pg), "Rupees:- " +
+            worksheet.write('A' + str(34+pg), "Rupees:- " +
                             convertToWords(total_roundup), normal_12)
             worksheet.write(
-                'A' + str(39+pg), "Note:- Goods once sold cannot be taken back.", normal_12)
+                'A' + str(36+pg), "Note:- Goods once sold cannot be taken back.", normal_12)
             worksheet.write(
-                'A' + str(40+pg), "Guarantee & Warranty applicable as per the original component suppliers terms & condition only.", normal_12)
+                'A' + str(37+pg), "Guarantee & Warranty applicable as per the original component suppliers terms & condition only.", normal_12)
 
             # Bank Details
-            worksheet.write('A' + str(43+pg), "Bank details:-", normal_12)
-            worksheet.write('A' + str(44+pg),
+            worksheet.write('A' + str(40+pg), "Bank details:-", normal_12)
+            worksheet.write('A' + str(41+pg),
                             "Bank Name:- Bank of India", normal_12)
-            worksheet.write('A' + str(45+pg),
+            worksheet.write('A' + str(42+pg),
                             "Branch :- Kalbadevi Branch", normal_12)
-            worksheet.write('A' + str(46+pg),
+            worksheet.write('A' + str(43+pg),
                             "A/C No:- 002420110001459", normal_12)
             worksheet.write(
-                'A' + str(47+pg), "RTGS/NEFT/IFSC Code: BKID0000024", normal_12)
+                'A' + str(44+pg), "RTGS/NEFT/IFSC Code: BKID0000024", normal_12)
 
             # Proprietery Signature
             worksheet.merge_range(
-                'F' + str(42+pg)+':J' + str(42+pg), "FOR F.K. PATANWALA & Co.", bold_14)
+                'F' + str(39+pg)+':J' + str(39+pg), "FOR F.K. PATANWALA & Co.", bold_14)
             worksheet.merge_range(
-                'F' + str(48+pg)+':J' + str(48+pg), "Proprietor/Authorized signatory", bold_14)
+                'F' + str(45+pg)+':J' + str(45+pg), "Proprietor/Authorized signatory", bold_14)
             cursor.execute(
                 "SELECT bd_ch_no FROM bill_detail WHERE b_year=? AND b_no=? AND bd_ch_no IS NOT ''", bill_info)
             rows = cursor.fetchall()
