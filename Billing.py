@@ -1,9 +1,11 @@
 from tkinter import *
 from tkinter import messagebox, ttk, scrolledtext
 from decimal import ROUND_HALF_UP, Decimal
+from wincom32 import client
 import sqlite3
 import re
 import xlsxwriter
+import os
 
 charcoal = '#F1F1EE'
 rust = '#F62A00'
@@ -1756,7 +1758,7 @@ class GenerateBill(Frame):
             rows = cursor.fetchall()
             bill_no = bill_info[0]+'/'+str(bill_info[1])
             workbook = xlsxwriter.Workbook(
-                'Bills/Sales/' + bill_no+'-'+c_name+'.xlsx')
+                'Bills/Sales/' + bill_info[0]+'/Excel/'+str(bill_info[1])+'-'+c_name + '.xlsx')
             worksheet = workbook.add_worksheet()
             worksheet.set_paper(9)
             worksheet.set_portrait()
@@ -2026,9 +2028,10 @@ class GenerateBill(Frame):
 
             sqliteConnection.commit()
             messagebox.showinfo(title="Successful",
-                                message="Bill created successfully!!")
+                                message="Excel Bill created successfully!!")
             getCientList()
             cursor.close()
+            self.xlsxToPdf(bill_info[0], bill_info[1], c_name)
 
         except sqlite3.Error as error:
             messagebox.showerror(
@@ -2059,7 +2062,7 @@ class GenerateBill(Frame):
             rows = cursor.fetchall()
             bill_no = bill_info[0]+'/'+str(bill_info[1])
             workbook = xlsxwriter.Workbook(
-                'Bills/Sales/' + bill_no+'-'+c_name+'.xlsx')
+                'Bills/Sales/' + bill_info[0]+'/Excel/'+str(bill_info[1])+'-'+c_name + '.xlsx')
             worksheet = workbook.add_worksheet()
             worksheet.set_paper(9)
             worksheet.set_portrait()
@@ -2327,9 +2330,10 @@ class GenerateBill(Frame):
 
             sqliteConnection.commit()
             messagebox.showinfo(title="Successful",
-                                message="Bill created successfully!!")
+                                message="Excel Bill created successfully!!")
             getCientList()
             cursor.close()
+            self.xlsxToPdf(bill_info[0], bill_info[1], c_name)
 
         except sqlite3.Error as error:
             messagebox.showerror(
@@ -2360,7 +2364,7 @@ class GenerateBill(Frame):
             rows = cursor.fetchall()
             bill_no = bill_info[0]+'/'+str(bill_info[1])
             workbook = xlsxwriter.Workbook(
-                'Bills/Sales/' + bill_no+'-'+c_name+'.xlsx')
+                'Bills/Sales/' + bill_info[0]+'/Excel/'+str(bill_info[1])+'-'+c_name + '.xlsx')
             worksheet = workbook.add_worksheet()
             worksheet.set_paper(9)
             worksheet.set_portrait()
@@ -2628,9 +2632,10 @@ class GenerateBill(Frame):
 
             sqliteConnection.commit()
             messagebox.showinfo(title="Successful",
-                                message="Bill created successfully!!")
+                                message="Excel Bill created successfully!!")
             getCientList()
             cursor.close()
+            self.xlsxToPdf(bill_info[0], bill_info[1], c_name)
 
         except sqlite3.Error as error:
             messagebox.showerror(
@@ -2661,7 +2666,7 @@ class GenerateBill(Frame):
             rows = cursor.fetchall()
             bill_no = bill_info[0]+'/'+str(bill_info[1])
             workbook = xlsxwriter.Workbook(
-                'Bills/Sales/' + bill_no+'-'+c_name+'.xlsx')
+                'Bills/Sales/' + bill_info[0]+'/Excel/'+str(bill_info[1])+'-'+c_name + '.xlsx')
             worksheet = workbook.add_worksheet()
             worksheet.set_paper(9)
             worksheet.set_portrait()
@@ -2906,9 +2911,10 @@ class GenerateBill(Frame):
 
             sqliteConnection.commit()
             messagebox.showinfo(title="Successful",
-                                message="Bill created successfully!!")
+                                message="Excel Bill created successfully!!")
             getCientList()
             cursor.close()
+            self.xlsxToPdf(bill_info[0], bill_info[1], c_name)
 
         except sqlite3.Error as error:
             messagebox.showerror(
@@ -2939,7 +2945,7 @@ class GenerateBill(Frame):
             rows = cursor.fetchall()
             bill_no = bill_info[0]+'/'+str(bill_info[1])
             workbook = xlsxwriter.Workbook(
-                'Bills/Sales/' + bill_no+'-'+c_name+'.xlsx')
+                'Bills/Sales/' + bill_info[0]+'/Excel/'+str(bill_info[1])+'-'+c_name + '.xlsx')
             worksheet = workbook.add_worksheet()
             worksheet.set_paper(9)
             worksheet.set_portrait()
@@ -3215,9 +3221,10 @@ class GenerateBill(Frame):
 
             sqliteConnection.commit()
             messagebox.showinfo(title="Successful",
-                                message="Bill created successfully!!")
+                                message="Excel Bill created successfully!!")
             getCientList()
             cursor.close()
+            self.xlsxToPdf(bill_info[0], bill_info[1], c_name)
 
         except sqlite3.Error as error:
             messagebox.showerror(
@@ -3228,6 +3235,31 @@ class GenerateBill(Frame):
         finally:
             if (sqliteConnection):
                 sqliteConnection.close()
+
+    # Covert excel to pdf
+    def xlsxToPdf(self, year, num, name):
+        cwd = os.getcwd()
+        input_file = cwd + r'\Bills\Sales'+'\\' + year + \
+            r'\Excel'+'\\'+str(num)+'-'+name+'.xlsx'
+        # give your file name with valid path
+        output_file = cwd + r'\Bills\Sales'+'\\' + \
+            year + r'\PDF'+'\\'+str(num)+'-'+name+'.pdf'
+        # give valid output file name and path
+        app = client.Dispatch("Excel.Application")
+        app.Interactive = False
+        app.Visible = False
+        Workbook = app.Workbooks.Open(input_file)
+        try:
+            Workbook.ActiveSheet.ExportAsFixedFormat(0, output_file)
+            messagebox.showinfo(title="Successful",
+                                message="PDF Bill created successfully!!")
+        except Exception as e:
+            messagebox.showerror(
+                title="Failed to convert in PDF format.", message=str(e))
+        finally:
+            Workbook.Close()
+            app.Quit()
+            del app
 
 
 # ---------- PURCHASES FRAMES --------
@@ -3930,7 +3962,7 @@ class UpdatePurchaseStatus(Frame):
 
             sqliteConnection.commit()
             messagebox.showinfo(title="Successful",
-                                message="Bill created successfully!!")
+                                message="Excel Bill created successfully!!")
             getCientList()
             cursor.close()
 
