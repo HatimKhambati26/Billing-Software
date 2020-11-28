@@ -14,6 +14,8 @@ purchasers = []
 products = []
 years = ["2020-2021", "2021-2022", "2022-2023",  "2023-2024",
          "2024-2025", "2025-2026", "2026-2027", "2027-2028", "2028-2029", "2029-2030"]
+months = {1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 6: 'Jun',
+          7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dec'}
 one = ["", "One ", "Two ", "Three ", "Four ", "Five ", "Six ", "Seven ", "Eight ", "Nine ", "Ten ", "Eleven ",
        "Twelve ", "Thirteen ", "Fourteen ", "Fifteen ", "Sixteen ", "Seventeen ", "Eighteen ", "Nineteen "]
 ten = ["", "", "Twenty ", "Thirty ", "Fourty ",
@@ -1754,7 +1756,7 @@ class GenerateBill(Frame):
             rows = cursor.fetchall()
             bill_no = bill_info[0]+'/'+str(bill_info[1])
             workbook = xlsxwriter.Workbook(
-                'Bills/' + bill_no+'-'+c_name+'.xlsx')
+                'Bills/Sales/' + bill_no+'-'+c_name+'.xlsx')
             worksheet = workbook.add_worksheet()
             worksheet.set_paper(9)
             worksheet.set_portrait()
@@ -2030,7 +2032,7 @@ class GenerateBill(Frame):
 
         except sqlite3.Error as error:
             messagebox.showerror(
-                title="Failed to get Bill details table", message=error)
+                title="Failed to get Bill details from table", message=error)
         except xlsxwriter.exceptions.FileCreateError as error:
             messagebox.showerror(
                 title="Failed to generate Bill", message=error)
@@ -2057,7 +2059,7 @@ class GenerateBill(Frame):
             rows = cursor.fetchall()
             bill_no = bill_info[0]+'/'+str(bill_info[1])
             workbook = xlsxwriter.Workbook(
-                'Bills/' + bill_no+'-'+c_name+'.xlsx')
+                'Bills/Sales/' + bill_no+'-'+c_name+'.xlsx')
             worksheet = workbook.add_worksheet()
             worksheet.set_paper(9)
             worksheet.set_portrait()
@@ -2331,7 +2333,7 @@ class GenerateBill(Frame):
 
         except sqlite3.Error as error:
             messagebox.showerror(
-                title="Failed to get Bill details table", message=error)
+                title="Failed to get Bill details from table", message=error)
         except xlsxwriter.exceptions.FileCreateError as error:
             messagebox.showerror(
                 title="Failed to generate Bill", message=error)
@@ -2358,7 +2360,7 @@ class GenerateBill(Frame):
             rows = cursor.fetchall()
             bill_no = bill_info[0]+'/'+str(bill_info[1])
             workbook = xlsxwriter.Workbook(
-                'Bills/' + bill_no+'-'+c_name+'.xlsx')
+                'Bills/Sales/' + bill_no+'-'+c_name+'.xlsx')
             worksheet = workbook.add_worksheet()
             worksheet.set_paper(9)
             worksheet.set_portrait()
@@ -2632,7 +2634,7 @@ class GenerateBill(Frame):
 
         except sqlite3.Error as error:
             messagebox.showerror(
-                title="Failed to get Bill details table", message=error)
+                title="Failed to get Bill details from table", message=error)
         except xlsxwriter.exceptions.FileCreateError as error:
             messagebox.showerror(
                 title="Failed to generate Bill", message=error)
@@ -2659,7 +2661,7 @@ class GenerateBill(Frame):
             rows = cursor.fetchall()
             bill_no = bill_info[0]+'/'+str(bill_info[1])
             workbook = xlsxwriter.Workbook(
-                'Bills/' + bill_no+'-'+c_name+'.xlsx')
+                'Bills/Sales/' + bill_no+'-'+c_name+'.xlsx')
             worksheet = workbook.add_worksheet()
             worksheet.set_paper(9)
             worksheet.set_portrait()
@@ -2910,7 +2912,7 @@ class GenerateBill(Frame):
 
         except sqlite3.Error as error:
             messagebox.showerror(
-                title="Failed to get Bill details table", message=error)
+                title="Failed to get Bill details from table", message=error)
         except xlsxwriter.exceptions.FileCreateError as error:
             messagebox.showerror(
                 title="Failed to generate Bill", message=error)
@@ -2937,7 +2939,7 @@ class GenerateBill(Frame):
             rows = cursor.fetchall()
             bill_no = bill_info[0]+'/'+str(bill_info[1])
             workbook = xlsxwriter.Workbook(
-                'Bills/' + bill_no+'-'+c_name+'.xlsx')
+                'Bills/Sales/' + bill_no+'-'+c_name+'.xlsx')
             worksheet = workbook.add_worksheet()
             worksheet.set_paper(9)
             worksheet.set_portrait()
@@ -3219,7 +3221,7 @@ class GenerateBill(Frame):
 
         except sqlite3.Error as error:
             messagebox.showerror(
-                title="Failed to get Bill details table", message=error)
+                title="Failed to get Bill details from table", message=error)
         except xlsxwriter.exceptions.FileCreateError as error:
             messagebox.showerror(
                 title="Failed to generate Bill", message=error)
@@ -3624,7 +3626,7 @@ class UpdatePurchaseStatus(Frame):
 
         # Generate Excel Button
         Button(self.selectBillF, text="Add to Excel", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", width=25, pady=20, font=(
-            "arial", 18, "bold"), command=lambda: controller.show_frame(Home)).place(relx=0.55, rely=0.61, relwidth=0.35, relheight=0.3)
+            "arial", 18, "bold"), command=self.generatePurchaseBill).place(relx=0.55, rely=0.61, relwidth=0.35, relheight=0.3)
 
         # # --------- Edit Bill Status Frame ------------
         self.editStatusF = LabelFrame(self.purchaseF, text="  Update Bill Payment  ", bd=6, relief=GROOVE, labelanchor=NW, font=(
@@ -3749,6 +3751,195 @@ class UpdatePurchaseStatus(Frame):
         except sqlite3.Error as error:
             messagebox.showerror(
                 title="Failed to Get Data form Database", message=error)
+        finally:
+            if (sqliteConnection):
+                sqliteConnection.close()
+
+    def generatePurchaseBill(self):
+        year = int(self.byear.get())
+        if not year:
+            messagebox.showerror(
+                title="Error", message="Enter a Year!!")
+            return
+        if not (2019 < year < 2030):
+            messagebox.showerror(
+                title="Error", message="Incorrect Year!!")
+            return
+        month = int(self.bmonth.get())
+        if not month:
+            messagebox.showerror(
+                title="Error", message="Enter a Year!!")
+            return
+        if not (0 < month < 13):
+            messagebox.showerror(
+                title="Error", message="Incorrect Year!!")
+            return
+        try:
+            sqliteConnection = sqlite3.connect('Billing.db')
+            cursor = sqliteConnection.cursor()
+            cursor.execute(
+                "SELECT pb_day, pb_month, pb_year, pb_bill_no, pb_tax_amt, pb_gst_5, pb_igst_5, pb_gst_12, pb_igst_12, pb_gst_18, pb_igst_18, pb_gst_28, pb_igst_28, pb_total_amt, pb_status, p_id FROM purchase_bill WHERE pb_year=? AND pb_month=?;", (year, month,))
+            rows = cursor.fetchall()
+            workbook = xlsxwriter.Workbook(
+                'Bills/Purchases' + str(year) + '/Purchase Bill [' + months[month] + "-" + str(year)+'].xlsx')
+            worksheet = workbook.add_worksheet()
+            worksheet.set_paper(9)
+            worksheet.set_landscape()
+            worksheet.center_horizontally()
+            worksheet.set_margins(0.05, 0.05, 0.05, 0.05)
+            worksheet.set_default_row(15)
+            table_header = workbook.add_format({
+                'border': 1,
+                'bold': 'bold',
+                'align': 'center',
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 12})
+            table_data = workbook.add_format({
+                'border': 1,
+                'valign': 'bottom',
+                'align': 'center',
+                'font_name': 'Times New Roman',
+                'font_size': 11})
+
+            # ------ Set column Width -----
+            # Date
+            worksheet.set_column(0, 0, 10)
+            # Bill No.
+            worksheet.set_column(1, 1, 10)
+            # Purchaser
+            worksheet.set_column(2, 2, 30)
+            # GST
+            worksheet.set_column(3, 3, 14)
+            # Taxable Amount
+            worksheet.set_column(4, 4, 16)
+            # CGST-5
+            worksheet.set_column(5, 5, 8)
+            # SGST-5
+            worksheet.set_column(6, 6, 8)
+            # IGST-5
+            worksheet.set_column(7, 7, 8)
+            # CGST-12
+            worksheet.set_column(8, 8, 8)
+            # SGST-12
+            worksheet.set_column(9, 9, 8)
+            # IGST-12
+            worksheet.set_column(10, 10, 8)
+            # CGST-18
+            worksheet.set_column(11, 11, 8)
+            # SGST-18
+            worksheet.set_column(12, 12, 8)
+            # IGST-18
+            worksheet.set_column(13, 13, 8)
+            # CGST-28
+            worksheet.set_column(14, 14, 8)
+            # SGST-28
+            worksheet.set_column(15, 15, 8)
+            # IGST-28
+            worksheet.set_column(16, 16, 8)
+            # Total Amount
+            worksheet.set_column(17, 17, 16)
+            # Status Pending
+            worksheet.set_column(18, 18, 8)
+
+            # -------- Excelsheet --------
+
+            # Table Columns
+            worksheet.write(
+                'A' + str(1), "Date", table_header)
+            worksheet.write(
+                'B' + str(1), "Bill No.", table_header)
+            worksheet.write(
+                'C' + str(1), "Purchaser", table_header)
+            worksheet.write(
+                'D' + str(1), "GST No.", table_header)
+            worksheet.write(
+                'E' + str(1), "Taxable Amount", table_header)
+            worksheet.write(
+                'F' + str(1), "cgst 5", table_header)
+            worksheet.write(
+                'G' + str(1), "sgst 5", table_header)
+            worksheet.write(
+                'H' + str(1), "igst 5", table_header)
+            worksheet.write(
+                'I' + str(1), "cgst 12", table_header)
+            worksheet.write(
+                'J' + str(1), "sgst 12", table_header)
+            worksheet.write(
+                'K' + str(1), "igst 12", table_header)
+            worksheet.write(
+                'L' + str(1), "cgst 18", table_header)
+            worksheet.write(
+                'M' + str(1), "sgst 18", table_header)
+            worksheet.write(
+                'N' + str(1), "igst 18", table_header)
+            worksheet.write(
+                'O' + str(1), "cgst 28", table_header)
+            worksheet.write(
+                'P' + str(1), "sgst 28", table_header)
+            worksheet.write(
+                'Q' + str(1), "igst 28", table_header)
+            worksheet.write(
+                'R' + str(1), "Total Amount", table_header)
+            worksheet.write(
+                'S' + str(1), "Status", table_header)
+
+            for ent in range(0, len(rows)):
+                cursor.execute(
+                    "SELECT p_name, p_gst FROM purchaser WHERE p_id=?", (rows[ent][-1],))
+                purchaser = cursor.fetchone()
+                worksheet.write_string(
+                    'A' + str(2 + ent), str(rows[ent][0]) + "/"+str(rows[ent][1]) + "/"+str(rows[ent][2]), table_data)
+                worksheet.write_string(
+                    'B' + str(2 + ent), rows[ent][3], table_data)
+                worksheet.write_string(
+                    'C' + str(2 + ent), purchaser[0], table_data)
+                worksheet.write_string(
+                    'D' + str(2 + ent), purchaser[1], table_data)
+                worksheet.write_number(
+                    'E' + str(2 + ent), rows[ent][4], table_data)
+                worksheet.write_number(
+                    'F' + str(2 + ent), rows[ent][5], table_data)
+                worksheet.write_number(
+                    'G' + str(2 + ent), rows[ent][5], table_data)
+                worksheet.write_number(
+                    'H' + str(2 + ent), rows[ent][6], table_data)
+                worksheet.write_number(
+                    'I' + str(2 + ent), rows[ent][7], table_data)
+                worksheet.write_number(
+                    'J' + str(2 + ent), rows[ent][7], table_data)
+                worksheet.write_number(
+                    'K' + str(2 + ent), rows[ent][8], table_data)
+                worksheet.write_number(
+                    'L' + str(2 + ent), rows[ent][9], table_data)
+                worksheet.write_number(
+                    'M' + str(2 + ent), rows[ent][9], table_data)
+                worksheet.write_number(
+                    'N' + str(2 + ent), rows[ent][10], table_data)
+                worksheet.write_number(
+                    'O' + str(2 + ent), rows[ent][11], table_data)
+                worksheet.write_number(
+                    'P' + str(2 + ent), rows[ent][11], table_data)
+                worksheet.write_number(
+                    'Q' + str(2 + ent), rows[ent][12], table_data)
+                worksheet.write_number(
+                    'R' + str(2 + ent), rows[ent][13], table_data)
+                worksheet.write_string(
+                    'S' + str(2 + ent), rows[ent][14], table_data)
+            workbook.close()
+
+            sqliteConnection.commit()
+            messagebox.showinfo(title="Successful",
+                                message="Bill created successfully!!")
+            getCientList()
+            cursor.close()
+
+        except sqlite3.Error as error:
+            messagebox.showerror(
+                title="Failed to get Bill details from table", message=error)
+        except xlsxwriter.exceptions.FileCreateError as error:
+            messagebox.showerror(
+                title="Failed to generate Bill", message=error)
         finally:
             if (sqliteConnection):
                 sqliteConnection.close()
