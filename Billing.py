@@ -1,11 +1,14 @@
 from tkinter import *
 from tkinter import messagebox, ttk, scrolledtext
 from decimal import ROUND_HALF_UP, Decimal
-from wincom32 import client
+from win32com import client
+from datetime import datetime
 import sqlite3
 import re
 import xlsxwriter
+import win32api
 import os
+
 
 charcoal = '#F1F1EE'
 rust = '#F62A00'
@@ -193,10 +196,6 @@ class Home(Frame):
         # Search Bill Button
         Button(purchaseF, text="Search & Edit Bill Status", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
             "arial", 18, "bold"), command=lambda: controller.show_frame(UpdatePurchaseStatus)).place(relx=0.55, rely=0.2, relwidth=0.3, relheight=0.6)
-
-        # # Generate Bill Button
-        # Button(purchaseF, text="Generate Bill", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
-        #     "arial", 18, "bold"), command=lambda: controller.show_frame(UpdatePurchaseStatus)).place(relx=0.7, rely=0.2, relwidth=0.25, relheight=0.6)
 
         # --------- Backup Options ---------
         BackupF = LabelFrame(self, text="Backup", bd=6, relief=GROOVE, labelanchor=N, font=(
@@ -1703,7 +1702,7 @@ class GenerateBill(Frame):
             "arial", 18, "bold"), command=self.getBillData).place(relx=0.1, rely=0.78, relwidth=0.35, relheight=0.08)
         # Print Excel Button
         add_client_btn = Button(self.saleF, text="Print Bill", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=20, width=50, font=(
-            "arial", 18, "bold"), command=self.getBillData).place(relx=0.55, rely=0.78, relwidth=0.35, relheight=0.08)
+            "arial", 18, "bold"), command=self.printBill).place(relx=0.55, rely=0.78, relwidth=0.35, relheight=0.08)
         # Home Button
         add_client_btn = Button(self.saleF, text="Home", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=20, width=50, font=(
             "arial", 18, "bold"), command=lambda: controller.show_frame(Home)).place(relx=0.3, rely=0.88, relwidth=0.4, relheight=0.08)
@@ -2031,7 +2030,6 @@ class GenerateBill(Frame):
                                 message="Excel Bill created successfully!!")
             getCientList()
             cursor.close()
-            self.xlsxToPdf(bill_info[0], bill_info[1], c_name)
 
         except sqlite3.Error as error:
             messagebox.showerror(
@@ -2042,6 +2040,7 @@ class GenerateBill(Frame):
         finally:
             if (sqliteConnection):
                 sqliteConnection.close()
+        self.xlsxToPdf(bill_info[0], bill_info[1], c_name)
 
     def generateAMCBill(self, bill_info):
         try:
@@ -2333,7 +2332,6 @@ class GenerateBill(Frame):
                                 message="Excel Bill created successfully!!")
             getCientList()
             cursor.close()
-            self.xlsxToPdf(bill_info[0], bill_info[1], c_name)
 
         except sqlite3.Error as error:
             messagebox.showerror(
@@ -2344,6 +2342,7 @@ class GenerateBill(Frame):
         finally:
             if (sqliteConnection):
                 sqliteConnection.close()
+        self.xlsxToPdf(bill_info[0], bill_info[1], c_name)
 
     def generateHSNBill(self, bill_info):
         try:
@@ -2635,7 +2634,6 @@ class GenerateBill(Frame):
                                 message="Excel Bill created successfully!!")
             getCientList()
             cursor.close()
-            self.xlsxToPdf(bill_info[0], bill_info[1], c_name)
 
         except sqlite3.Error as error:
             messagebox.showerror(
@@ -2646,6 +2644,7 @@ class GenerateBill(Frame):
         finally:
             if (sqliteConnection):
                 sqliteConnection.close()
+        self.xlsxToPdf(bill_info[0], bill_info[1], c_name)
 
     def generateIGSTBill(self, bill_info):
         try:
@@ -2914,7 +2913,6 @@ class GenerateBill(Frame):
                                 message="Excel Bill created successfully!!")
             getCientList()
             cursor.close()
-            self.xlsxToPdf(bill_info[0], bill_info[1], c_name)
 
         except sqlite3.Error as error:
             messagebox.showerror(
@@ -2925,6 +2923,7 @@ class GenerateBill(Frame):
         finally:
             if (sqliteConnection):
                 sqliteConnection.close()
+        self.xlsxToPdf(bill_info[0], bill_info[1], c_name)
 
     def generateAmcHsnBill(self, bill_info):
         try:
@@ -3224,7 +3223,6 @@ class GenerateBill(Frame):
                                 message="Excel Bill created successfully!!")
             getCientList()
             cursor.close()
-            self.xlsxToPdf(bill_info[0], bill_info[1], c_name)
 
         except sqlite3.Error as error:
             messagebox.showerror(
@@ -3235,6 +3233,7 @@ class GenerateBill(Frame):
         finally:
             if (sqliteConnection):
                 sqliteConnection.close()
+        self.xlsxToPdf(bill_info[0], bill_info[1], c_name)
 
     # Covert excel to pdf
     def xlsxToPdf(self, year, num, name):
@@ -3260,6 +3259,60 @@ class GenerateBill(Frame):
             Workbook.Close()
             app.Quit()
             del app
+
+    # Print Bill
+    def printBill(self):
+        b_year = self.byear.get()
+        if not b_year:
+            messagebox.showerror(
+                title="Error", message="Financial Year Field cannot be empty!!")
+            return
+        if b_year not in years:
+            messagebox.showerror(
+                title="Error", message="Select Blling Year from Dropdown List!!")
+            return
+        b_no = self.billno.get()
+        if not b_no:
+            messagebox.showerror(
+                title="Error", message="Billing No. Field cannot be empty!!")
+            return
+        try:
+            sqliteConnection = sqlite3.connect('Billing.db')
+            cursor = sqliteConnection.cursor()
+
+            cursor.execute(
+                "SELECt c_id, FROM bill WHERE b_year=? AND b_no=?", (b_year, b_no,))
+            rows = cursor.fetchone()
+            c_id = rows[0]
+            if not c_id:
+                messagebox.showerror(
+                    title="Error", message="Bill No. does not exit!!")
+            cursor.execute(
+                "SELECT c_name FROM client WHERE c_id=?", (c_id,))
+            rows = cursor.fetchone()
+            c_name = rows[0]
+
+            sqliteConnection.commit()
+            getCientList()
+            cursor.close()
+
+        except sqlite3.Error as error:
+            messagebox.showerror(
+                title="Failed to get Bill details from table", message=error)
+
+        finally:
+            if (sqliteConnection):
+                sqliteConnection.close()
+
+        self.printPDF(b_year, b_no, c_name)
+
+    def printPDF(self, year, num, name):
+        pdf_file = cwd + r'\Bills\Sales'+'\\' + \
+            year + r'\PDF'+'\\'+str(num)+'-'+name+'.pdf'
+        try:
+            win32api.ShellExecute(0, "print", pdf_file, None,  ".",  0)
+        except win32api.error as e:
+            messagebox.showerror(title="Failed to Print Bill", message=e)
 
 
 # ---------- PURCHASES FRAMES --------
@@ -4226,6 +4279,7 @@ class AutocompleteAddEntry(Entry):
 
     def comparison(self):
         return [w for w in self.autocompleteList if self.matchesFunction(self.var.get(), w)]
+
 
 # ---------- Global Update List Function --------
 
