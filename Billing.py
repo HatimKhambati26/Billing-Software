@@ -3,6 +3,7 @@ from tkinter import messagebox, ttk, scrolledtext
 from decimal import ROUND_HALF_UP, Decimal
 from win32com import client
 from datetime import datetime
+import subprocess as cmd
 import sqlite3
 import re
 import xlsxwriter
@@ -119,7 +120,7 @@ def draw_frame_border(workbook, worksheet, first_row, first_col, rows_count, col
 
 
 # Header
-header = '&C&"Times New Roman"&B&U&20GST TAX INVOICE&18\n&U \n&UF.K. PATANWALA & Co.&U&18\n &14Hardware, Plumbing goods, Sanitary goods, Paints, Electrical materials && General merchant&18\n &14Address:- 67,Trinity Street, S.S Gaikwad Marg Dhobi Talao, Mumbai-400002.'
+header = '&C&"Times New Roman"&B&U&20GST TAX INVOICE&18\n&U \n&UF.K. PATANWALA && Co.&U&18\n &14Hardware, Plumbing goods, Sanitary goods, Paints, Electrical materials && General merchant&18\n &14Address:- 67,Trinity Street, S.S Gaikwad Marg Dhobi Talao, Mumbai-400002.'
 
 
 class App(Tk):
@@ -202,10 +203,29 @@ class Home(Frame):
             "times new roman", 28, "bold"), padx=50, pady=15)
         BackupF.place(x=1, rely=0.82, relwidth=1, relheight=0.18)
 
-        # Generate Bill
-        Button(BackupF, text="Sync", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
-            "arial", 18, "bold"), command=lambda: controller.show_frame(GenerateBill)).place(relx=0.3, rely=0.05, relwidth=0.4, relheight=0.9)
+        # Push to Git Button
+        Button(BackupF, text="Upload to Cloud", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+            "arial", 18, "bold"), command=self.gitPush).place(relx=0.3, rely=0.05, relwidth=0.4, relheight=0.9)
 
+    def gitPush(self):
+        cwd = os.getcwd()
+        os.chdir(cwd + "/Bills")
+        dt = datetime.now()
+        message = "Backup [" + dt.strftime("%d-%m-%Y %I:%M %p")+"]"
+        try:
+            cmd.run("git pull origin master", check=True, shell=True)
+            cmd.run("git add .", check=True, shell=True)
+            cmd.run(f'git commit -m "{message}"', check=True, shell=True)
+            cmd.run("git push -u origin master -f",
+                    check=True, shell=True)
+            messagebox.showinfo(
+                title="Successful!!", message="Uploaded to Cloud: " + message)
+        except cmd.SubprocessError as e:
+            messagebox.showerror(
+                title="Failed to Upload to Cloud!!!", message=e)
+
+        finally:
+            os.chdir(cwd)
 
 # ---------- SALES FRAMES ----------
 
@@ -280,7 +300,7 @@ class AddClient(Frame):
 
     def insertClient(self, name, address, gst):
         try:
-            sqliteConnection = sqlite3.connect('Billing.db')
+            sqliteConnection = sqlite3.connect('Bills/Database/Billing.db')
             cursor = sqliteConnection.cursor()
 
             sqlite_insert_with_param = """INSERT INTO client
@@ -375,12 +395,12 @@ class CreateBill(Frame):
             return
         if name not in clients:
             messagebox.showerror(
-                title="Error", message="Select Client's Name from Dropdown List!!")
+                title="Error", message="SELECT Client's Name from Dropdown List!!")
             return
         year = self.byear.get()
         if not year:
             messagebox.showerror(
-                title="Error", message="Select a Year!!")
+                title="Error", message="SELECT a Year!!")
             return
         date = self.bdate.get()
         if not date:
@@ -392,7 +412,7 @@ class CreateBill(Frame):
 
     def insertBill(self, name, year, date, po):
         try:
-            sqliteConnection = sqlite3.connect('Billing.db')
+            sqliteConnection = sqlite3.connect('Bills/Database/Billing.db')
             cursor = sqliteConnection.cursor()
 
             cursor.execute(
@@ -604,38 +624,38 @@ class AddBillDetails(Frame):
         # Button(self.editDetailsF, text="Clear", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=10, width=15, font=(
         #     "arial", 16, "bold"), command=self.clearTextEdit).grid(row=5, column=2, columnspan=2, padx=10, pady=10)
 
-        # # --------- Select Bill Frame ------------
-        self.selectBillF = LabelFrame(self.saleF, text="Select Bill", bd=6, relief=GROOVE, labelanchor=NW, font=(
+        # # --------- SELECT Bill Frame ------------
+        self.SELECTBillF = LabelFrame(self.saleF, text="SELECT Bill", bd=6, relief=GROOVE, labelanchor=NW, font=(
             "times new roman", 18, "bold"), padx=20, pady=10)
-        self.selectBillF.place(relx=0.51, rely=0.09,
+        self.SELECTBillF.place(relx=0.51, rely=0.09,
                                relwidth=0.48, relheight=0.45)
 
         # Billing Year
-        Label(self.selectBillF, text="Billing Year:", font=(
+        Label(self.SELECTBillF, text="Billing Year:", font=(
             "times new roman", 16, "bold")).place(relx=0, rely=0.01, relwidth=0.4, relheight=0.15)
         self.byear = StringVar()
-        self.byearC = ttk.Combobox(self.selectBillF, font=(
+        self.byearC = ttk.Combobox(self.SELECTBillF, font=(
             "arial", 16, "bold"), textvariable=self.byear, values=years)
         self.byearC.place(relx=0.4, rely=0.01, relwidth=0.4, relheight=0.15)
 
         # Bill No.
-        Label(self.selectBillF, text="Billing No:", font=(
+        Label(self.SELECTBillF, text="Billing No:", font=(
             "times new roman", 16, "bold")).place(relx=0, rely=0.3, relwidth=0.4, relheight=0.15)
         self.bno = StringVar()
-        self.bnoC = Entry(self.selectBillF, bd=3, relief=GROOVE, font=(
+        self.bnoC = Entry(self.SELECTBillF, bd=3, relief=GROOVE, font=(
             "arial", 16, "bold"), textvariable=self.bno)
         self.bnoC.place(relx=0.4, rely=0.3, relwidth=0.4, relheight=0.15)
 
         # Current Bill Details Button
-        Button(self.selectBillF, text="View Bill Details", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+        Button(self.SELECTBillF, text="View Bill Details", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
             "arial", 16, "bold"), command=self.viewBillDetails).place(relx=0.1, rely=0.61, relwidth=0.35, relheight=0.15)
 
         # Delete Last Entry Bill Details Button
-        Button(self.selectBillF, text="Delete Last Entry", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+        Button(self.SELECTBillF, text="Delete Last Entry", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
             "arial", 16, "bold"), command=self.removeLastDetail).place(relx=0.55, rely=0.61, relwidth=0.35, relheight=0.15)
 
         # Home Button
-        Button(self.selectBillF, text="Home", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", width=35, pady=30, font=(
+        Button(self.SELECTBillF, text="Home", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", width=35, pady=30, font=(
             "arial", 18, "bold"), command=lambda: controller.show_frame(Home)).place(relx=0.3, rely=0.81, relwidth=0.4, relheight=0.15)
 
         # # --------- Edit Client Frame ------------
@@ -668,7 +688,7 @@ class AddBillDetails(Frame):
             self.displayBillF, font=("Courier",
                                      12, "bold"), padx=10, pady=10)
         self.displayText.insert(INSERT,
-                                "\n\n\n\n\n\n\n\n\t\t\t\t\tSelect Billing Year and Billing No. to see the entries!! ")
+                                "\n\n\n\n\n\n\n\n\t\t\t\t\tSELECT Billing Year and Billing No. to see the entries!! ")
         self.displayText.configure(state='disabled')
         self.displayText.pack(side="left", fill="both", expand=True)
         Label(self.viewBillF, text="Sr. No.\t\t            Product\t\t              Rate      Quantity  GST     IGST       AMOUNT\t       HSN         Ch. No.      AMC No.", font=(
@@ -684,7 +704,7 @@ class AddBillDetails(Frame):
         #     self.displayInfoF, font=("arial",
         #                              16, "bold"), padx=10, pady=10)
         # self.displayInfo.insert(INSERT,
-        #                         "\n       Select Billing Year and Billing No. \n              to see the Information!! ")
+        #                         "\n       SELECT Billing Year and Billing No. \n              to see the Information!! ")
         # self.displayInfo.configure(state='disabled')
         # self.displayInfo.pack(side="left", fill="both", expand=True)
 
@@ -696,7 +716,7 @@ class AddBillDetails(Frame):
             return
         if b_year not in years:
             messagebox.showerror(
-                title="Error", message="Select Blling Year from Dropdown List!!")
+                title="Error", message="SELECT Blling Year from Dropdown List!!")
             return
         b_no = self.bno.get()
         if not b_no:
@@ -743,7 +763,7 @@ class AddBillDetails(Frame):
 
     def insertBillDetails(self, data_list):
         try:
-            sqliteConnection = sqlite3.connect('Billing.db')
+            sqliteConnection = sqlite3.connect('Bills/Database/Billing.db')
             cursor = sqliteConnection.cursor()
 
             cursor.execute(
@@ -789,18 +809,18 @@ class AddBillDetails(Frame):
             return
         if b_year not in years:
             messagebox.showerror(
-                title="Error", message="Select Blling Year from Dropdown List!!")
+                title="Error", message="SELECT Blling Year from Dropdown List!!")
             return
         b_no = self.bno.get()
         if not b_no:
             messagebox.showerror(
                 title="Error", message="Billing No. Field cannot be empty!!")
             return
-        self.selectBillDetails(b_year, b_no)
+        self.SELECTBillDetails(b_year, b_no)
 
-    def selectBillDetails(self, b_year, b_no):
+    def SELECTBillDetails(self, b_year, b_no):
         try:
-            sqliteConnection = sqlite3.connect('Billing.db')
+            sqliteConnection = sqlite3.connect('Bills/Database/Billing.db')
             cursor = sqliteConnection.cursor()
 
             sqlite_insert_with_param = """SELECT bd_id, bd_product, bd_rate, bd_quantity, bd_cgst, bd_igst, bd_amount, bd_hsn, bd_ch_no, bd_amc_no FROM bill_detail WHERE b_year=? AND b_no=?;"""
@@ -857,7 +877,7 @@ class AddBillDetails(Frame):
             return
         if b_year not in years:
             messagebox.showerror(
-                title="Error", message="Select Blling Year from Dropdown List!!")
+                title="Error", message="SELECT Blling Year from Dropdown List!!")
             return
         b_no = self.bno.get()
         if not b_no:
@@ -868,7 +888,7 @@ class AddBillDetails(Frame):
 
     def deleteDetails(self, b_year, b_no):
         try:
-            sqliteConnection = sqlite3.connect('Billing.db')
+            sqliteConnection = sqlite3.connect('Bills/Database/Billing.db')
             cursor = sqliteConnection.cursor()
 
             cursor.execute(
@@ -1015,38 +1035,38 @@ class EditBillDetails(Frame):
         Button(self.editDetailsF, text="Clear", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=10, width=15, font=(
             "arial", 16, "bold"), command=self.clearTextEdit).place(relx=0.55, rely=0.8, relwidth=0.35, relheight=0.15)
 
-        # # --------- Select Bill Frame ------------
-        self.selectBillF = LabelFrame(self.saleF, text="Select Bill", bd=6, relief=GROOVE, labelanchor=NW, font=(
+        # # --------- SELECT Bill Frame ------------
+        self.SELECTBillF = LabelFrame(self.saleF, text="SELECT Bill", bd=6, relief=GROOVE, labelanchor=NW, font=(
             "times new roman", 18, "bold"))
-        self.selectBillF.place(relx=0.4, rely=0.09,
+        self.SELECTBillF.place(relx=0.4, rely=0.09,
                                relwidth=0.25, relheight=0.45)
 
         # Billing Year
-        Label(self.selectBillF, text="Billing Year:", font=(
+        Label(self.SELECTBillF, text="Billing Year:", font=(
             "times new roman", 16, "bold")).place(relx=0, rely=0, relwidth=0.45, relheight=0.15)
         self.byear = StringVar()
-        self.byearC = ttk.Combobox(self.selectBillF, font=(
+        self.byearC = ttk.Combobox(self.SELECTBillF, font=(
             "arial", 16, "bold"), textvariable=self.byear, values=years)
         self.byearC.place(relx=0.45, rely=0.01, relwidth=0.5, relheight=0.12)
 
         # Bill No.
-        Label(self.selectBillF, text="Billing No:", font=(
+        Label(self.SELECTBillF, text="Billing No:", font=(
             "times new roman", 16, "bold")).place(relx=0, rely=0.17, relwidth=0.45, relheight=0.15)
         self.bno = StringVar()
-        self.bnoC = Entry(self.selectBillF, bd=3, relief=GROOVE, font=(
+        self.bnoC = Entry(self.SELECTBillF, bd=3, relief=GROOVE, font=(
             "arial", 16, "bold"), textvariable=self.bno)
         self.bnoC.place(relx=0.45, rely=0.19, relwidth=0.5, relheight=0.12)
 
         # Current Bill Details Button
-        Button(self.selectBillF, text="View Bill Details", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+        Button(self.SELECTBillF, text="View Bill Details", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
             "arial", 16, "bold"), command=self.viewBillDetails).place(relx=0.15, rely=0.4, relwidth=0.7, relheight=0.15)
 
         # Delete Last Entry Bill Details Button
-        Button(self.selectBillF, text="Delete Last Entry", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+        Button(self.SELECTBillF, text="Delete Last Entry", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
             "arial", 16, "bold"), command=self.removeLastDetail).place(relx=0.15, rely=0.6, relwidth=0.7, relheight=0.15)
 
         # Home Button
-        Button(self.selectBillF, text="Home", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", width=35, pady=30, font=(
+        Button(self.SELECTBillF, text="Home", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", width=35, pady=30, font=(
             "arial", 18, "bold"), command=lambda: controller.show_frame(Home)).place(relx=0.15, rely=0.8, relwidth=0.7, relheight=0.15)
 
         # --------- Edit Client Frame ------------
@@ -1077,7 +1097,7 @@ class EditBillDetails(Frame):
             self.displayInfoF, font=("arial",
                                      16, "bold"), padx=10, pady=10)
         self.displayInfo.insert(INSERT,
-                                "\nSelect Billing Year and Billing No. \nto see the Information!! ")
+                                "\nSELECT Billing Year and Billing No. \nto see the Information!! ")
         self.displayInfo.configure(state='disabled')
         self.displayInfo.pack(side="left", fill="both", expand=True)
 
@@ -1093,7 +1113,7 @@ class EditBillDetails(Frame):
             self.displayBillF, font=("Courier",
                                      12, "bold"), padx=10, pady=10)
         self.displayText.insert(INSERT,
-                                "\n\n\n\n\n\n\n\n\t\t\t\t\tSelect Billing Year and Billing No. to see the entries!! ")
+                                "\n\n\n\n\n\n\n\n\t\t\t\t\tSELECT Billing Year and Billing No. to see the entries!! ")
         self.displayText.configure(state='disabled')
         self.displayText.pack(side="left", fill="both", expand=True)
         Label(self.viewBillF, text="Sr. No.\t\t            Product\t\t              Rate      Quantity  GST     IGST       AMOUNT\t       HSN         Ch. No.      AMC No.", font=(
@@ -1107,7 +1127,7 @@ class EditBillDetails(Frame):
             return
         if b_year not in years:
             messagebox.showerror(
-                title="Error", message="Select Blling Year from Dropdown List!!")
+                title="Error", message="SELECT Blling Year from Dropdown List!!")
             return
         b_no = self.bno.get()
         if not b_no:
@@ -1124,7 +1144,7 @@ class EditBillDetails(Frame):
         if name:
             if name not in products:
                 messagebox.showerror(
-                    title="Error", message="Select Product's Name from Dropdown List!!")
+                    title="Error", message="SELECT Product's Name from Dropdown List!!")
                 return
             constraints.append("bd_product")
             constraints.append(name)
@@ -1180,7 +1200,7 @@ class EditBillDetails(Frame):
 
     def updateBill(self, b_year, b_no, srno, constraints):
         try:
-            sqliteConnection = sqlite3.connect('Billing.db')
+            sqliteConnection = sqlite3.connect('Bills/Database/Billing.db')
             cursor = sqliteConnection.cursor()
 
             cursor.execute(
@@ -1228,19 +1248,19 @@ class EditBillDetails(Frame):
             return
         if b_year not in years:
             messagebox.showerror(
-                title="Error", message="Select Blling Year from Dropdown List!!")
+                title="Error", message="SELECT Blling Year from Dropdown List!!")
             return
         b_no = self.bno.get()
         if not b_no:
             messagebox.showerror(
                 title="Error", message="Billing No. Field cannot be empty!!")
             return
-        self.selectBillDetails(b_year, b_no)
-        self.selectBillInfo(b_year, b_no)
+        self.SELECTBillDetails(b_year, b_no)
+        self.SELECTBillInfo(b_year, b_no)
 
-    def selectBillDetails(self, b_year, b_no):
+    def SELECTBillDetails(self, b_year, b_no):
         try:
-            sqliteConnection = sqlite3.connect('Billing.db')
+            sqliteConnection = sqlite3.connect('Bills/Database/Billing.db')
             cursor = sqliteConnection.cursor()
 
             sqlite_insert_with_param = """SELECT bd_id, bd_product, bd_rate, bd_quantity, bd_cgst, bd_igst, bd_amount, bd_hsn, bd_ch_no, bd_amc_no FROM bill_detail WHERE b_year=? AND b_no=?;"""
@@ -1297,7 +1317,7 @@ class EditBillDetails(Frame):
             return
         if b_year not in years:
             messagebox.showerror(
-                title="Error", message="Select Blling Year from Dropdown List!!")
+                title="Error", message="SELECT Blling Year from Dropdown List!!")
             return
         b_no = self.bno.get()
         if not b_no:
@@ -1308,7 +1328,7 @@ class EditBillDetails(Frame):
 
     def deleteDetails(self, b_year, b_no):
         try:
-            sqliteConnection = sqlite3.connect('Billing.db')
+            sqliteConnection = sqlite3.connect('Bills/Database/Billing.db')
             cursor = sqliteConnection.cursor()
 
             cursor.execute(
@@ -1349,7 +1369,7 @@ class EditBillDetails(Frame):
             return
         if b_year not in years:
             messagebox.showerror(
-                title="Error", message="Select Blling Year from Dropdown List!!")
+                title="Error", message="SELECT Blling Year from Dropdown List!!")
             return
         b_no = self.bno.get()
         if not b_no:
@@ -1361,7 +1381,7 @@ class EditBillDetails(Frame):
 
     def updateClient(self, b_year, b_no, cname):
         try:
-            sqliteConnection = sqlite3.connect('Billing.db')
+            sqliteConnection = sqlite3.connect('Bills/Database/Billing.db')
             cursor = sqliteConnection.cursor()
 
             cursor.execute("SELECT c_id FROM client WHERE c_name=?;", (cname,))
@@ -1372,7 +1392,7 @@ class EditBillDetails(Frame):
             sqliteConnection.commit()
             getCientList()
             cursor.close()
-            self.selectBillInfo(b_year, b_no)
+            self.SELECTBillInfo(b_year, b_no)
 
         except sqlite3.Error as error:
             messagebox.showerror(
@@ -1381,9 +1401,9 @@ class EditBillDetails(Frame):
             if (sqliteConnection):
                 sqliteConnection.close()
 
-    def selectBillInfo(self, b_year, b_no):
+    def SELECTBillInfo(self, b_year, b_no):
         try:
-            sqliteConnection = sqlite3.connect('Billing.db')
+            sqliteConnection = sqlite3.connect('Bills/Database/Billing.db')
             cursor = sqliteConnection.cursor()
 
             sqlite_insert_with_param = """SELECT c_id FROM bill WHERE b_year=? AND b_no=?;"""
@@ -1449,33 +1469,33 @@ class UpdateBillStatus(Frame):
             "times new roman", 26, "bold")).place(relx=0.05, rely=0.03, relwidth=0.9, relheight=0.09)
 
         # --------- Check Bill Status Frame ------------
-        self.selectBillF = LabelFrame(self.saleF, text="  Search Bill Payment  ", bd=6, relief=GROOVE, labelanchor=NW, font=(
+        self.SELECTBillF = LabelFrame(self.saleF, text="  Search Bill Payment  ", bd=6, relief=GROOVE, labelanchor=NW, font=(
             "times new roman", 22, "bold"))
-        self.selectBillF.place(relx=0.05, rely=0.14,
+        self.SELECTBillF.place(relx=0.05, rely=0.14,
                                relwidth=0.43, relheight=0.38)
 
         # Billing Year
-        Label(self.selectBillF, text="Billing Year:", font=(
+        Label(self.SELECTBillF, text="Billing Year:", font=(
             "times new roman", 18, "bold")).place(relx=0.1, rely=0.1, relwidth=0.3, relheight=0.12)
         self.byear = StringVar()
-        self.byearC = ttk.Combobox(self.selectBillF, font=(
+        self.byearC = ttk.Combobox(self.SELECTBillF, font=(
             "arial", 18, "bold"), textvariable=self.byear, values=years)
         self.byearC.place(relx=0.4, rely=0.11, relwidth=0.5, relheight=0.11)
 
         # Client's Name
-        Label(self.selectBillF, text="Client's Name:", font=(
+        Label(self.SELECTBillF, text="Client's Name:", font=(
             "times new roman", 18, "bold")).place(relx=0.1, rely=0.35, relwidth=0.3, relheight=0.12)
         self.cname = StringVar()
-        self.cnameC = ttk.Combobox(self.selectBillF, font=(
+        self.cnameC = ttk.Combobox(self.SELECTBillF, font=(
             "arial", 18, "bold"), textvariable=self.cname, postcommand=self.updateClientList)
         self.cnameC.place(relx=0.4, rely=0.35, relwidth=0.5, relheight=0.14)
 
         # Search Bills Button
-        Button(self.selectBillF, text="Search Bill", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+        Button(self.SELECTBillF, text="Search Bill", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
             "arial", 18, "bold"), command=self.searchBill).place(relx=0.1, rely=0.65, relwidth=0.35, relheight=0.21)
 
         # Home Button
-        Button(self.selectBillF, text="Home", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+        Button(self.SELECTBillF, text="Home", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
             "arial", 18, "bold"), command=lambda: controller.show_frame(Home)).place(relx=0.55, rely=0.65, relwidth=0.35, relheight=0.21)
 
         # --------- Edit Bill Status Frame ------------
@@ -1515,7 +1535,7 @@ class UpdateBillStatus(Frame):
             self.displayBillF, font=("Courier",
                                      12, "bold"), padx=10, pady=10)
         self.displayText.insert(INSERT,
-                                "\n\n\n\n\n\n\t\t\tSelect Billing Year or Client's Name to see the entries!! ")
+                                "\n\n\n\n\n\n\t\t\tSELECT Billing Year or Client's Name to see the entries!! ")
         self.displayText.configure(state='disabled')
         self.displayText.pack(side="left", fill="both", expand=True)
         Label(self.viewBillF, text="Bill. No.\t       Year\t\t\t\t     Client's Name\t\t\t              Payment", font=(
@@ -1527,7 +1547,7 @@ class UpdateBillStatus(Frame):
         if c_name:
             if c_name not in clients:
                 messagebox.showerror(
-                    title="Error", message="Select Client's Name from Dropdown List!!")
+                    title="Error", message="SELECT Client's Name from Dropdown List!!")
                 return
             constraints.append("c_name")
             constraints.append(c_name)
@@ -1535,18 +1555,18 @@ class UpdateBillStatus(Frame):
         if b_year:
             if b_year not in years:
                 messagebox.showerror(
-                    title="Error", message="Select Blling Year from Dropdown List!!")
+                    title="Error", message="SELECT Blling Year from Dropdown List!!")
                 return
             constraints.append(b_year)
         if not len(constraints):
             messagebox.showerror(
-                title="Error", message="Select atleast 1 critera to search!!")
+                title="Error", message="SELECT atleast 1 critera to search!!")
             return
-        self.selectBill(constraints)
+        self.SELECTBill(constraints)
 
-    def selectBill(self, constraints):
+    def SELECTBill(self, constraints):
         try:
-            sqliteConnection = sqlite3.connect('Billing.db')
+            sqliteConnection = sqlite3.connect('Bills/Database/Billing.db')
             cursor = sqliteConnection.cursor()
 
             s = ""
@@ -1602,7 +1622,7 @@ class UpdateBillStatus(Frame):
             return
         if b_year not in years:
             messagebox.showerror(
-                title="Error", message="Select Blling Year from Dropdown List!!")
+                title="Error", message="SELECT Blling Year from Dropdown List!!")
             return
         b_no = self.bno.get()
         if not b_no:
@@ -1618,7 +1638,7 @@ class UpdateBillStatus(Frame):
 
     def updateStatus(self, constraints):
         try:
-            sqliteConnection = sqlite3.connect('Billing.db')
+            sqliteConnection = sqlite3.connect('Bills/Database/Billing.db')
             cursor = sqliteConnection.cursor()
 
             cursor.execute("SELECT b_no FROM bill WHERE b_year=? AND b_no=?", (
@@ -1634,7 +1654,7 @@ class UpdateBillStatus(Frame):
                 title="Successfull", message="Payment Status updated Successfully!!")
             sqliteConnection.commit()
             cursor.close()
-            self.selectBill([constraints[1]])
+            self.SELECTBill([constraints[1]])
 
         except sqlite3.Error as error:
             messagebox.showerror(
@@ -1715,7 +1735,7 @@ class GenerateBill(Frame):
             return
         if b_year not in years:
             messagebox.showerror(
-                title="Error", message="Select Blling Year from Dropdown List!!")
+                title="Error", message="SELECT Blling Year from Dropdown List!!")
             return
         b_no = self.billno.get()
         if not b_no:
@@ -1725,7 +1745,7 @@ class GenerateBill(Frame):
         b_type = self.btype.get()
         if not b_type:
             messagebox.showerror(
-                title="Error", message="Select a Bill Type!!")
+                title="Error", message="SELECT a Bill Type!!")
             return
         if b_type == 1:
             self.generateNormalBill((b_year, b_no))
@@ -1740,11 +1760,11 @@ class GenerateBill(Frame):
 
     def generateNormalBill(self, bill_info):
         try:
-            sqliteConnection = sqlite3.connect('Billing.db')
+            sqliteConnection = sqlite3.connect('Bills/Database/Billing.db')
             cursor = sqliteConnection.cursor()
 
             cursor.execute(
-                "SELECt c_id, b_date FROM bill WHERE b_year=? AND b_no=?", bill_info)
+                "SELECT c_id, b_date FROM bill WHERE b_year=? AND b_no=?", bill_info)
             rows = cursor.fetchall()
             c_id = rows[0][0]
             b_date = rows[0][1]
@@ -2044,11 +2064,11 @@ class GenerateBill(Frame):
 
     def generateAMCBill(self, bill_info):
         try:
-            sqliteConnection = sqlite3.connect('Billing.db')
+            sqliteConnection = sqlite3.connect('Bills/Database/Billing.db')
             cursor = sqliteConnection.cursor()
 
             cursor.execute(
-                "SELECt c_id, b_date FROM bill WHERE b_year=? AND b_no=?", bill_info)
+                "SELECT c_id, b_date FROM bill WHERE b_year=? AND b_no=?", bill_info)
             rows = cursor.fetchall()
             c_id = rows[0][0]
             b_date = rows[0][1]
@@ -2346,11 +2366,11 @@ class GenerateBill(Frame):
 
     def generateHSNBill(self, bill_info):
         try:
-            sqliteConnection = sqlite3.connect('Billing.db')
+            sqliteConnection = sqlite3.connect('Bills/Database/Billing.db')
             cursor = sqliteConnection.cursor()
 
             cursor.execute(
-                "SELECt c_id, b_date FROM bill WHERE b_year=? AND b_no=?", bill_info)
+                "SELECT c_id, b_date FROM bill WHERE b_year=? AND b_no=?", bill_info)
             rows = cursor.fetchall()
             c_id = rows[0][0]
             b_date = rows[0][1]
@@ -2648,11 +2668,11 @@ class GenerateBill(Frame):
 
     def generateIGSTBill(self, bill_info):
         try:
-            sqliteConnection = sqlite3.connect('Billing.db')
+            sqliteConnection = sqlite3.connect('Bills/Database/Billing.db')
             cursor = sqliteConnection.cursor()
 
             cursor.execute(
-                "SELECt c_id, b_date FROM bill WHERE b_year=? AND b_no=?", bill_info)
+                "SELECT c_id, b_date FROM bill WHERE b_year=? AND b_no=?", bill_info)
             rows = cursor.fetchall()
             c_id = rows[0][0]
             b_date = rows[0][1]
@@ -2927,11 +2947,11 @@ class GenerateBill(Frame):
 
     def generateAmcHsnBill(self, bill_info):
         try:
-            sqliteConnection = sqlite3.connect('Billing.db')
+            sqliteConnection = sqlite3.connect('Bills/Database/Billing.db')
             cursor = sqliteConnection.cursor()
 
             cursor.execute(
-                "SELECt c_id, b_date FROM bill WHERE b_year=? AND b_no=?", bill_info)
+                "SELECT c_id, b_date FROM bill WHERE b_year=? AND b_no=?", bill_info)
             rows = cursor.fetchall()
             c_id = rows[0][0]
             b_date = rows[0][1]
@@ -3269,7 +3289,7 @@ class GenerateBill(Frame):
             return
         if b_year not in years:
             messagebox.showerror(
-                title="Error", message="Select Blling Year from Dropdown List!!")
+                title="Error", message="SELECT Blling Year from Dropdown List!!")
             return
         b_no = self.billno.get()
         if not b_no:
@@ -3277,11 +3297,11 @@ class GenerateBill(Frame):
                 title="Error", message="Billing No. Field cannot be empty!!")
             return
         try:
-            sqliteConnection = sqlite3.connect('Billing.db')
+            sqliteConnection = sqlite3.connect('Bills/Database/Billing.db')
             cursor = sqliteConnection.cursor()
 
             cursor.execute(
-                "SELECt c_id, FROM bill WHERE b_year=? AND b_no=?", (b_year, b_no,))
+                "SELECT c_id FROM bill WHERE b_year=? AND b_no=?", (b_year, b_no,))
             rows = cursor.fetchone()
             c_id = rows[0]
             if not c_id:
@@ -3307,6 +3327,7 @@ class GenerateBill(Frame):
         self.printPDF(b_year, b_no, c_name)
 
     def printPDF(self, year, num, name):
+        cwd = os.getcwd()
         pdf_file = cwd + r'\Bills\Sales'+'\\' + \
             year + r'\PDF'+'\\'+str(num)+'-'+name+'.pdf'
         try:
@@ -3527,7 +3548,7 @@ class AddPurchaseBill(Frame):
 
     def insertPurchaser(self, constraints):
         try:
-            sqliteConnection = sqlite3.connect('Billing.db')
+            sqliteConnection = sqlite3.connect('Bills/Database/Billing.db')
             cursor = sqliteConnection.cursor()
 
             cursor.execute(
@@ -3553,7 +3574,7 @@ class AddPurchaseBill(Frame):
             return
         if name not in purchasers:
             messagebox.showerror(
-                title="Error", message="Add Client to the database First or Select from Dropdown List!!")
+                title="Error", message="Add Client to the database First or SELECT from Dropdown List!!")
             return
         bill_no = self.bno.get()
         if not name:
@@ -3611,7 +3632,7 @@ class AddPurchaseBill(Frame):
 
     def insertBill(self, name, constraints):
         try:
-            sqliteConnection = sqlite3.connect('Billing.db')
+            sqliteConnection = sqlite3.connect('Bills/Database/Billing.db')
             cursor = sqliteConnection.cursor()
 
             cursor.execute(
@@ -3678,39 +3699,39 @@ class UpdatePurchaseStatus(Frame):
             "times new roman", 26, "bold")).place(relx=0.05, rely=0.01, relwidth=0.9, relheight=0.07)
 
         # --------- Check Bill Status Frame ------------
-        self.selectBillF = LabelFrame(self.purchaseF, text="  Search & Generate Excel Bill   ", bd=6, relief=GROOVE, labelanchor=NW, font=(
+        self.SELECTBillF = LabelFrame(self.purchaseF, text="  Search & Generate Excel Bill   ", bd=6, relief=GROOVE, labelanchor=NW, font=(
             "times new roman", 22, "bold"))
-        self.selectBillF.place(relx=0.01, rely=0.09,
+        self.SELECTBillF.place(relx=0.01, rely=0.09,
                                relwidth=0.48, relheight=0.3)
 
         # Billing Year
-        Label(self.selectBillF, text="Bill Year:", font=(
+        Label(self.SELECTBillF, text="Bill Year:", font=(
             "times new roman", 18, "bold")).place(relx=0.01, rely=0.01, relwidth=0.24, relheight=0.2)
-        self.byear = Entry(self.selectBillF, bd=3, relief=GROOVE, font=(
+        self.byear = Entry(self.SELECTBillF, bd=3, relief=GROOVE, font=(
             "arial", 18, "bold"))
         self.byear.place(relx=0.25, rely=0.02, relwidth=0.24, relheight=0.2)
 
         # Billing Month
-        Label(self.selectBillF, text="Bill Month:", font=(
+        Label(self.SELECTBillF, text="Bill Month:", font=(
             "times new roman", 18, "bold")).place(relx=0.51, rely=0.01, relwidth=0.24, relheight=0.2)
-        self.bmonth = Entry(self.selectBillF, bd=3, relief=GROOVE, font=(
+        self.bmonth = Entry(self.SELECTBillF, bd=3, relief=GROOVE, font=(
             "arial", 18, "bold"))
         self.bmonth.place(relx=0.75, rely=0.02, relwidth=0.2, relheight=0.2)
 
         # Purchaser's Name
-        Label(self.selectBillF, text="Purchaser's Name:", font=(
+        Label(self.SELECTBillF, text="Purchaser's Name:", font=(
             "times new roman", 18, "bold")).place(relx=0.01, rely=0.31, relwidth=0.44, relheight=0.2)
         self.pname = StringVar()
-        self.pnameC = ttk.Combobox(self.selectBillF, width=28, font=(
+        self.pnameC = ttk.Combobox(self.SELECTBillF, width=28, font=(
             "arial", 18, "bold"), textvariable=self.pname, postcommand=self.updatePurchaserList)
         self.pnameC.place(relx=0.41, rely=0.31, relwidth=0.54, relheight=0.2)
 
         # Search Bills Button
-        Button(self.selectBillF, text="Search Bill", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+        Button(self.SELECTBillF, text="Search Bill", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
             "arial", 18, "bold"), command=self.searchBill).place(relx=0.1, rely=0.61, relwidth=0.35, relheight=0.3)
 
         # Generate Excel Button
-        Button(self.selectBillF, text="Add to Excel", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", width=25, pady=20, font=(
+        Button(self.SELECTBillF, text="Add to Excel", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", width=25, pady=20, font=(
             "arial", 18, "bold"), command=self.generatePurchaseBill).place(relx=0.55, rely=0.61, relwidth=0.35, relheight=0.3)
 
         # # --------- Edit Bill Status Frame ------------
@@ -3754,7 +3775,7 @@ class UpdatePurchaseStatus(Frame):
             self.displayBillF, height=280, font=("Courier",
                                                  12, "bold"), padx=10, pady=10)
         self.displayText.insert(INSERT,
-                                "\n\n\n\n\n\n\t\tSelect Billing Year or Purchaser's Name to see the entries!! ")
+                                "\n\n\n\n\n\n\t\tSELECT Billing Year or Purchaser's Name to see the entries!! ")
         self.displayText.configure(state='disabled')
         self.displayText.pack(side="left", fill="both", expand=True)
         Label(self.viewBillF, text="Bill No.\tYear\t\t            Purchaser's Name\t\t\t Amount\t              Payment", font=(
@@ -3766,7 +3787,7 @@ class UpdatePurchaseStatus(Frame):
         if p_name:
             if p_name not in purchasers:
                 messagebox.showerror(
-                    title="Error", message="Select Purchaser's Name from Dropdown List!!")
+                    title="Error", message="SELECT Purchaser's Name from Dropdown List!!")
                 return
             constraints.append("p_name")
             constraints.append(p_name)
@@ -3778,13 +3799,13 @@ class UpdatePurchaseStatus(Frame):
                 constraints.append(b_month)
         if not len(constraints):
             messagebox.showerror(
-                title="Error", message="Select atleast 1 critera to search!!")
+                title="Error", message="SELECT atleast 1 critera to search!!")
             return
-        self.selectBill(constraints)
+        self.SELECTBill(constraints)
 
-    def selectBill(self, constraints):
+    def SELECTBill(self, constraints):
         try:
-            sqliteConnection = sqlite3.connect('Billing.db')
+            sqliteConnection = sqlite3.connect('Bills/Database/Billing.db')
             cursor = sqliteConnection.cursor()
 
             s = ""
@@ -3860,7 +3881,7 @@ class UpdatePurchaseStatus(Frame):
                 title="Error", message="Incorrect Year!!")
             return
         try:
-            sqliteConnection = sqlite3.connect('Billing.db')
+            sqliteConnection = sqlite3.connect('Bills/Database/Billing.db')
             cursor = sqliteConnection.cursor()
             cursor.execute(
                 "SELECT pb_day, pb_month, pb_year, pb_bill_no, pb_tax_amt, pb_gst_5, pb_igst_5, pb_gst_12, pb_igst_12, pb_gst_18, pb_igst_18, pb_gst_28, pb_igst_28, pb_total_amt, pb_status, p_id FROM purchase_bill WHERE pb_year=? AND pb_month=?;", (year, month,))
@@ -4049,7 +4070,7 @@ class UpdatePurchaseStatus(Frame):
 
     def updateStatus(self, constraints):
         try:
-            sqliteConnection = sqlite3.connect('Billing.db')
+            sqliteConnection = sqlite3.connect('Bills/Database/Billing.db')
             cursor = sqliteConnection.cursor()
 
             cursor.execute(
@@ -4058,7 +4079,7 @@ class UpdatePurchaseStatus(Frame):
                 title="Successfull", message="Payment Status updated Successfully!!")
             sqliteConnection.commit()
             cursor.close()
-            self.selectBill([constraints[1]])
+            self.SELECTBill([constraints[1]])
 
         except sqlite3.Error as error:
             messagebox.showerror(
@@ -4107,7 +4128,7 @@ class AutocompleteEntry(Entry):
             self.var = self["textvariable"] = StringVar()
 
         self.var.trace('w', self.changed)
-        self.bind("<Return>", self.selection)
+        self.bind("<Return>", self.SELECTion)
         self.bind("<Up>", self.moveUp)
         self.bind("<Down>", self.moveDown)
 
@@ -4124,8 +4145,8 @@ class AutocompleteEntry(Entry):
                 if not self.listboxUp:
                     self.listbox = Listbox(
                         width=40, height=self.listboxLength, font=("arial", 11))
-                    self.listbox.bind("<Button-1>", self.selection)
-                    self.listbox.bind("<Return>", self.selection)
+                    self.listbox.bind("<Button-1>", self.SELECTion)
+                    self.listbox.bind("<Return>", self.SELECTion)
                     self.listbox.place(relx=0.09, rely=0.35)
                     self.listboxUp = True
 
@@ -4137,7 +4158,7 @@ class AutocompleteEntry(Entry):
                     self.listbox.destroy()
                     self.listboxUp = False
 
-    def selection(self, event):
+    def SELECTion(self, event):
         if self.listboxUp:
             self.var.set(self.listbox.get(ACTIVE))
             self.listbox.destroy()
@@ -4146,32 +4167,32 @@ class AutocompleteEntry(Entry):
 
     def moveUp(self, event):
         if self.listboxUp:
-            if self.listbox.curselection() == ():
+            if self.listbox.curSELECTion() == ():
                 index = '0'
             else:
-                index = self.listbox.curselection()[0]
+                index = self.listbox.curSELECTion()[0]
 
             if index != '0':
-                self.listbox.selection_clear(first=index)
+                self.listbox.SELECTion_clear(first=index)
                 index = str(int(index) - 1)
 
                 self.listbox.see(index)  # Scroll!
-                self.listbox.selection_set(first=index)
+                self.listbox.SELECTion_set(first=index)
                 self.listbox.activate(index)
 
     def moveDown(self, event):
         if self.listboxUp:
-            if self.listbox.curselection() == ():
+            if self.listbox.curSELECTion() == ():
                 index = '0'
             else:
-                index = self.listbox.curselection()[0]
+                index = self.listbox.curSELECTion()[0]
 
             if index != END:
-                self.listbox.selection_clear(first=index)
+                self.listbox.SELECTion_clear(first=index)
                 index = str(int(index) + 1)
 
                 self.listbox.see(index)  # Scroll!
-                self.listbox.selection_set(first=index)
+                self.listbox.SELECTion_set(first=index)
                 self.listbox.activate(index)
 
     def comparison(self):
@@ -4210,7 +4231,7 @@ class AutocompleteAddEntry(Entry):
             self.var = self["textvariable"] = StringVar()
 
         self.var.trace('w', self.changed)
-        self.bind("<Return>", self.selection)
+        self.bind("<Return>", self.SELECTion)
         self.bind("<Up>", self.moveUp)
         self.bind("<Down>", self.moveDown)
 
@@ -4227,8 +4248,8 @@ class AutocompleteAddEntry(Entry):
                 if not self.listboxUp:
                     self.listbox = Listbox(
                         width=33, height=self.listboxLength, font=("arial", 18))
-                    self.listbox.bind("<Button-1>", self.selection)
-                    self.listbox.bind("<Return>", self.selection)
+                    self.listbox.bind("<Button-1>", self.SELECTion)
+                    self.listbox.bind("<Return>", self.SELECTion)
                     self.listbox.place(relx=0.11, rely=0.31)
                     self.listboxUp = True
 
@@ -4240,7 +4261,7 @@ class AutocompleteAddEntry(Entry):
                     self.listbox.destroy()
                     self.listboxUp = False
 
-    def selection(self, event):
+    def SELECTion(self, event):
         if self.listboxUp:
             self.var.set(self.listbox.get(ACTIVE))
             self.listbox.destroy()
@@ -4249,32 +4270,32 @@ class AutocompleteAddEntry(Entry):
 
     def moveUp(self, event):
         if self.listboxUp:
-            if self.listbox.curselection() == ():
+            if self.listbox.curSELECTion() == ():
                 index = '0'
             else:
-                index = self.listbox.curselection()[0]
+                index = self.listbox.curSELECTion()[0]
 
             if index != '0':
-                self.listbox.selection_clear(first=index)
+                self.listbox.SELECTion_clear(first=index)
                 index = str(int(index) - 1)
 
                 self.listbox.see(index)  # Scroll!
-                self.listbox.selection_set(first=index)
+                self.listbox.SELECTion_set(first=index)
                 self.listbox.activate(index)
 
     def moveDown(self, event):
         if self.listboxUp:
-            if self.listbox.curselection() == ():
+            if self.listbox.curSELECTion() == ():
                 index = '0'
             else:
-                index = self.listbox.curselection()[0]
+                index = self.listbox.curSELECTion()[0]
 
             if index != END:
-                self.listbox.selection_clear(first=index)
+                self.listbox.SELECTion_clear(first=index)
                 index = str(int(index) + 1)
 
                 self.listbox.see(index)  # Scroll!
-                self.listbox.selection_set(first=index)
+                self.listbox.SELECTion_set(first=index)
                 self.listbox.activate(index)
 
     def comparison(self):
@@ -4285,7 +4306,7 @@ class AutocompleteAddEntry(Entry):
 
 
 def getCientList():
-    sqliteConnection = sqlite3.connect('Billing.db')
+    sqliteConnection = sqlite3.connect('Bills/Database/Billing.db')
     cursor = sqliteConnection.cursor()
     cursor.execute("""SELECT c_name FROM client;""")
     rows = cursor.fetchall()
@@ -4300,7 +4321,7 @@ def getCientList():
 
 
 def getPurchaserList():
-    sqliteConnection = sqlite3.connect('Billing.db')
+    sqliteConnection = sqlite3.connect('Bills/Database/Billing.db')
     cursor = sqliteConnection.cursor()
     cursor.execute("""SELECT p_name FROM purchaser;""")
     rows = cursor.fetchall()
@@ -4315,7 +4336,7 @@ def getPurchaserList():
 
 
 def addProduct(name):
-    sqliteConnection = sqlite3.connect('Billing.db')
+    sqliteConnection = sqlite3.connect('Bills/Database/Billing.db')
     cursor = sqliteConnection.cursor()
     cursor.execute("INSERT INTO product VALUES (?)", (name,))
     sqliteConnection.commit()
@@ -4326,7 +4347,7 @@ def addProduct(name):
 
 
 def getProductList():
-    sqliteConnection = sqlite3.connect('Billing.db')
+    sqliteConnection = sqlite3.connect('Bills/Database/Billing.db')
     cursor = sqliteConnection.cursor()
     cursor.execute("""SELECT pr_name FROM product;""")
     rows = cursor.fetchall()
