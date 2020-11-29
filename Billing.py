@@ -135,7 +135,6 @@ class App(Tk):
         self.geometry("1280x800+0+0")
         self.title("Billing Software")
         self.frames = {}
-        # for F in (Home, AddClient, CreateBill, AddBillDetails, EditBillDetails, UpdateBillStatus, GenerateBill, AddPurchaseBill,):
         for F in (Home, AddClient, CreateBill, AddBillDetails, EditBillDetails, UpdateBillStatus, GenerateBill, AddPurchaseBill, UpdatePurchaseStatus):
             frame = F(container, self)
             self.frames[F] = frame
@@ -530,151 +529,39 @@ class AddBillDetails(Frame):
         Button(self.addDetailsF, text="Clear", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
             "arial", 16, "bold"), command=self.clearTextAdd).place(relx=0.7, rely=0.76, relwidth=0.2, relheight=0.14)
 
-        # # --------- Edit Details Frame ------------
-        # self.editDetailsF = LabelFrame(self.saleF, text="Edit Details", bd=6, relief=GROOVE, labelanchor=NW, font=(
-        #     "times new roman", 18, "bold"), padx=25, pady=20)
-        # self.editDetailsF.place(x=645, y=100, width=615, height=400)
-
-        # # Bill Serial No.
-        # Label(self.editDetailsF, text="", font=(
-        #     "times new roman", 14, "bold")).grid(row=0, column=0, columnspan=4, pady=10, sticky=E)
-
-        # Label(self.editDetailsF, text="Serial No.:", font=(
-        #     "times new roman", 14, "bold")).place(x=1, y=10)
-        # self.esrno = StringVar()
-        # self.esrnoC = Entry(self.editDetailsF, width=4, font=(
-        #     "arial", 14, "bold"), textvariable=self.esrno, bd=3, relief=GROOVE)
-        # self.esrnoC.place(x=100, y=10)
-
-        # # HSN Code
-        # Label(self.editDetailsF, text="HSN Code:", font=(
-        #     "times new roman", 14, "bold")).place(x=180, y=10)
-        # self.ephsn = Entry(self.editDetailsF, width=6, bd=3, relief=GROOVE, font=(
-        #     "arial", 14, "bold"))
-        # self.ephsn.place(x=280, y=10)
-
-        # # AMC No.
-        # Label(self.editDetailsF, text="AMC No:", font=(
-        #     "times new roman", 14, "bold")).place(x=380, y=10)
-        # self.eamc = Entry(self.editDetailsF, width=7, bd=3, relief=GROOVE, font=(
-        #     "arial", 14, "bold"))
-        # self.eamc.place(x=470, y=10)
-
-        # # Product Name
-        # Label(self.editDetailsF, text="Product:", font=(
-        #     "times new roman", 14, "bold")).grid(row=1, column=0, pady=10, sticky=E)
-        # self.epname = AutocompleteEntry(
-        #     products, self, listboxLength=10, width=15, bd=3, relief=GROOVE, font=("arial", 14, "bold"))
-        # self.epname.place(x=800, y=345)
-
-        # # Quantity
-        # Label(self.editDetailsF, text="Quantity:", font=(
-        #     "times new roman", 14, "bold")).grid(row=1, column=2, pady=10, sticky=E)
-        # self.epquan = Entry(self.editDetailsF, width=15, bd=3, relief=GROOVE, font=(
-        #     "arial", 14, "bold"))
-        # self.epquan.grid(row=1, column=3, padx=10, pady=10)
-
-        # # Rate
-        # Label(self.editDetailsF, text="Rate:", font=(
-        #     "times new roman", 14, "bold")).grid(row=2, column=0, pady=10, sticky=E)
-        # self.erate = Entry(self.editDetailsF, width=15, bd=3, relief=GROOVE, font=(
-        #     "arial", 14, "bold"))
-        # self.erate.grid(row=2, column=1, padx=10, pady=10)
-
-        # # Taxable Amount
-        # Label(self.editDetailsF, text="Amount:", font=(
-        #     "times new roman", 14, "bold")).grid(row=2, column=2, pady=10, sticky=E)
-        # self.eamt = Entry(self.editDetailsF, width=15, bd=3, relief=GROOVE, font=(
-        #     "arial", 14, "bold"))
-        # self.eamt.grid(row=2, column=3, padx=10, pady=10)
-
-        # # CGST
-        # Label(self.editDetailsF, text="CGST:", font=(
-        #     "times new roman", 14, "bold")).grid(row=3, column=0, pady=10, sticky=E)
-        # self.ecgst = Entry(self.editDetailsF, width=15, bd=3, relief=GROOVE, font=(
-        #     "arial", 14, "bold"))
-        # self.ecgst.grid(row=3, column=1, padx=10, pady=10)
-
-        # # SGST
-        # Label(self.editDetailsF, text="SGST:", font=(
-        #     "times new roman", 14, "bold")).grid(row=3, column=2, pady=10, sticky=E)
-        # self.esgst = Entry(self.editDetailsF, width=15, bd=3, relief=GROOVE, font=(
-        #     "arial", 14, "bold"))
-        # self.esgst.grid(row=3, column=3, padx=10, pady=10)
-
-        # # IGST
-        # Label(self.editDetailsF, text="IGST:", font=(
-        #     "times new roman", 14, "bold")).grid(row=4, column=0, pady=10, sticky=E)
-        # self.eigst = Entry(self.editDetailsF, width=15, bd=3, relief=GROOVE, font=(
-        #     "arial", 14, "bold"))
-        # self.eigst.grid(row=4, column=1, padx=10, pady=10)
-
-        # # Challan No.
-        # Label(self.editDetailsF, text="Challan No:", font=(
-        #     "times new roman", 14, "bold")).grid(row=4, column=2, pady=10, sticky=E)
-        # self.echallan = Entry(self.editDetailsF, width=15, bd=3, relief=GROOVE, font=(
-        #     "arial", 14, "bold"))
-        # self.echallan.grid(row=4, column=3, padx=10, pady=10)
-
-        # # Edit Bill Details Button
-        # Button(self.editDetailsF, text="Edit Bill Detail", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=10, width=15, font=(
-        #     "arial", 16, "bold"), command=self.editBillDetails).grid(row=5, column=0, columnspan=2, padx=30, pady=10)
-
-        # # Clear Edit Details Button
-        # Button(self.editDetailsF, text="Clear", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=10, width=15, font=(
-        #     "arial", 16, "bold"), command=self.clearTextEdit).grid(row=5, column=2, columnspan=2, padx=10, pady=10)
-
-        # # --------- SELECT Bill Frame ------------
-        self.SELECTBillF = LabelFrame(self.saleF, text="SELECT Bill", bd=6, relief=GROOVE, labelanchor=NW, font=(
+        # --------- SELECT Bill Frame ------------
+        self.selectBillF = LabelFrame(self.saleF, text="SELECT Bill", bd=6, relief=GROOVE, labelanchor=NW, font=(
             "times new roman", 18, "bold"), padx=20, pady=10)
-        self.SELECTBillF.place(relx=0.51, rely=0.09,
+        self.selectBillF.place(relx=0.51, rely=0.09,
                                relwidth=0.48, relheight=0.45)
 
         # Billing Year
-        Label(self.SELECTBillF, text="Billing Year:", font=(
+        Label(self.selectBillF, text="Billing Year:", font=(
             "times new roman", 16, "bold")).place(relx=0, rely=0.01, relwidth=0.4, relheight=0.15)
         self.byear = StringVar()
-        self.byearC = ttk.Combobox(self.SELECTBillF, font=(
+        self.byearC = ttk.Combobox(self.selectBillF, font=(
             "arial", 16, "bold"), textvariable=self.byear, values=years)
         self.byearC.place(relx=0.4, rely=0.01, relwidth=0.4, relheight=0.15)
 
         # Bill No.
-        Label(self.SELECTBillF, text="Billing No:", font=(
+        Label(self.selectBillF, text="Billing No:", font=(
             "times new roman", 16, "bold")).place(relx=0, rely=0.3, relwidth=0.4, relheight=0.15)
         self.bno = StringVar()
-        self.bnoC = Entry(self.SELECTBillF, bd=3, relief=GROOVE, font=(
+        self.bnoC = Entry(self.selectBillF, bd=3, relief=GROOVE, font=(
             "arial", 16, "bold"), textvariable=self.bno)
         self.bnoC.place(relx=0.4, rely=0.3, relwidth=0.4, relheight=0.15)
 
         # Current Bill Details Button
-        Button(self.SELECTBillF, text="View Bill Details", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+        Button(self.selectBillF, text="View Bill Details", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
             "arial", 16, "bold"), command=self.viewBillDetails).place(relx=0.1, rely=0.61, relwidth=0.35, relheight=0.15)
 
         # Delete Last Entry Bill Details Button
-        Button(self.SELECTBillF, text="Delete Last Entry", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+        Button(self.selectBillF, text="Delete Last Entry", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
             "arial", 16, "bold"), command=self.removeLastDetail).place(relx=0.55, rely=0.61, relwidth=0.35, relheight=0.15)
 
         # Home Button
-        Button(self.SELECTBillF, text="Home", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", width=35, pady=30, font=(
+        Button(self.selectBillF, text="Home", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", width=35, pady=30, font=(
             "arial", 18, "bold"), command=lambda: controller.show_frame(Home)).place(relx=0.3, rely=0.81, relwidth=0.4, relheight=0.15)
-
-        # # --------- Edit Client Frame ------------
-        # self.editClientF = LabelFrame(self.saleF, text="Edit Client", bd=6, relief=GROOVE, labelanchor=NW, font=(
-        #     "times new roman", 18, "bold"), padx=30, pady=10)
-        # self.editClientF.place(x=1290, y=290, width=580, height=210)
-
-        # # Billing Client's Name
-        # Label(self.editClientF, text="Client's Name:", font=(
-        #     "times new roman", 16, "bold")).grid(row=0, column=0, pady=20, sticky=E)
-        # self.ecname = StringVar()
-        # self.cname_txt = ttk.Combobox(self.editClientF, width=25, font=(
-        #     "arial", 16, "bold"), textvariable=self.ecname, postcommand=self.updateClientList)
-        # self.cname_txt.grid(row=0, column=1,
-        #                     padx=20, pady=10, sticky=W)
-
-        # # Edit Client Button
-        # Button(self.editClientF, text="Edit Client", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", width=15, pady=10, font=(
-        #     "arial", 16, "bold"), command=self.editClient).place(x=150, y=80)
 
         # --------- View Bill Detials Frame ------------
         self.viewBillF = LabelFrame(self.saleF, text="View Bill Detials", bd=6, relief=GROOVE, labelanchor=NW, font=(
@@ -693,20 +580,6 @@ class AddBillDetails(Frame):
         self.displayText.pack(side="left", fill="both", expand=True)
         Label(self.viewBillF, text="Sr. No.\t\t            Product\t\t              Rate      Quantity  GST     IGST       AMOUNT\t       HSN         Ch. No.      AMC No.", font=(
             "times new roman", 15, "bold")).place(x=30, y=0)
-
-        # # --------- Bill Information Frame ------------
-        # self.viewInfoF = LabelFrame(self.saleF, text="Bill Information", bd=6, relief=GROOVE, labelanchor=NW, font=(
-        #     "times new roman", 18, "bold"), padx=10, pady=10)
-        # self.viewInfoF.place(x=1380, y=512, width=490, height=230)
-        # self.displayInfoF = Frame(self.viewInfoF)
-        # self.displayInfoF.place(x=10, y=10, width=440, height=150)
-        # self.displayInfo = scrolledtext.ScrolledText(
-        #     self.displayInfoF, font=("arial",
-        #                              16, "bold"), padx=10, pady=10)
-        # self.displayInfo.insert(INSERT,
-        #                         "\n       SELECT Billing Year and Billing No. \n              to see the Information!! ")
-        # self.displayInfo.configure(state='disabled')
-        # self.displayInfo.pack(side="left", fill="both", expand=True)
 
     def addBillDetails(self):
         b_year = self.byear.get()
@@ -816,9 +689,9 @@ class AddBillDetails(Frame):
             messagebox.showerror(
                 title="Error", message="Billing No. Field cannot be empty!!")
             return
-        self.SELECTBillDetails(b_year, b_no)
+        self.selectBillDetails(b_year, b_no)
 
-    def SELECTBillDetails(self, b_year, b_no):
+    def selectBillDetails(self, b_year, b_no):
         try:
             sqliteConnection = sqlite3.connect('Bills/Database/Billing.db')
             cursor = sqliteConnection.cursor()
@@ -1035,38 +908,38 @@ class EditBillDetails(Frame):
         Button(self.editDetailsF, text="Clear", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", pady=10, width=15, font=(
             "arial", 16, "bold"), command=self.clearTextEdit).place(relx=0.55, rely=0.8, relwidth=0.35, relheight=0.15)
 
-        # # --------- SELECT Bill Frame ------------
-        self.SELECTBillF = LabelFrame(self.saleF, text="SELECT Bill", bd=6, relief=GROOVE, labelanchor=NW, font=(
+        # --------- SELECT Bill Frame ------------
+        self.selectBillF = LabelFrame(self.saleF, text="SELECT Bill", bd=6, relief=GROOVE, labelanchor=NW, font=(
             "times new roman", 18, "bold"))
-        self.SELECTBillF.place(relx=0.4, rely=0.09,
+        self.selectBillF.place(relx=0.4, rely=0.09,
                                relwidth=0.25, relheight=0.45)
 
         # Billing Year
-        Label(self.SELECTBillF, text="Billing Year:", font=(
+        Label(self.selectBillF, text="Billing Year:", font=(
             "times new roman", 16, "bold")).place(relx=0, rely=0, relwidth=0.45, relheight=0.15)
         self.byear = StringVar()
-        self.byearC = ttk.Combobox(self.SELECTBillF, font=(
+        self.byearC = ttk.Combobox(self.selectBillF, font=(
             "arial", 16, "bold"), textvariable=self.byear, values=years)
         self.byearC.place(relx=0.45, rely=0.01, relwidth=0.5, relheight=0.12)
 
         # Bill No.
-        Label(self.SELECTBillF, text="Billing No:", font=(
+        Label(self.selectBillF, text="Billing No:", font=(
             "times new roman", 16, "bold")).place(relx=0, rely=0.17, relwidth=0.45, relheight=0.15)
         self.bno = StringVar()
-        self.bnoC = Entry(self.SELECTBillF, bd=3, relief=GROOVE, font=(
+        self.bnoC = Entry(self.selectBillF, bd=3, relief=GROOVE, font=(
             "arial", 16, "bold"), textvariable=self.bno)
         self.bnoC.place(relx=0.45, rely=0.19, relwidth=0.5, relheight=0.12)
 
         # Current Bill Details Button
-        Button(self.SELECTBillF, text="View Bill Details", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+        Button(self.selectBillF, text="View Bill Details", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
             "arial", 16, "bold"), command=self.viewBillDetails).place(relx=0.15, rely=0.4, relwidth=0.7, relheight=0.15)
 
         # Delete Last Entry Bill Details Button
-        Button(self.SELECTBillF, text="Delete Last Entry", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+        Button(self.selectBillF, text="Delete Last Entry", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
             "arial", 16, "bold"), command=self.removeLastDetail).place(relx=0.15, rely=0.6, relwidth=0.7, relheight=0.15)
 
         # Home Button
-        Button(self.SELECTBillF, text="Home", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", width=35, pady=30, font=(
+        Button(self.selectBillF, text="Home", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", width=35, pady=30, font=(
             "arial", 18, "bold"), command=lambda: controller.show_frame(Home)).place(relx=0.15, rely=0.8, relwidth=0.7, relheight=0.15)
 
         # --------- Edit Client Frame ------------
@@ -1255,10 +1128,10 @@ class EditBillDetails(Frame):
             messagebox.showerror(
                 title="Error", message="Billing No. Field cannot be empty!!")
             return
-        self.SELECTBillDetails(b_year, b_no)
-        self.SELECTBillInfo(b_year, b_no)
+        self.selectBillDetails(b_year, b_no)
+        self.selectBillInfo(b_year, b_no)
 
-    def SELECTBillDetails(self, b_year, b_no):
+    def selectBillDetails(self, b_year, b_no):
         try:
             sqliteConnection = sqlite3.connect('Bills/Database/Billing.db')
             cursor = sqliteConnection.cursor()
@@ -1392,7 +1265,7 @@ class EditBillDetails(Frame):
             sqliteConnection.commit()
             getCientList()
             cursor.close()
-            self.SELECTBillInfo(b_year, b_no)
+            self.selectBillInfo(b_year, b_no)
 
         except sqlite3.Error as error:
             messagebox.showerror(
@@ -1401,7 +1274,7 @@ class EditBillDetails(Frame):
             if (sqliteConnection):
                 sqliteConnection.close()
 
-    def SELECTBillInfo(self, b_year, b_no):
+    def selectBillInfo(self, b_year, b_no):
         try:
             sqliteConnection = sqlite3.connect('Bills/Database/Billing.db')
             cursor = sqliteConnection.cursor()
@@ -1469,33 +1342,33 @@ class UpdateBillStatus(Frame):
             "times new roman", 26, "bold")).place(relx=0.05, rely=0.03, relwidth=0.9, relheight=0.09)
 
         # --------- Check Bill Status Frame ------------
-        self.SELECTBillF = LabelFrame(self.saleF, text="  Search Bill Payment  ", bd=6, relief=GROOVE, labelanchor=NW, font=(
+        self.selectBillF = LabelFrame(self.saleF, text="  Search Bill Payment  ", bd=6, relief=GROOVE, labelanchor=NW, font=(
             "times new roman", 22, "bold"))
-        self.SELECTBillF.place(relx=0.05, rely=0.14,
+        self.selectBillF.place(relx=0.05, rely=0.14,
                                relwidth=0.43, relheight=0.38)
 
         # Billing Year
-        Label(self.SELECTBillF, text="Billing Year:", font=(
+        Label(self.selectBillF, text="Billing Year:", font=(
             "times new roman", 18, "bold")).place(relx=0.1, rely=0.1, relwidth=0.3, relheight=0.12)
         self.byear = StringVar()
-        self.byearC = ttk.Combobox(self.SELECTBillF, font=(
+        self.byearC = ttk.Combobox(self.selectBillF, font=(
             "arial", 18, "bold"), textvariable=self.byear, values=years)
         self.byearC.place(relx=0.4, rely=0.11, relwidth=0.5, relheight=0.11)
 
         # Client's Name
-        Label(self.SELECTBillF, text="Client's Name:", font=(
+        Label(self.selectBillF, text="Client's Name:", font=(
             "times new roman", 18, "bold")).place(relx=0.1, rely=0.35, relwidth=0.3, relheight=0.12)
         self.cname = StringVar()
-        self.cnameC = ttk.Combobox(self.SELECTBillF, font=(
+        self.cnameC = ttk.Combobox(self.selectBillF, font=(
             "arial", 18, "bold"), textvariable=self.cname, postcommand=self.updateClientList)
         self.cnameC.place(relx=0.4, rely=0.35, relwidth=0.5, relheight=0.14)
 
         # Search Bills Button
-        Button(self.SELECTBillF, text="Search Bill", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+        Button(self.selectBillF, text="Search Bill", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
             "arial", 18, "bold"), command=self.searchBill).place(relx=0.1, rely=0.65, relwidth=0.35, relheight=0.21)
 
         # Home Button
-        Button(self.SELECTBillF, text="Home", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+        Button(self.selectBillF, text="Home", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
             "arial", 18, "bold"), command=lambda: controller.show_frame(Home)).place(relx=0.55, rely=0.65, relwidth=0.35, relheight=0.21)
 
         # --------- Edit Bill Status Frame ------------
@@ -1562,9 +1435,9 @@ class UpdateBillStatus(Frame):
             messagebox.showerror(
                 title="Error", message="SELECT atleast 1 critera to search!!")
             return
-        self.SELECTBill(constraints)
+        self.selectBill(constraints)
 
-    def SELECTBill(self, constraints):
+    def selectBill(self, constraints):
         try:
             sqliteConnection = sqlite3.connect('Bills/Database/Billing.db')
             cursor = sqliteConnection.cursor()
@@ -1654,7 +1527,7 @@ class UpdateBillStatus(Frame):
                 title="Successfull", message="Payment Status updated Successfully!!")
             sqliteConnection.commit()
             cursor.close()
-            self.SELECTBill([constraints[1]])
+            self.selectBill([constraints[1]])
 
         except sqlite3.Error as error:
             messagebox.showerror(
@@ -3699,42 +3572,42 @@ class UpdatePurchaseStatus(Frame):
             "times new roman", 26, "bold")).place(relx=0.05, rely=0.01, relwidth=0.9, relheight=0.07)
 
         # --------- Check Bill Status Frame ------------
-        self.SELECTBillF = LabelFrame(self.purchaseF, text="  Search & Generate Excel Bill   ", bd=6, relief=GROOVE, labelanchor=NW, font=(
+        self.selectBillF = LabelFrame(self.purchaseF, text="  Search & Generate Excel Bill   ", bd=6, relief=GROOVE, labelanchor=NW, font=(
             "times new roman", 22, "bold"))
-        self.SELECTBillF.place(relx=0.01, rely=0.09,
+        self.selectBillF.place(relx=0.01, rely=0.09,
                                relwidth=0.48, relheight=0.3)
 
         # Billing Year
-        Label(self.SELECTBillF, text="Bill Year:", font=(
+        Label(self.selectBillF, text="Bill Year:", font=(
             "times new roman", 18, "bold")).place(relx=0.01, rely=0.01, relwidth=0.24, relheight=0.2)
-        self.byear = Entry(self.SELECTBillF, bd=3, relief=GROOVE, font=(
+        self.byear = Entry(self.selectBillF, bd=3, relief=GROOVE, font=(
             "arial", 18, "bold"))
         self.byear.place(relx=0.25, rely=0.02, relwidth=0.24, relheight=0.2)
 
         # Billing Month
-        Label(self.SELECTBillF, text="Bill Month:", font=(
+        Label(self.selectBillF, text="Bill Month:", font=(
             "times new roman", 18, "bold")).place(relx=0.51, rely=0.01, relwidth=0.24, relheight=0.2)
-        self.bmonth = Entry(self.SELECTBillF, bd=3, relief=GROOVE, font=(
+        self.bmonth = Entry(self.selectBillF, bd=3, relief=GROOVE, font=(
             "arial", 18, "bold"))
         self.bmonth.place(relx=0.75, rely=0.02, relwidth=0.2, relheight=0.2)
 
         # Purchaser's Name
-        Label(self.SELECTBillF, text="Purchaser's Name:", font=(
+        Label(self.selectBillF, text="Purchaser's Name:", font=(
             "times new roman", 18, "bold")).place(relx=0.01, rely=0.31, relwidth=0.44, relheight=0.2)
         self.pname = StringVar()
-        self.pnameC = ttk.Combobox(self.SELECTBillF, width=28, font=(
+        self.pnameC = ttk.Combobox(self.selectBillF, width=28, font=(
             "arial", 18, "bold"), textvariable=self.pname, postcommand=self.updatePurchaserList)
         self.pnameC.place(relx=0.41, rely=0.31, relwidth=0.54, relheight=0.2)
 
         # Search Bills Button
-        Button(self.SELECTBillF, text="Search Bill", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+        Button(self.selectBillF, text="Search Bill", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
             "arial", 18, "bold"), command=self.searchBill).place(relx=0.1, rely=0.61, relwidth=0.35, relheight=0.3)
 
         # Generate Excel Button
-        Button(self.SELECTBillF, text="Add to Excel", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", width=25, pady=20, font=(
+        Button(self.selectBillF, text="Add to Excel", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", width=25, pady=20, font=(
             "arial", 18, "bold"), command=self.generatePurchaseBill).place(relx=0.55, rely=0.61, relwidth=0.35, relheight=0.3)
 
-        # # --------- Edit Bill Status Frame ------------
+        # --------- Edit Bill Status Frame ------------
         self.editStatusF = LabelFrame(self.purchaseF, text="  Update Bill Payment  ", bd=6, relief=GROOVE, labelanchor=NW, font=(
             "times new roman", 22, "bold"))
         self.editStatusF.place(relx=0.51, rely=0.09,
@@ -3801,9 +3674,9 @@ class UpdatePurchaseStatus(Frame):
             messagebox.showerror(
                 title="Error", message="SELECT atleast 1 critera to search!!")
             return
-        self.SELECTBill(constraints)
+        self.selectBill(constraints)
 
-    def SELECTBill(self, constraints):
+    def selectBill(self, constraints):
         try:
             sqliteConnection = sqlite3.connect('Bills/Database/Billing.db')
             cursor = sqliteConnection.cursor()
@@ -3880,6 +3753,8 @@ class UpdatePurchaseStatus(Frame):
             messagebox.showerror(
                 title="Error", message="Incorrect Year!!")
             return
+        Path("final test/Bills/Purchases/"+str(year)
+             ).mkdir(parents=True, exist_ok=True)
         try:
             sqliteConnection = sqlite3.connect('Bills/Database/Billing.db')
             cursor = sqliteConnection.cursor()
@@ -4079,7 +3954,7 @@ class UpdatePurchaseStatus(Frame):
                 title="Successfull", message="Payment Status updated Successfully!!")
             sqliteConnection.commit()
             cursor.close()
-            self.SELECTBill([constraints[1]])
+            self.selectBill([constraints[1]])
 
         except sqlite3.Error as error:
             messagebox.showerror(
