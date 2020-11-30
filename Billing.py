@@ -480,11 +480,12 @@ class AddBillDetails(Frame):
         self.pquan.place(relx=0.2, rely=0.18, relwidth=0.2, relheight=0.1)
 
         # Rate
+        self.rate = DoubleVar()
         Label(self.addDetailsF, text="Rate:", font=(
             "times new roman", 14, "bold")).place(relx=0.55, rely=0.18, relwidth=0.2, relheight=0.1)
-        self.rate = Entry(self.addDetailsF, bd=3, relief=GROOVE, font=(
-            "arial", 14, "bold"))
-        self.rate.place(relx=0.75, rely=0.18, relwidth=0.2, relheight=0.1)
+        self.rateE = Entry(self.addDetailsF, bd=3, relief=GROOVE, font=(
+            "arial", 14, "bold"), textvariable=self.rate)
+        self.rateE.place(relx=0.75, rely=0.18, relwidth=0.2, relheight=0.1)
 
         # GST
         self.gst = DoubleVar()
@@ -613,16 +614,13 @@ class AddBillDetails(Frame):
             messagebox.showerror(
                 title="Error", message="Enter a Valid Quantity!!")
             return
-        rate = self.rate.get()
+        rate = str(self.rate.get())
         if not rate:
             messagebox.showerror(
                 title="Error", message="Rate Field cannot be empty!!")
             return
-        if not str.isdigit(rate):
-            messagebox.showerror(
-                title="Error", message="Enter a Valid Rate!!")
-            return
-        amt = int(quantity) * int(rate)
+        amt = int(Decimal(float(rate) * int(quantity)
+                          ).quantize(0, ROUND_HALF_UP))
         gst = self.gst.get() * 0.5
         igst = self.igst.get()
         if not gst and not igst:
@@ -669,6 +667,7 @@ class AddBillDetails(Frame):
             self.viewBillDetails()
             if data_list[3] not in products:
                 addProduct(data_list[3])
+            self.clearTextAdd()
 
         except sqlite3.Error as error:
             messagebox.showerror(
@@ -799,10 +798,12 @@ class AddBillDetails(Frame):
 
     def clearTextAdd(self):
         self.pname.delete(0, END)
-        self.rate.delete(0, END)
+        self.rateE.delete(0, END)
         self.pquan.delete(0, END)
         self.gstE.delete(0, END)
+        self.gstE.insert(0, 0)
         self.igstE.delete(0, END)
+        self.igstE.insert(0, 0)
         self.phsn.delete(0, END)
         self.challan.delete(0, END)
         self.amc.delete(0, END)
@@ -1024,7 +1025,7 @@ class EditBillDetails(Frame):
                 return
             constraints.append("bd_product")
             constraints.append(name)
-        rate = self.erate.get()
+        rate = str(self.erate.get())
         amt = self.eamt.get()
         quantity = self.epquan.get()
         if rate or amt or quantity:
@@ -1032,11 +1033,12 @@ class EditBillDetails(Frame):
                 messagebox.showerror(
                     title="Error", message="Enter a Valid Quantity!!")
                 return
-            if not str.isdigit(rate):
+            if not rate:
                 messagebox.showerror(
                     title="Error", message="Enter a Valid Rate!!")
                 return
-            amt = int(rate) * int(quantity)
+            amt = int(Decimal(float(rate) * int(quantity)
+                              ).quantize(0, ROUND_HALF_UP))
             constraints.append("bd_rate")
             constraints.append(rate)
             constraints.append("bd_amount")
@@ -1962,9 +1964,9 @@ class GenerateBill(Frame):
                 sqliteConnection.commit()
                 cursor.close()
                 if (sqliteConnection):
-                    sqliteConnection.close()all()
-            c_id = rows[0][0]
-            b_date = rows[0][1]
+                    sqliteConnection.close()
+            c_id = rows[0]
+            b_date = rows[1]
             cursor.execute(
                 "Select c_name, c_address, c_gst FROM client WHERE c_id=?", (c_id,))
             rows = cursor.fetchall()
@@ -2270,9 +2272,9 @@ class GenerateBill(Frame):
                 sqliteConnection.commit()
                 cursor.close()
                 if (sqliteConnection):
-                    sqliteConnection.close()all()
-            c_id = rows[0][0]
-            b_date = rows[0][1]
+                    sqliteConnection.close()
+            c_id = rows[0]
+            b_date = rows[1]
             cursor.execute(
                 "Select c_name, c_address, c_gst FROM client WHERE c_id=?", (c_id,))
             rows = cursor.fetchall()
@@ -2578,9 +2580,9 @@ class GenerateBill(Frame):
                 sqliteConnection.commit()
                 cursor.close()
                 if (sqliteConnection):
-                    sqliteConnection.close()all()
-            c_id = rows[0][0]
-            b_date = rows[0][1]
+                    sqliteConnection.close()
+            c_id = rows[0]
+            b_date = rows[1]
             cursor.execute(
                 "Select c_name, c_address, c_gst FROM client WHERE c_id=?", (c_id,))
             rows = cursor.fetchall()
@@ -2863,9 +2865,9 @@ class GenerateBill(Frame):
                 sqliteConnection.commit()
                 cursor.close()
                 if (sqliteConnection):
-                    sqliteConnection.close()all()
-            c_id = rows[0][0]
-            b_date = rows[0][1]
+                    sqliteConnection.close()
+            c_id = rows[0]
+            b_date = rows[1]
             cursor.execute(
                 "Select c_name, c_address, c_gst FROM client WHERE c_id=?", (c_id,))
             rows = cursor.fetchall()
