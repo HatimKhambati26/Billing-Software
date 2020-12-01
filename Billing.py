@@ -326,6 +326,7 @@ class AddClient(Frame):
         self.cname_txt.delete(0, END)
         self.cgst_txt.delete(0, END)
         self.caddress_txt.delete(0, END)
+        self.cname_txt.focus()
 
 
 class CreateBill(Frame):
@@ -469,7 +470,7 @@ class AddBillDetails(Frame):
         Label(self.addDetailsF, text="Product:", font=(
             "times new roman", 18, "bold")).place(relx=0, rely=0.01, relwidth=0.2, relheight=0.1)
         self.pname = AutocompleteAddEntry(
-            products, self.addDetailsF, listboxLength=15, bd=3, relief=GROOVE, font=("arial", 18, "bold"))
+            products, self.addDetailsF, listboxLength=15, matchesFunction=matches, bd=3, relief=GROOVE, font=("arial", 18, "bold"))
         self.pname.place(relx=0.2, rely=0.01, relwidth=0.75, relheight=0.13)
 
         # Quantity
@@ -619,8 +620,7 @@ class AddBillDetails(Frame):
             messagebox.showerror(
                 title="Error", message="Rate Field cannot be empty!!")
             return
-        amt = int(Decimal(float(rate) * int(quantity)
-                          ).quantize(0, ROUND_HALF_UP))
+        amt = int(Decimal(float(rate) * int(quantity)).quantize(0, ROUND_HALF_UP))
         gst = self.gst.get() * 0.5
         igst = self.igst.get()
         if not gst and not igst:
@@ -801,12 +801,13 @@ class AddBillDetails(Frame):
         self.rateE.delete(0, END)
         self.pquan.delete(0, END)
         self.gstE.delete(0, END)
-        self.gstE.insert(0, 0)
+        self.gstE.insert(0,0)
         self.igstE.delete(0, END)
-        self.igstE.insert(0, 0)
+        self.igstE.insert(0,0)
         self.phsn.delete(0, END)
         self.challan.delete(0, END)
         self.amc.delete(0, END)
+        self.pname.focus()
 
     def updateClientList(self):
         getCientList()
@@ -859,7 +860,7 @@ class EditBillDetails(Frame):
         Label(self.editDetailsF, text="Product:", font=(
             "times new roman", 14, "bold")).place(relx=0, rely=0.16, relwidth=0.2, relheight=0.1)
         self.epname = AutocompleteEntry(
-            products, self.editDetailsF, listboxLength=10, width=15, bd=3, relief=GROOVE, font=("arial", 14, "bold"))
+            products, self.editDetailsF, listboxLength=10, matchesFunction=matches, width=15, bd=3, relief=GROOVE, font=("arial", 14, "bold"))
         self.epname.place(relx=0.2, rely=0.16, relwidth=0.75, relheight=0.1)
 
         # Quantity
@@ -1037,8 +1038,7 @@ class EditBillDetails(Frame):
                 messagebox.showerror(
                     title="Error", message="Enter a Valid Rate!!")
                 return
-            amt = int(Decimal(float(rate) * int(quantity)
-                              ).quantize(0, ROUND_HALF_UP))
+            amt = int(Decimal(float(rate) * int(quantity)).quantize(0, ROUND_HALF_UP))
             constraints.append("bd_rate")
             constraints.append(rate)
             constraints.append("bd_amount")
@@ -1326,6 +1326,7 @@ class EditBillDetails(Frame):
         self.eigst.delete(0, END)
         self.echallan.delete(0, END)
         self.eamc.delete(0, END)
+        self.esrnoC.focus()
 
     def updateClientList(self):
         getCientList()
@@ -1656,7 +1657,7 @@ class GenerateBill(Frame):
                 if (sqliteConnection):
                     sqliteConnection.close()
             c_id = rows[0]
-            b_date = rows[0]
+            b_date = rows[1]
             cursor.execute(
                 "Select c_name, c_address, c_gst FROM client WHERE c_id=?", (c_id,))
             rows = cursor.fetchall()
@@ -1920,8 +1921,6 @@ class GenerateBill(Frame):
             worksheet.merge_range(
                 'E' + str(45+pg)+':H' + str(45+pg), "Proprietor/Authorized signatory", bold_14)
 
-            worksheet.conditional_format(
-                'E' + str(28+pg)+':H' + str(32+pg), {'type': 'no_blanks', 'format': border})
             cursor.execute(
                 "Select bd_ch_no FROM bill_detail WHERE b_year=? AND b_no=? AND bd_ch_no IS NOT ''", bill_info)
             rows = cursor.fetchall()
@@ -1932,6 +1931,11 @@ class GenerateBill(Frame):
                     challan += str(ch[0]) + ","
                 worksheet.write_rich_string(
                     'A6', bold_12, "Challan No.: ", normal_12, challan)
+            cursor.execute("Select b_po FROM bill WHERE b_year=? AND b_no=?;", bill_info)
+            row = cursor.fetchone()
+            if row[0]:
+                worksheet.write_rich_string(
+                    'F6', bold_12, "P.O. No.: ", normal_12, row[0])
             workbook.close()
 
             sqliteConnection.commit()
@@ -2240,6 +2244,11 @@ class GenerateBill(Frame):
                     challan += str(ch[0]) + ","
                 worksheet.write_rich_string(
                     'A6', bold_12, "Challan No.: ", normal_12, challan)
+            cursor.execute("Select b_po FROM bill WHERE b_year=? AND b_no=?;", bill_info)
+            row = cursor.fetchone()
+            if row[0]:
+                worksheet.write_rich_string(
+                    'G6', bold_12, "P.O. No.: ", normal_12, row[0])
             workbook.close()
 
             sqliteConnection.commit()
@@ -2515,7 +2524,7 @@ class GenerateBill(Frame):
             worksheet.write_number(
                 'I' + str(32+pg), total_roundup, table_header)
 
-            worksheet.write('A' + str(37+pg), "Rupees:- " +
+            worksheet.write('A' + str(34+pg), "Rupees:- " +
                             convertToWords(total_roundup), normal_12)
             worksheet.write(
                 'A' + str(36+pg), "Note:- Goods once sold cannot be taken back.", normal_12)
@@ -2548,6 +2557,11 @@ class GenerateBill(Frame):
                     challan += str(ch[0]) + ","
                 worksheet.write_rich_string(
                     'A6', bold_12, "Challan No.: ", normal_12, challan)
+            cursor.execute("Select b_po FROM bill WHERE b_year=? AND b_no=?;", bill_info)
+            row = cursor.fetchone()
+            if row[0]:
+                worksheet.write_rich_string(
+                    'G6', bold_12, "P.O. No.: ", normal_12, row[0])
             workbook.close()
 
             sqliteConnection.commit()
@@ -2833,6 +2847,10 @@ class GenerateBill(Frame):
                     challan += str(ch[0]) + ","
                 worksheet.write_rich_string(
                     'A6', bold_12, "Challan No.: ", normal_12, challan)
+            row = cursor.fetchone()
+            if row[0]:
+                worksheet.write_rich_string(
+                    'E6', bold_12, "P.O. No.: ", normal_12, row[0])
             workbook.close()
 
             sqliteConnection.commit()
@@ -3149,6 +3167,10 @@ class GenerateBill(Frame):
                     challan += str(ch[0]) + ","
                 worksheet.write_rich_string(
                     'A6', bold_12, "Challan No.: ", normal_12, challan)
+            row = cursor.fetchone()
+            if row[0]:
+                worksheet.write_rich_string(
+                    'H6', bold_12, "P.O. No.: ", normal_12, row[0])
             workbook.close()
 
             sqliteConnection.commit()
@@ -4041,7 +4063,7 @@ class AutocompleteEntry(Entry):
             self.var = self["textvariable"] = StringVar()
 
         self.var.trace('w', self.changed)
-        self.bind("<Return>", self.Selection)
+        self.bind("<Return>", self.selection)
         self.bind("<Up>", self.moveUp)
         self.bind("<Down>", self.moveDown)
 
@@ -4058,8 +4080,8 @@ class AutocompleteEntry(Entry):
                 if not self.listboxUp:
                     self.listbox = Listbox(
                         width=40, height=self.listboxLength, font=("arial", 11))
-                    self.listbox.bind("<Button-1>", self.Selection)
-                    self.listbox.bind("<Return>", self.Selection)
+                    self.listbox.bind("<Button-1>", self.selection)
+                    self.listbox.bind("<Return>", self.selection)
                     self.listbox.place(relx=0.09, rely=0.35)
                     self.listboxUp = True
 
@@ -4071,7 +4093,7 @@ class AutocompleteEntry(Entry):
                     self.listbox.destroy()
                     self.listboxUp = False
 
-    def Selection(self, event):
+    def selection(self, event):
         if self.listboxUp:
             self.var.set(self.listbox.get(ACTIVE))
             self.listbox.destroy()
@@ -4080,32 +4102,32 @@ class AutocompleteEntry(Entry):
 
     def moveUp(self, event):
         if self.listboxUp:
-            if self.listbox.curSelection() == ():
+            if self.listbox.curselection() == ():
                 index = '0'
             else:
-                index = self.listbox.curSelection()[0]
+                index = self.listbox.curselection()[0]
 
             if index != '0':
-                self.listbox.Selection_clear(first=index)
+                self.listbox.selection_clear(first=index)
                 index = str(int(index) - 1)
 
                 self.listbox.see(index)  # Scroll!
-                self.listbox.Selection_set(first=index)
+                self.listbox.selection_set(first=index)
                 self.listbox.activate(index)
 
     def moveDown(self, event):
         if self.listboxUp:
-            if self.listbox.curSelection() == ():
+            if self.listbox.curselection() == ():
                 index = '0'
             else:
-                index = self.listbox.curSelection()[0]
+                index = self.listbox.curselection()[0]
 
             if index != END:
-                self.listbox.Selection_clear(first=index)
+                self.listbox.selection_clear(first=index)
                 index = str(int(index) + 1)
 
                 self.listbox.see(index)  # Scroll!
-                self.listbox.Selection_set(first=index)
+                self.listbox.selection_set(first=index)
                 self.listbox.activate(index)
 
     def comparison(self):
@@ -4144,7 +4166,7 @@ class AutocompleteAddEntry(Entry):
             self.var = self["textvariable"] = StringVar()
 
         self.var.trace('w', self.changed)
-        self.bind("<Return>", self.Selection)
+        self.bind("<Return>", self.selection)
         self.bind("<Up>", self.moveUp)
         self.bind("<Down>", self.moveDown)
 
@@ -4161,8 +4183,8 @@ class AutocompleteAddEntry(Entry):
                 if not self.listboxUp:
                     self.listbox = Listbox(
                         width=33, height=self.listboxLength, font=("arial", 18))
-                    self.listbox.bind("<Button-1>", self.Selection)
-                    self.listbox.bind("<Return>", self.Selection)
+                    self.listbox.bind("<Button-1>", self.selection)
+                    self.listbox.bind("<Return>", self.selection)
                     self.listbox.place(relx=0.11, rely=0.31)
                     self.listboxUp = True
 
@@ -4174,7 +4196,7 @@ class AutocompleteAddEntry(Entry):
                     self.listbox.destroy()
                     self.listboxUp = False
 
-    def Selection(self, event):
+    def selection(self, event):
         if self.listboxUp:
             self.var.set(self.listbox.get(ACTIVE))
             self.listbox.destroy()
@@ -4183,37 +4205,40 @@ class AutocompleteAddEntry(Entry):
 
     def moveUp(self, event):
         if self.listboxUp:
-            if self.listbox.curSelection() == ():
+            if self.listbox.curselection() == ():
                 index = '0'
             else:
-                index = self.listbox.curSelection()[0]
+                index = self.listbox.curselection()[0]
 
             if index != '0':
-                self.listbox.Selection_clear(first=index)
+                self.listbox.selection_clear(first=index)
                 index = str(int(index) - 1)
 
                 self.listbox.see(index)  # Scroll!
-                self.listbox.Selection_set(first=index)
+                self.listbox.selection_set(first=index)
                 self.listbox.activate(index)
 
     def moveDown(self, event):
         if self.listboxUp:
-            if self.listbox.curSelection() == ():
+            if self.listbox.curselection() == ():
                 index = '0'
             else:
-                index = self.listbox.curSelection()[0]
+                index = self.listbox.curselection()[0]
 
             if index != END:
-                self.listbox.Selection_clear(first=index)
+                self.listbox.selection_clear(first=index)
                 index = str(int(index) + 1)
 
                 self.listbox.see(index)  # Scroll!
-                self.listbox.Selection_set(first=index)
+                self.listbox.selection_set(first=index)
                 self.listbox.activate(index)
 
     def comparison(self):
         return [w for w in self.autocompleteList if self.matchesFunction(self.var.get(), w)]
 
+def matches(fieldValue, acListEntry):
+    pattern = re.compile(re.escape(fieldValue) + '.*', re.IGNORECASE)
+    return re.match(pattern, acListEntry)
 
 # ---------- Global Update List Function --------
 
@@ -4303,3 +4328,4 @@ if __name__ == "__main__":
     getProductList()
     app = App()
     app.mainloop()
+
