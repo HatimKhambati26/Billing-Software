@@ -620,7 +620,8 @@ class AddBillDetails(Frame):
             messagebox.showerror(
                 title="Error", message="Rate Field cannot be empty!!")
             return
-        amt = int(Decimal(float(rate) * int(quantity)).quantize(0, ROUND_HALF_UP))
+        amt = int(Decimal(float(rate) * int(quantity)
+                          ).quantize(0, ROUND_HALF_UP))
         gst = self.gst.get() * 0.5
         igst = self.igst.get()
         if not gst and not igst:
@@ -801,9 +802,9 @@ class AddBillDetails(Frame):
         self.rateE.delete(0, END)
         self.pquan.delete(0, END)
         self.gstE.delete(0, END)
-        self.gstE.insert(0,0)
+        self.gstE.insert(0, 0)
         self.igstE.delete(0, END)
-        self.igstE.insert(0,0)
+        self.igstE.insert(0, 0)
         self.phsn.delete(0, END)
         self.challan.delete(0, END)
         self.amc.delete(0, END)
@@ -1038,7 +1039,8 @@ class EditBillDetails(Frame):
                 messagebox.showerror(
                     title="Error", message="Enter a Valid Rate!!")
                 return
-            amt = int(Decimal(float(rate) * int(quantity)).quantize(0, ROUND_HALF_UP))
+            amt = int(Decimal(float(rate) * int(quantity)
+                              ).quantize(0, ROUND_HALF_UP))
             constraints.append("bd_rate")
             constraints.append(rate)
             constraints.append("bd_amount")
@@ -1048,7 +1050,7 @@ class EditBillDetails(Frame):
         cgst = self.ecgst.get()
         if cgst:
             constraints.append("bd_cgst")
-            constraints.append(cgst)
+            constraints.append(str(int(cgst)/2))
         igst = self.eigst.get()
         if igst:
             constraints.append("bd_igst")
@@ -1931,7 +1933,8 @@ class GenerateBill(Frame):
                     challan += str(ch[0]) + ","
                 worksheet.write_rich_string(
                     'A6', bold_12, "Challan No.: ", normal_12, challan)
-            cursor.execute("Select b_po FROM bill WHERE b_year=? AND b_no=?;", bill_info)
+            cursor.execute(
+                "Select b_po FROM bill WHERE b_year=? AND b_no=?;", bill_info)
             row = cursor.fetchone()
             if row[0]:
                 worksheet.write_rich_string(
@@ -2244,7 +2247,8 @@ class GenerateBill(Frame):
                     challan += str(ch[0]) + ","
                 worksheet.write_rich_string(
                     'A6', bold_12, "Challan No.: ", normal_12, challan)
-            cursor.execute("Select b_po FROM bill WHERE b_year=? AND b_no=?;", bill_info)
+            cursor.execute(
+                "Select b_po FROM bill WHERE b_year=? AND b_no=?;", bill_info)
             row = cursor.fetchone()
             if row[0]:
                 worksheet.write_rich_string(
@@ -2557,7 +2561,8 @@ class GenerateBill(Frame):
                     challan += str(ch[0]) + ","
                 worksheet.write_rich_string(
                     'A6', bold_12, "Challan No.: ", normal_12, challan)
-            cursor.execute("Select b_po FROM bill WHERE b_year=? AND b_no=?;", bill_info)
+            cursor.execute(
+                "Select b_po FROM bill WHERE b_year=? AND b_no=?;", bill_info)
             row = cursor.fetchone()
             if row[0]:
                 worksheet.write_rich_string(
@@ -3296,10 +3301,10 @@ class AddPurchaseBill(Frame):
         # Purchaser's Name
         Label(self.purchaseDF, text="Purchaser's Name:", font=(
             "times new roman", 18, "bold")).place(relx=0.01, rely=0.2, relwidth=0.16, relheight=0.6)
-        self.pname = StringVar()
-        self.pnameC = ttk.Combobox(self.purchaseDF, font=(
-            "arial", 18, "bold"), textvariable=self.pname, postcommand=self.updatePurchaserList)
-        self.pnameC.place(relx=0.18, rely=0.2, relwidth=0.32, relheight=0.6)
+        self.pname = AutocompletePurchaser(
+            purchasers, self.purchaseDF, listboxLength=15, matchesFunction=matches, bd=3, relief=GROOVE, font=("arial", 18, "bold"))
+        self.pname.place(relx=0.2, rely=0.01, relwidth=0.75, relheight=0.13)
+        self.pname.place(relx=0.18, rely=0.2, relwidth=0.32, relheight=0.6)
 
         # Purchaser's GST
         Label(self.purchaseDF, text="GST No.:", font=(
@@ -3589,6 +3594,7 @@ class AddPurchaseBill(Frame):
             messagebox.showinfo(title="Successful",
                                 message="Bill added successfully with Bill Sr. No:"+str(b_no)+"!!")
             cursor.close()
+            self.clearText()
 
         except sqlite3.Error as error:
             messagebox.showerror(
@@ -3596,10 +3602,6 @@ class AddPurchaseBill(Frame):
         finally:
             if (sqliteConnection):
                 sqliteConnection.close()
-
-    def updatePurchaserList(self):
-        getPurchaserList()
-        self.pnameC['values'] = purchasers
 
     def updateGST_5(self, event):
         self.bgst_5.set(self.bamt_5.get()*0.025)
@@ -3615,8 +3617,33 @@ class AddPurchaseBill(Frame):
 
     def totalBill(self):
         self.btamt.set(round(self.bamt_5.get()+self.bamt_12.get()+self.bamt_18.get()+self.bamt_28.get()+2*(self.bgst_5.get()+self.bgst_12.get() +
-                                                                                                           self.bgst_12.get()+self.bgst_28.get())+self.bigst_5.get()+self.bigst_12.get()+self.bigst_18.get()+self.bigst_28.get()))
-
+                                                                                                           self.bgst_18.get()+self.bgst_28.get())+self.bigst_5.get()+self.bigst_12.get()+self.bigst_18.get()+self.bigst_28.get()))
+    def clearText(self):
+        self.pname.delete(0, END)
+        self.gst.delete(0, END)
+        self.bnoE.delete(0,END)
+        self.bdayE.delete(0,END)
+        self.bmonthE.delete(0,END)
+        self.byearE.delete(0,END)
+        self.bamt_5E.delete(0, END)
+        self.bamt_5E.insert(0, 0)
+        self.bamt_12E.delete(0, END)
+        self.bamt_12E.insert(0, 0)
+        self.bamt_18E.delete(0, END)
+        self.bamt_18E.insert(0, 0)
+        self.bamt_28E.delete(0, END)
+        self.bamt_28E.insert(0, 0)
+        self.bgst_5.set(0)
+        self.bigst_5.set(0)
+        self.bgst_12.set(0)
+        self.bigst_12.set(0)
+        self.bgst_18.set(0)
+        self.bigst_18.set(0)
+        self.bgst_28.set(0)
+        self.bigst_28.set(0)
+        self.btamt.set(0)
+        self.bstatus.delete(0, END)
+        self.pname.focus()
 
 class UpdatePurchaseStatus(Frame):
     def __init__(self, parent, controller):
@@ -3820,7 +3847,7 @@ class UpdatePurchaseStatus(Frame):
             sqliteConnection = sqlite3.connect('Bills/Database/Billing.db')
             cursor = sqliteConnection.cursor()
             cursor.execute(
-                "Select pb_day, pb_month, pb_year, pb_bill_no, pb_tax_amt, pb_gst_5, pb_igst_5, pb_gst_12, pb_igst_12, pb_gst_18, pb_igst_18, pb_gst_28, pb_igst_28, pb_total_amt, pb_status, p_id FROM purchase_bill WHERE pb_year=? AND pb_month=?;", (year, month,))
+                "Select pb_day, pb_month, pb_year, pb_bill_no, pb_tax_amt, pb_gst_5, pb_igst_5, pb_gst_12, pb_igst_12, pb_gst_18, pb_igst_18, pb_gst_28, pb_igst_28, pb_total_amt, pb_status, p_id FROM purchase_bill WHERE pb_year=? AND pb_month=? ORDER BY pb_day;", (year, month,))
             rows = cursor.fetchall()
             workbook = xlsxwriter.Workbook(
                 'Bills/Purchases/' + str(year) + '/Purchase Bill [' + months[month] + "-" + str(year)+'].xlsx')
@@ -3848,11 +3875,11 @@ class UpdatePurchaseStatus(Frame):
             # Date
             worksheet.set_column(0, 0, 10)
             # Bill No.
-            worksheet.set_column(1, 1, 10)
+            worksheet.set_column(1, 1, 15)
             # Purchaser
             worksheet.set_column(2, 2, 30)
             # GST
-            worksheet.set_column(3, 3, 14)
+            worksheet.set_column(3, 3, 20)
             # Taxable Amount
             worksheet.set_column(4, 4, 16)
             # CGST-5
@@ -4236,6 +4263,110 @@ class AutocompleteAddEntry(Entry):
     def comparison(self):
         return [w for w in self.autocompleteList if self.matchesFunction(self.var.get(), w)]
 
+
+class AutocompletePurchaser(Entry):
+    def __init__(self, autocompleteList, *args, **kwargs):
+
+        # Listbox length
+        if 'listboxLength' in kwargs:
+            self.listboxLength = kwargs['listboxLength']
+            del kwargs['listboxLength']
+        else:
+            self.listboxLength = 8
+
+        # Custom matches function
+        if 'matchesFunction' in kwargs:
+            self.matchesFunction = kwargs['matchesFunction']
+            del kwargs['matchesFunction']
+        else:
+            def matches(fieldValue, acListEntry):
+                pattern = re.compile(
+                    '.*' + re.escape(fieldValue) + '.*', re.IGNORECASE)
+                return re.match(pattern, acListEntry)
+
+            self.matchesFunction = matches
+
+        Entry.__init__(self, *args, **kwargs)
+        self.focus()
+
+        self.autocompleteList = autocompleteList
+
+        self.var = self["textvariable"]
+        if self.var == '':
+            self.var = self["textvariable"] = StringVar()
+
+        self.var.trace('w', self.changed)
+        self.bind("<Return>", self.selection)
+        self.bind("<Up>", self.moveUp)
+        self.bind("<Down>", self.moveDown)
+
+        self.listboxUp = False
+
+    def changed(self, name, index, mode):
+        if self.var.get() == '':
+            if self.listboxUp:
+                self.listbox.destroy()
+                self.listboxUp = False
+        else:
+            words = self.comparison()
+            if words:
+                if not self.listboxUp:
+                    self.listbox = Listbox(
+                        width=33, height=self.listboxLength, font=("arial", 18))
+                    self.listbox.bind("<Button-1>", self.selection)
+                    self.listbox.bind("<Return>", self.selection)
+                    self.listbox.place(relx=0.19, rely=0.32)
+                    self.listboxUp = True
+
+                self.listbox.delete(0, END)
+                for w in words:
+                    self.listbox.insert(END, w)
+            else:
+                if self.listboxUp:
+                    self.listbox.destroy()
+                    self.listboxUp = False
+
+    def selection(self, event):
+        if self.listboxUp:
+            self.var.set(self.listbox.get(ACTIVE))
+            self.listbox.destroy()
+            self.listboxUp = False
+            self.icursor(END)
+
+    def moveUp(self, event):
+        if self.listboxUp:
+            if self.listbox.curselection() == ():
+                index = '0'
+            else:
+                index = self.listbox.curselection()[0]
+
+            if index != '0':
+                self.listbox.selection_clear(first=index)
+                index = str(int(index) - 1)
+
+                self.listbox.see(index)  # Scroll!
+                self.listbox.selection_set(first=index)
+                self.listbox.activate(index)
+
+    def moveDown(self, event):
+        if self.listboxUp:
+            if self.listbox.curselection() == ():
+                index = '0'
+            else:
+                index = self.listbox.curselection()[0]
+
+            if index != END:
+                self.listbox.selection_clear(first=index)
+                index = str(int(index) + 1)
+
+                self.listbox.see(index)  # Scroll!
+                self.listbox.selection_set(first=index)
+                self.listbox.activate(index)
+
+    def comparison(self):
+        return [w for w in self.autocompleteList if self.matchesFunction(self.var.get(), w)]
+
+
 def matches(fieldValue, acListEntry):
     pattern = re.compile(re.escape(fieldValue) + '.*', re.IGNORECASE)
     return re.match(pattern, acListEntry)
@@ -4326,6 +4457,6 @@ def convertToWords(n):
 
 if __name__ == "__main__":
     getProductList()
+    getPurchaserList()
     app = App()
     app.mainloop()
-
