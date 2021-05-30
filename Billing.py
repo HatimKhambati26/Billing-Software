@@ -1769,6 +1769,9 @@ class GenerateBill(Frame):
                 pg = p*47
                 worksheet.merge_range('A' + str(1+pg)+':H' + str(
                     1+pg), "GST No:- 27AADPP0622L1ZQ   Tel. No: +919820552008 / +919004023428   Email:aqpatanwala@hotmail.com", bold_11)
+                # Page No.
+                worksheet.merge_range('A' + str(2+pg)+':H' + str(
+                    2+pg), "Page: " + str(p+1) + " of " + str(pgs), bold_11)
                 worksheet.write(
                     'A' + str(3+pg), "To:- " + c_name, bold_14_u)
                 worksheet.merge_range(
@@ -1845,6 +1848,9 @@ class GenerateBill(Frame):
                         total += rows[ent][5]
                         gst += rows[ent][5]*rows[ent][4]*0.01
                         rem -= 1
+                    # P.T.O.
+                    worksheet.write(
+                        'H' + str(36+pg), "P.T.O.", bold_12)
                 else:
                     count = rem
                     for i in range(pg+8, pg+28):
@@ -2076,6 +2082,9 @@ class GenerateBill(Frame):
                 pg = p*47
                 worksheet.merge_range('A' + str(1+pg)+':I' + str(
                     1+pg), "GST No:- 27AADPP0622L1ZQ   Tel. No: +919820552008 / +919004022828   Email:aqpatanwala@hotmail.com", bold_11)
+                # Page No.
+                worksheet.merge_range('A' + str(2+pg)+':I' + str(
+                    2+pg), "Page: " + str(p+1) + " of " + str(pgs), bold_11)
                 worksheet.write(
                     'A' + str(3+pg), "To:- " + c_name, bold_14_u)
                 worksheet.merge_range(
@@ -2158,6 +2167,9 @@ class GenerateBill(Frame):
                         total += rows[ent][6]
                         gst += rows[ent][6]*rows[ent][5]*0.01
                         rem -= 1
+                    # P.T.O.
+                    worksheet.write(
+                        'I' + str(36+pg), "P.T.O.", bold_12)
                 else:
                     count = rem
                     for i in range(pg+8, pg+28):
@@ -2390,6 +2402,9 @@ class GenerateBill(Frame):
                 pg = p*47
                 worksheet.merge_range('A' + str(1+pg)+':I' + str(
                     1+pg), "GST No:- 27AADPP0622L1ZQ   Tel. No: +919820552008 / +919004023128   Email:aqpatanwala@hotmail.com", bold_11)
+                # Page No.
+                worksheet.merge_range('A' + str(2+pg)+':I' + str(
+                    2+pg), "Page: " + str(p+1) + " of " + str(pgs), bold_11)
                 worksheet.write(
                     'A' + str(3+pg), "To:- " + c_name, bold_14_u)
                 worksheet.merge_range(
@@ -2472,6 +2487,9 @@ class GenerateBill(Frame):
                         total += rows[ent][6]
                         gst += rows[ent][6]*rows[ent][5]*0.01
                         rem -= 1
+                    # P.T.O.
+                    worksheet.write(
+                        'I' + str(36+pg), "P.T.O.", bold_12)
                 else:
                     count = rem
                     for i in range(pg+8, pg+28):
@@ -2703,6 +2721,9 @@ class GenerateBill(Frame):
                 pg = p*47
                 worksheet.merge_range('A' + str(1+pg)+':G' + str(
                     1+pg), "GST No:- 27AADPP0622L1ZQ   Tel. No: +919820552008 / +919004020428   Email:aqpatanwala@hotmail.com", bold_11)
+                # Page No.
+                worksheet.merge_range('A' + str(2+pg)+':G' + str(
+                    2+pg), "Page: " + str(p+1) + " of " + str(pgs), bold_11)
                 worksheet.write(
                     'A' + str(3+pg), "To:- " + c_name, bold_14_u)
                 worksheet.merge_range(
@@ -2770,6 +2791,9 @@ class GenerateBill(Frame):
                         total += rows[ent][5]
                         igst += rows[ent][5]*rows[ent][4]*0.01
                         rem -= 1
+                    # P.T.O.
+                    worksheet.write(
+                        'G' + str(36+pg), "P.T.O.", bold_12)
                 else:
                     count = rem
                     for i in range(pg+8, pg+28):
@@ -2852,6 +2876,8 @@ class GenerateBill(Frame):
                     challan += str(ch[0]) + ","
                 worksheet.write_rich_string(
                     'A6', bold_12, "Challan No.: ", normal_12, challan)
+            cursor.execute(
+                "Select b_po FROM bill WHERE b_year=? AND b_no=?;", bill_info)
             row = cursor.fetchone()
             if row[0]:
                 worksheet.write_rich_string(
@@ -2993,6 +3019,9 @@ class GenerateBill(Frame):
                 pg = p*47
                 worksheet.merge_range('A' + str(1+pg)+':J' + str(
                     1+pg), "GST No:- 27AADPP0622L1ZQ   Tel. No: +919820552008 / +919004023128   Email:aqpatanwala@hotmail.com", bold_11)
+                # Page No.
+                worksheet.merge_range('A' + str(2+pg)+':J' + str(
+                    2+pg), "Page: " + str(p+1) + " of " + str(pgs), bold_11)
                 worksheet.write(
                     'A' + str(3+pg), "To:- " + c_name, bold_14_u)
                 worksheet.merge_range(
@@ -3081,6 +3110,9 @@ class GenerateBill(Frame):
                         total += rows[ent][7]
                         gst += rows[ent][7]*rows[ent][6]*0.01
                         rem -= 1
+                    # P.T.O.
+                    worksheet.write(
+                        'J' + str(36+pg), "P.T.O.", bold_12)
                 else:
                     count = rem
                     for i in range(pg+8, pg+28):
@@ -3172,6 +3204,8 @@ class GenerateBill(Frame):
                     challan += str(ch[0]) + ","
                 worksheet.write_rich_string(
                     'A6', bold_12, "Challan No.: ", normal_12, challan)
+            cursor.execute(
+                "Select b_po FROM bill WHERE b_year=? AND b_no=?;", bill_info)
             row = cursor.fetchone()
             if row[0]:
                 worksheet.write_rich_string(
@@ -3618,13 +3652,14 @@ class AddPurchaseBill(Frame):
     def totalBill(self):
         self.btamt.set(round(self.bamt_5.get()+self.bamt_12.get()+self.bamt_18.get()+self.bamt_28.get()+2*(self.bgst_5.get()+self.bgst_12.get() +
                                                                                                            self.bgst_18.get()+self.bgst_28.get())+self.bigst_5.get()+self.bigst_12.get()+self.bigst_18.get()+self.bigst_28.get()))
+
     def clearText(self):
         self.pname.delete(0, END)
         self.gst.delete(0, END)
-        self.bnoE.delete(0,END)
-        self.bdayE.delete(0,END)
-        self.bmonthE.delete(0,END)
-        self.byearE.delete(0,END)
+        self.bnoE.delete(0, END)
+        self.bdayE.delete(0, END)
+        self.bmonthE.delete(0, END)
+        self.byearE.delete(0, END)
         self.bamt_5E.delete(0, END)
         self.bamt_5E.insert(0, 0)
         self.bamt_12E.delete(0, END)
@@ -3644,6 +3679,7 @@ class AddPurchaseBill(Frame):
         self.btamt.set(0)
         self.bstatus.delete(0, END)
         self.pname.focus()
+
 
 class UpdatePurchaseStatus(Frame):
     def __init__(self, parent, controller):
