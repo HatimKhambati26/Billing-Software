@@ -1757,6 +1757,8 @@ class GenerateBill(Frame):
             pgs = 0
             total = 0
             gst = 0
+            tax_percent_amount = {2.5: 0, 6: 0, 9: 0, 14: 0}
+            gst_percent_amount = {2.5: 0, 6: 0, 9: 0, 14: 0}
             if len_entries > 40:
                 pgs = int(len_entries/40)
                 len_entries %= 40
@@ -1823,8 +1825,9 @@ class GenerateBill(Frame):
                             'G' + str(i), rows[ent][4], table_data)
                         worksheet.write_number(
                             'H' + str(i), rows[ent][5], table_data)
-                        total += rows[ent][5]
-                        gst += rows[ent][5]*rows[ent][4]*0.01
+                        tax_percent_amount[rows[ent][4]] += rows[ent][5]
+                        gst_percent_amount[rows[ent][4]
+                                           ] += rows[ent][5]*rows[ent][4]*0.01
                         rem -= 1
                 elif rem > 20:
                     for i in range(pg+8, pg+28):
@@ -1845,12 +1848,13 @@ class GenerateBill(Frame):
                             'G' + str(i), rows[ent][4], table_data)
                         worksheet.write_number(
                             'H' + str(i), rows[ent][5], table_data)
-                        total += rows[ent][5]
-                        gst += rows[ent][5]*rows[ent][4]*0.01
+                        tax_percent_amount[rows[ent][4]] += rows[ent][5]
+                        gst_percent_amount[rows[ent][4]
+                                           ] += rows[ent][5]*rows[ent][4]*0.01
                         rem -= 1
-                    # P.T.O.
-                    worksheet.write(
-                        'H' + str(36+pg), "P.T.O.", bold_12)
+                    # Page No.
+                    worksheet.merge_range('A' + str(38+pg)+':H' + str(
+                        38+pg), "Page: " + str(p+1) + " of " + str(pgs), bold_11)
                 else:
                     count = rem
                     for i in range(pg+8, pg+28):
@@ -1873,8 +1877,9 @@ class GenerateBill(Frame):
                             'G' + str(i), rows[ent][4], table_data)
                         worksheet.write_number(
                             'H' + str(i), rows[ent][5], table_data)
-                        total += rows[ent][5]
-                        gst += rows[ent][5]*rows[ent][4]*0.01
+                        tax_percent_amount[rows[ent][4]] += rows[ent][5]
+                        gst_percent_amount[rows[ent][4]
+                                           ] += rows[ent][5]*rows[ent][4]*0.01
                         rem -= 1
                     if count < 20:
                         for i in range(0, 8):
@@ -1882,7 +1887,20 @@ class GenerateBill(Frame):
                                               count+7+pg, i, 20-count, 1)
                     break
 
+            # GST Amount Split Up
+            worksheet.merge_range('A' + str(28+pg)+':D' + str(
+                28+pg), "GST 5%: Amount - " + str(tax_percent_amount[2.5]) + "/-  GST - " + str(round(gst_percent_amount[2.5]*2, 2)) + "/-", bold_11)
+            worksheet.merge_range('A' + str(29+pg)+':D' + str(
+                29+pg), "GST 12%: Amount - " + str(tax_percent_amount[6]) + "/-  GST - " + str(round(gst_percent_amount[6]*2, 2)) + "/-", bold_11)
+            worksheet.merge_range('A' + str(30+pg)+':D' + str(
+                30+pg), "GST 18%: Amount - " + str(tax_percent_amount[9]) + "/-  GST - " + str(round(gst_percent_amount[9]*2, 2)) + "/-", bold_11)
+            worksheet.merge_range('A' + str(31+pg)+':D' + str(
+                31+pg), "GST 28%: Amount - " + str(tax_percent_amount[14]) + "/-  GST - " + str(round(gst_percent_amount[14]*2, 2)) + "/-", bold_11)
+
             # TOTAL
+            for pk in [2.5, 6, 9, 14]:
+                gst += round(gst_percent_amount[pk], 2)
+                total += tax_percent_amount[pk]
             gst = round(gst, 2)
             worksheet.merge_range('E' + str(28+pg)+':G' +
                                   str(28+pg), "TOTAL AMOUNT", table_header)
@@ -2070,6 +2088,8 @@ class GenerateBill(Frame):
             pgs = 0
             total = 0
             gst = 0
+            tax_percent_amount = {2.5: 0, 6: 0, 9: 0, 14: 0}
+            gst_percent_amount = {2.5: 0, 6: 0, 9: 0, 14: 0}
             if len_entries > 40:
                 pgs = int(len_entries/40)
                 len_entries %= 40
@@ -2140,8 +2160,9 @@ class GenerateBill(Frame):
                             'H' + str(i), rows[ent][5], table_data)
                         worksheet.write_number(
                             'I' + str(i), rows[ent][6], table_data)
-                        total += rows[ent][6]
-                        gst += rows[ent][6]*rows[ent][5]*0.01
+                        tax_percent_amount[rows[ent][5]] += rows[ent][6]
+                        gst_percent_amount[rows[ent][5]
+                                           ] += rows[ent][6]*rows[ent][5]*0.01
                         rem -= 1
                 elif rem > 20:
                     for i in range(pg+8, pg+28):
@@ -2164,12 +2185,13 @@ class GenerateBill(Frame):
                             'H' + str(i), rows[ent][5], table_data)
                         worksheet.write_number(
                             'I' + str(i), rows[ent][6], table_data)
-                        total += rows[ent][6]
-                        gst += rows[ent][6]*rows[ent][5]*0.01
+                        tax_percent_amount[rows[ent][5]] += rows[ent][6]
+                        gst_percent_amount[rows[ent][5]
+                                           ] += rows[ent][6]*rows[ent][5]*0.01
                         rem -= 1
-                    # P.T.O.
-                    worksheet.write(
-                        'I' + str(36+pg), "P.T.O.", bold_12)
+                    # Page No.
+                    worksheet.merge_range('A' + str(38+pg)+':I' + str(
+                        38+pg), "Page: " + str(p+1) + " of " + str(pgs), bold_11)
                 else:
                     count = rem
                     for i in range(pg+8, pg+28):
@@ -2194,8 +2216,9 @@ class GenerateBill(Frame):
                             'H' + str(i), rows[ent][5], table_data)
                         worksheet.write_number(
                             'I' + str(i), rows[ent][6], table_data)
-                        total += rows[ent][6]
-                        gst += rows[ent][6]*rows[ent][5]*0.01
+                        tax_percent_amount[rows[ent][5]] += rows[ent][6]
+                        gst_percent_amount[rows[ent][5]
+                                           ] += rows[ent][6]*rows[ent][5]*0.01
                         rem -= 1
                     if count < 20:
                         for i in range(0, 9):
@@ -2203,7 +2226,20 @@ class GenerateBill(Frame):
                                               count+7+pg, i, 20-count, 1)
                     break
 
+            # GST Amount Split Up
+            worksheet.merge_range('A' + str(28+pg)+':E' + str(
+                28+pg), "GST 5%: Amount - " + str(tax_percent_amount[2.5]) + "/-  GST - " + str(round(gst_percent_amount[2.5]*2, 2)) + "/-", bold_11)
+            worksheet.merge_range('A' + str(29+pg)+':E' + str(
+                29+pg), "GST 12%: Amount - " + str(tax_percent_amount[6]) + "/-  GST - " + str(round(gst_percent_amount[6]*2, 2)) + "/-", bold_11)
+            worksheet.merge_range('A' + str(30+pg)+':E' + str(
+                30+pg), "GST 18%: Amount - " + str(tax_percent_amount[9]) + "/-  GST - " + str(round(gst_percent_amount[9]*2, 2)) + "/-", bold_11)
+            worksheet.merge_range('A' + str(31+pg)+':E' + str(
+                31+pg), "GST 28%: Amount - " + str(tax_percent_amount[14]) + "/-  GST - " + str(round(gst_percent_amount[14]*2, 2)) + "/-", bold_11)
+
             # TOTAL
+            for pk in [2.5, 6, 9, 14]:
+                gst += round(gst_percent_amount[pk], 2)
+                total += tax_percent_amount[pk]
             gst = round(gst, 2)
             worksheet.merge_range('F' + str(28+pg)+':H' +
                                   str(28+pg), "TOTAL AMOUNT", table_header)
@@ -2390,6 +2426,8 @@ class GenerateBill(Frame):
             pgs = 0
             total = 0
             gst = 0
+            tax_percent_amount = {2.5: 0, 6: 0, 9: 0, 14: 0}
+            gst_percent_amount = {2.5: 0, 6: 0, 9: 0, 14: 0}
             if len_entries > 40:
                 pgs = int(len_entries/40)
                 len_entries %= 40
@@ -2460,8 +2498,9 @@ class GenerateBill(Frame):
                             'H' + str(i), rows[ent][5], table_data)
                         worksheet.write_number(
                             'I' + str(i), rows[ent][6], table_data)
-                        total += rows[ent][6]
-                        gst += rows[ent][6]*rows[ent][5]*0.01
+                        tax_percent_amount[rows[ent][5]] += rows[ent][6]
+                        gst_percent_amount[rows[ent][5]
+                                           ] += rows[ent][6]*rows[ent][5]*0.01
                         rem -= 1
                 elif rem > 20:
                     for i in range(pg+8, pg+28):
@@ -2484,12 +2523,13 @@ class GenerateBill(Frame):
                             'H' + str(i), rows[ent][5], table_data)
                         worksheet.write_number(
                             'I' + str(i), rows[ent][6], table_data)
-                        total += rows[ent][6]
-                        gst += rows[ent][6]*rows[ent][5]*0.01
+                        tax_percent_amount[rows[ent][5]] += rows[ent][6]
+                        gst_percent_amount[rows[ent][5]
+                                           ] += rows[ent][6]*rows[ent][5]*0.01
                         rem -= 1
-                    # P.T.O.
-                    worksheet.write(
-                        'I' + str(36+pg), "P.T.O.", bold_12)
+                    # Page No.
+                    worksheet.merge_range('A' + str(38+pg)+':I' + str(
+                        38+pg), "Page: " + str(p+1) + " of " + str(pgs), bold_11)
                 else:
                     count = rem
                     for i in range(pg+8, pg+28):
@@ -2514,8 +2554,9 @@ class GenerateBill(Frame):
                             'H' + str(i), rows[ent][5], table_data)
                         worksheet.write_number(
                             'I' + str(i), rows[ent][6], table_data)
-                        total += rows[ent][6]
-                        gst += rows[ent][6]*rows[ent][5]*0.01
+                        tax_percent_amount[rows[ent][5]] += rows[ent][6]
+                        gst_percent_amount[rows[ent][5]
+                                           ] += rows[ent][6]*rows[ent][5]*0.01
                         rem -= 1
                     if count < 20:
                         for i in range(0, 9):
@@ -2523,7 +2564,20 @@ class GenerateBill(Frame):
                                               count+7+pg, i, 20-count, 1)
                     break
 
+            # GST Amount Split Up
+            worksheet.merge_range('A' + str(28+pg)+':E' + str(
+                28+pg), "GST 5%: Amount - " + str(tax_percent_amount[2.5]) + "/-  GST - " + str(round(gst_percent_amount[2.5]*2, 2)) + "/-", bold_11)
+            worksheet.merge_range('A' + str(29+pg)+':E' + str(
+                29+pg), "GST 12%: Amount - " + str(tax_percent_amount[6]) + "/-  GST - " + str(round(gst_percent_amount[6]*2, 2)) + "/-", bold_11)
+            worksheet.merge_range('A' + str(30+pg)+':E' + str(
+                30+pg), "GST 18%: Amount - " + str(tax_percent_amount[9]) + "/-  GST - " + str(round(gst_percent_amount[9]*2, 2)) + "/-", bold_11)
+            worksheet.merge_range('A' + str(31+pg)+':E' + str(
+                31+pg), "GST 28%: Amount - " + str(tax_percent_amount[14]) + "/-  GST - " + str(round(gst_percent_amount[14]*2, 2)) + "/-", bold_11)
+
             # TOTAL
+            for pk in [2.5, 6, 9, 14]:
+                gst += round(gst_percent_amount[pk], 2)
+                total += tax_percent_amount[pk]
             gst = round(gst, 2)
             worksheet.merge_range('F' + str(28+pg)+':H' +
                                   str(28+pg), "TOTAL AMOUNT", table_header)
@@ -2707,8 +2761,9 @@ class GenerateBill(Frame):
             rem = len(rows)
             pgs = 0
             total = 0
-            gst = 0
             igst = 0
+            tax_percent_amount = {5: 0, 12: 0, 18: 0, 28: 0}
+            gst_percent_amount = {5: 0, 12: 0, 18: 0, 28: 0}
             if len_entries > 40:
                 pgs = int(len_entries/40)
                 len_entries %= 40
@@ -2768,8 +2823,9 @@ class GenerateBill(Frame):
                             'F' + str(i), rows[ent][4], table_data)
                         worksheet.write_number(
                             'G' + str(i), rows[ent][5], table_data)
-                        total += rows[ent][5]
-                        igst += rows[ent][5]*rows[ent][4]*0.01
+                        tax_percent_amount[rows[ent][4]] += rows[ent][5]
+                        gst_percent_amount[rows[ent][4]
+                                           ] += rows[ent][5]*rows[ent][4]*0.01
                         rem -= 1
                 elif rem > 20:
                     for i in range(pg+8, pg+28):
@@ -2788,12 +2844,13 @@ class GenerateBill(Frame):
                             'F' + str(i), rows[ent][4], table_data)
                         worksheet.write_number(
                             'G' + str(i), rows[ent][5], table_data)
-                        total += rows[ent][5]
-                        igst += rows[ent][5]*rows[ent][4]*0.01
+                        tax_percent_amount[rows[ent][4]] += rows[ent][5]
+                        gst_percent_amount[rows[ent][4]
+                                           ] += rows[ent][5]*rows[ent][4]*0.01
                         rem -= 1
-                    # P.T.O.
-                    worksheet.write(
-                        'G' + str(36+pg), "P.T.O.", bold_12)
+                    # Page No.
+                    worksheet.merge_range('A' + str(38+pg)+':G' + str(
+                        38+pg), "Page: " + str(p+1) + " of " + str(pgs), bold_11)
                 else:
                     count = rem
                     for i in range(pg+8, pg+28):
@@ -2814,8 +2871,9 @@ class GenerateBill(Frame):
                             'F' + str(i), rows[ent][4], table_data)
                         worksheet.write_number(
                             'G' + str(i), rows[ent][5], table_data)
-                        total += rows[ent][5]
-                        igst += rows[ent][5]*rows[ent][4]*0.01
+                        tax_percent_amount[rows[ent][4]] += rows[ent][5]
+                        gst_percent_amount[rows[ent][4]
+                                           ] += rows[ent][5]*rows[ent][4]*0.01
                         rem -= 1
                     if count < 20:
                         for i in range(0, 10):
@@ -2823,7 +2881,20 @@ class GenerateBill(Frame):
                                               count+7+pg, i, 20-count, 1)
                     break
 
+            # GST Amount Split Up
+            worksheet.merge_range('A' + str(28+pg)+':C' + str(
+                28+pg), "GST 5%: Amount - " + str(tax_percent_amount[5]) + "/-  GST - " + str(round(gst_percent_amount[5], 2)) + "/-", bold_11)
+            worksheet.merge_range('A' + str(29+pg)+':C' + str(
+                29+pg), "GST 12%: Amount - " + str(tax_percent_amount[12]) + "/-  GST - " + str(round(gst_percent_amount[12], 2)) + "/-", bold_11)
+            worksheet.merge_range('A' + str(30+pg)+':C' + str(
+                30+pg), "GST 18%: Amount - " + str(tax_percent_amount[18]) + "/-  GST - " + str(round(gst_percent_amount[18], 2)) + "/-", bold_11)
+            worksheet.merge_range('A' + str(31+pg)+':C' + str(
+                31+pg), "GST 28%: Amount - " + str(tax_percent_amount[28]) + "/-  GST - " + str(round(gst_percent_amount[28], 2)) + "/-", bold_11)
+
             # TOTAL
+            for pk in [2.5, 6, 9, 14]:
+                igst += round(gst_percent_amount[pk], 2)
+                total += tax_percent_amount[pk]
             igst = round(igst, 2)
             worksheet.merge_range('D' + str(28+pg)+':F' +
                                   str(28+pg), "TOTAL AMOUNT", table_header)
@@ -3007,6 +3078,8 @@ class GenerateBill(Frame):
             pgs = 0
             total = 0
             gst = 0
+            tax_percent_amount = {2.5: 0, 6: 0, 9: 0, 14: 0}
+            gst_percent_amount = {2.5: 0, 6: 0, 9: 0, 14: 0}
             if len_entries > 40:
                 pgs = int(len_entries/40)
                 len_entries %= 40
@@ -3081,8 +3154,9 @@ class GenerateBill(Frame):
                             'I' + str(i), rows[ent][6], table_data)
                         worksheet.write_number(
                             'J' + str(i), rows[ent][7], table_data)
-                        total += rows[ent][7]
-                        gst += rows[ent][7]*rows[ent][6]*0.01
+                        tax_percent_amount[rows[ent][6]] += rows[ent][7]
+                        gst_percent_amount[rows[ent][6]
+                                           ] += rows[ent][7]*rows[ent][6]*0.01
                         rem -= 1
                 elif rem > 20:
                     for i in range(pg+8, pg+28):
@@ -3110,9 +3184,9 @@ class GenerateBill(Frame):
                         total += rows[ent][7]
                         gst += rows[ent][7]*rows[ent][6]*0.01
                         rem -= 1
-                    # P.T.O.
-                    worksheet.write(
-                        'J' + str(36+pg), "P.T.O.", bold_12)
+                    # Page No.
+                    worksheet.merge_range('A' + str(38+pg)+':J' + str(
+                        38+pg), "Page: " + str(p+1) + " of " + str(pgs), bold_11)
                 else:
                     count = rem
                     for i in range(pg+8, pg+28):
@@ -3148,7 +3222,20 @@ class GenerateBill(Frame):
                                               count+7+pg, i, 20-count, 1)
                     break
 
+            # GST Amount Split Up
+            worksheet.merge_range('A' + str(28+pg)+':F' + str(
+                28+pg), "GST 5%: Amount - " + str(tax_percent_amount[2.5]) + "/-  GST - " + str(round(gst_percent_amount[2.5]*2, 2)) + "/-", bold_11)
+            worksheet.merge_range('A' + str(29+pg)+':F' + str(
+                29+pg), "GST 12%: Amount - " + str(tax_percent_amount[6]) + "/-  GST - " + str(round(gst_percent_amount[6]*2, 2)) + "/-", bold_11)
+            worksheet.merge_range('A' + str(30+pg)+':F' + str(
+                30+pg), "GST 18%: Amount - " + str(tax_percent_amount[9]) + "/-  GST - " + str(round(gst_percent_amount[9]*2, 2)) + "/-", bold_11)
+            worksheet.merge_range('A' + str(31+pg)+':F' + str(
+                31+pg), "GST 28%: Amount - " + str(tax_percent_amount[14]) + "/-  GST - " + str(round(gst_percent_amount[14]*2, 2)) + "/-", bold_11)
+
             # TOTAL
+            for pk in [2.5, 6, 9, 14]:
+                gst += round(gst_percent_amount[pk], 2)
+                total += tax_percent_amount[pk]
             gst = round(gst, 2)
             worksheet.merge_range('G' + str(28+pg)+':I' +
                                   str(28+pg), "TOTAL AMOUNT", table_header)
