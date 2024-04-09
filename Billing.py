@@ -3181,8 +3181,9 @@ class GenerateBill(Frame):
                             'I' + str(i), rows[ent][6], table_data)
                         worksheet.write_number(
                             'J' + str(i), rows[ent][7], table_data)
-                        total += rows[ent][7]
-                        gst += rows[ent][7]*rows[ent][6]*0.01
+                        tax_percent_amount[rows[ent][6]] += rows[ent][7]
+                        gst_percent_amount[rows[ent][6]
+                                           ] += rows[ent][7]*rows[ent][6]*0.01
                         rem -= 1
                     # Page No.
                     worksheet.merge_range('A' + str(38+pg)+':J' + str(
@@ -3213,8 +3214,9 @@ class GenerateBill(Frame):
                             'I' + str(i), rows[ent][6], table_data)
                         worksheet.write_number(
                             'J' + str(i), rows[ent][7], table_data)
-                        total += rows[ent][7]
-                        gst += rows[ent][7]*rows[ent][6]*0.01
+                        tax_percent_amount[rows[ent][6]] += rows[ent][7]
+                        gst_percent_amount[rows[ent][6]
+                                           ] += rows[ent][7]*rows[ent][6]*0.01
                         rem -= 1
                     if count < 20:
                         for i in range(0, 10):
