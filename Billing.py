@@ -1582,12 +1582,12 @@ class GenerateBill(Frame):
         Label(self.saleF, text="Bill Type:", font=(
             "times new roman", 22, "bold")).place(relx=0.1, rely=0.43, relwidth=0.3, relheight=0.12)
         self.btype = IntVar()
-        Radiobutton(self.saleF, text="Normal", variable=self.btype, value=1, font=(
-            "times new roman", 16, "bold"), bg=rust, bd=3, relief=GROOVE,
-            indicatoron=0).place(relx=0.4, rely=0.45, relwidth=0.2, relheight=0.07)
-        Radiobutton(self.saleF, text="Normal+AMC", variable=self.btype, value=2, font=(
-            "times new roman", 16, "bold"), bg=rust, bd=3, relief=GROOVE,
-            indicatoron=0).place(relx=0.7, rely=0.45, relwidth=0.2, relheight=0.07)
+        # Radiobutton(self.saleF, text="Normal", variable=self.btype, value=1, font=(
+        #     "times new roman", 16, "bold"), bg=rust, bd=3, relief=GROOVE,
+        #     indicatoron=0).place(relx=0.4, rely=0.45, relwidth=0.2, relheight=0.07)
+        # Radiobutton(self.saleF, text="Normal+AMC", variable=self.btype, value=2, font=(
+        #     "times new roman", 16, "bold"), bg=rust, bd=3, relief=GROOVE,
+        #     indicatoron=0).place(relx=0.7, rely=0.45, relwidth=0.2, relheight=0.07)
         Radiobutton(self.saleF, text="Normal + HSN", variable=self.btype, value=3, font=(
             "times new roman", 16, "bold"), bg=rust, bd=3, relief=GROOVE,
             indicatoron=0).place(relx=0.4, rely=0.55, relwidth=0.2, relheight=0.07)
@@ -1632,16 +1632,20 @@ class GenerateBill(Frame):
              ).mkdir(parents=True, exist_ok=True)
         Path("Bills/Sales/" + b_year + "/PDF"
              ).mkdir(parents=True, exist_ok=True)
-        if b_type == 1:
-            self.generateNormalBill((b_year, b_no))
-        elif b_type == 2:
-            self.generateAMCBill((b_year, b_no))
-        elif b_type == 3:
+        # if b_type == 1:
+        #     self.generateNormalBill((b_year, b_no))
+        # elif b_type == 2:
+        #     self.generateAMCBill((b_year, b_no))
+        if b_type == 3:
             self.generateHSNBill((b_year, b_no))
         elif b_type == 4:
             self.generateIGSTBill((b_year, b_no))
-        else:
+        elif b_type == 5:
             self.generateAmcHsnBill((b_year, b_no))
+        else:
+            messagebox.showerror(
+                title="Error", 
+                message="Invalid Bill Type selected!")
 
     def generateNormalBill(self, bill_info):
         try:
@@ -3181,8 +3185,9 @@ class GenerateBill(Frame):
                             'I' + str(i), rows[ent][6], table_data)
                         worksheet.write_number(
                             'J' + str(i), rows[ent][7], table_data)
-                        total += rows[ent][7]
-                        gst += rows[ent][7]*rows[ent][6]*0.01
+                        tax_percent_amount[rows[ent][6]] += rows[ent][7]
+                        gst_percent_amount[rows[ent][6]
+                                           ] += rows[ent][7]*rows[ent][6]*0.01
                         rem -= 1
                     # Page No.
                     worksheet.merge_range('A' + str(38+pg)+':J' + str(
@@ -3213,8 +3218,9 @@ class GenerateBill(Frame):
                             'I' + str(i), rows[ent][6], table_data)
                         worksheet.write_number(
                             'J' + str(i), rows[ent][7], table_data)
-                        total += rows[ent][7]
-                        gst += rows[ent][7]*rows[ent][6]*0.01
+                        tax_percent_amount[rows[ent][6]] += rows[ent][7]
+                        gst_percent_amount[rows[ent][6]
+                                           ] += rows[ent][7]*rows[ent][6]*0.01
                         rem -= 1
                     if count < 20:
                         for i in range(0, 10):
