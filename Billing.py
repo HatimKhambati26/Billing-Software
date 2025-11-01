@@ -1408,19 +1408,28 @@ class UpdateBillStatus(Frame):
         self.viewBillF = LabelFrame(self.saleF, text="View Bill Detials", bd=6, relief=GROOVE, labelanchor=NW, font=(
             "times new roman", 18, "bold"), padx=10, pady=10)
         self.viewBillF.place(relx=0.05, rely=0.54,
-                             relwidth=0.9, relheight=0.45)
+                            relwidth=0.9, relheight=0.4)
         self.displayBillF = Frame(self.viewBillF)
         self.displayBillF.place(relx=0.01, rely=0.05,
-                                relwidth=0.98, relheight=0.98)
+                                relwidth=0.98, relheight=0.95)
         self.displayText = scrolledtext.ScrolledText(
             self.displayBillF, font=("Courier",
-                                     12, "bold"), padx=10, pady=10)
+                                    11, "bold"), padx=10, pady=10)
         self.displayText.insert(INSERT,
                                 "\n\n\n\n\n\n\t\t\tSelect Billing Year or Client's Name to see the entries!! ")
         self.displayText.configure(state='disabled')
         self.displayText.pack(side="left", fill="both", expand=True)
-        Label(self.viewBillF, text="Bill. No.\t       Year\t\t\t\t     Client's Name\t\t\t              Payment", font=(
-            "times new roman", 15, "bold")).place(x=30, y=0)
+        Label(self.viewBillF, text="Bill No.    Year\t\t     Client's Name\t\t\t       Amount\t     Payment", font=(
+            "times new roman", 14, "bold")).place(x=30, y=0)
+
+        # --------- Generate Ledger Button Frame ------------
+        self.ledgerBtnF = LabelFrame(self.saleF, text="Generate Report", bd=6, relief=GROOVE, labelanchor=NW, font=(
+            "times new roman", 18, "bold"))
+        self.ledgerBtnF.place(relx=0.05, rely=0.95, relwidth=0.9, relheight=0.04)
+
+        # Generate Ledger Button
+        Button(self.ledgerBtnF, text="Generate Ledger PDF", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+            "arial", 16, "bold"), command=self.generateLedger).place(relx=0.35, rely=0.05, relwidth=0.3, relheight=0.9)
 
     def searchBill(self):
         constraints = []
@@ -1451,6 +1460,10 @@ class UpdateBillStatus(Frame):
             cursor = sqliteConnection.cursor()
 
             s = ""
+            total_amount = 0
+            paid_amount = 0
+            unpaid_amount = 0
+            
             if constraints[0] == "c_name":
                 cursor.execute(
                     "Select c_id FROM client WHERE c_name =?;", (constraints[1],))
@@ -1459,32 +1472,100 @@ class UpdateBillStatus(Frame):
                 if len(constraints) == 2:
                     cursor.execute(
                         "Select b_no, b_year, b_status FROM bill WHERE c_id=?;", (c_id,))
-                    rows = cursor.fetchall()
-                else:
+                elif len(constraints) == 3:
                     cursor.execute("Select b_no, b_year, b_status FROM bill WHERE c_id=? AND b_year=?;",
-                                   (c_id, constraints[2],))
-                    rows = cursor.fetchall()
+                                (c_id, constraints[2],))
+                else:
+                    cursor.execute("Select b_no, b_year, b_status FROM bill WHERE c_id=? AND b_year=? AND b_month=?;",
+                                (c_id, constraints[2], constraints[3]))
+                rows = cursor.fetchall()
+                
                 for row in rows:
+                    # Calculate bill total from bill_detail
+                    cursor.execute("""
+                        SELECT SUM(bd_amount), SUM(bd_amount * bd_cgst * 0.01), SUM(bd_amount * bd_igst * 0.01)
+                        FROM bill_detail 
+                        WHERE b_year=? AND b_no=?
+                    """, (row[1], row[0]))
+                    amounts = cursor.fetchone()
+                    
+                    taxable_amt = amounts[0] if amounts[0] else 0
+                    cgst_amt = amounts[1] if amounts[1] else 0
+                    igst_amt = amounts[2] if amounts[2] else 0
+                    sgst_amt = cgst_amt  # SGST = CGST
+                    
+                    bill_total = int(Decimal(taxable_amt + (2 * cgst_amt) + igst_amt).quantize(0, ROUND_HALF_UP))
+                    
                     s += "\n"+str(row[0]).center(7)
                     s += str(row[1]).center(17)
-                    s += constraints[1].center(51)
-                    s += str(row[2]).center(17)
+                    s += constraints[1].center(47)
+                    s += str(bill_total).center(15)
+                    s += str(row[2]).center(15)
+                    
+                    total_amount += bill_total
+                    if row[2].lower() in ['paid', 'complete', 'done']:
+                        paid_amount += bill_total
+                    else:
+                        unpaid_amount += bill_total
             else:
-                cursor.execute("Select b_no, b_year,c_id, b_status FROM bill WHERE b_year=?;",
-                               (constraints[0],))
+                if len(constraints) == 1:
+                    cursor.execute("Select b_no, b_year, c_id, b_status FROM bill WHERE b_year=?;",
+                                (constraints[0],))
+                else:
+                    cursor.execute("Select b_no, b_year, c_id, b_status FROM bill WHERE b_year=? AND b_month=?;",
+                                (constraints[0], constraints[1]))
                 rows = cursor.fetchall()
+                
                 for row in rows:
+                    # Calculate bill total from bill_detail
+                    cursor.execute("""
+                        SELECT SUM(bd_amount), SUM(bd_amount * bd_cgst * 0.01), SUM(bd_amount * bd_igst * 0.01)
+                        FROM bill_detail 
+                        WHERE b_year=? AND b_no=?
+                    """, (row[1], row[0]))
+                    amounts = cursor.fetchone()
+                    
+                    taxable_amt = amounts[0] if amounts[0] else 0
+                    cgst_amt = amounts[1] if amounts[1] else 0
+                    igst_amt = amounts[2] if amounts[2] else 0
+                    sgst_amt = cgst_amt
+                    
+                    bill_total = int(Decimal(taxable_amt + (2 * cgst_amt) + igst_amt).quantize(0, ROUND_HALF_UP))
+                    
                     s += "\n"+str(row[0]).center(7)
                     s += str(row[1]).center(17)
                     cursor.execute(
                         "Select c_name FROM client WHERE c_id =?;", (row[2],))
                     c_name = cursor.fetchall()
-                    s += c_name[0][0].center(51)
-                    s += str(row[3]).center(17)
+                    s += c_name[0][0].center(47)
+                    s += str(bill_total).center(15)
+                    s += str(row[3]).center(15)
+                    
+                    total_amount += bill_total
+                    if row[3].lower() in ['paid', 'complete', 'done']:
+                        paid_amount += bill_total
+                    else:
+                        unpaid_amount += bill_total
+            
+            # Add summary at bottom
+            s += "\n" + "-" * 100
+            s += "\n" + " " * 69 + "TOTAL:".ljust(15) + str(total_amount).center(15)
+            s += "\n" + " " * 69 + "PAID:".ljust(15) + str(paid_amount).center(15)
+            s += "\n" + " " * 69 + "UNPAID:".ljust(15) + str(unpaid_amount).center(15)
+            
             self.displayText.configure(state='normal')
             self.displayText.delete('1.0', END)
             self.displayText.insert(INSERT, s)
             self.displayText.configure(state='disabled')
+            
+            # Store for PDF generation
+            self.current_ledger_data = {
+                'constraints': constraints,
+                'total': total_amount,
+                'paid': paid_amount,
+                'unpaid': unpaid_amount
+            }
+            
             sqliteConnection.commit()
             cursor.close()
 
@@ -1494,6 +1575,259 @@ class UpdateBillStatus(Frame):
         finally:
             if (sqliteConnection):
                 sqliteConnection.close()
+    
+    def generateLedger(self):
+        if not hasattr(self, 'current_ledger_data'):
+            messagebox.showerror(
+                title="Error", message="Please search bills first before generating ledger!")
+            return
+        
+        constraints = self.current_ledger_data['constraints']
+        
+        # Determine client name for filename
+        if constraints[0] == "c_name":
+            client_name = constraints[1]
+        else:
+            client_name = "All_Clients"
+        
+        # Create PDF
+        try:
+            sqliteConnection = sqlite3.connect('Bills/Database/Billing.db')
+            cursor = sqliteConnection.cursor()
+            
+            dt = datetime.now()
+            filename = f"Ledger_{client_name}_{dt.strftime('%d-%m-%Y')}.pdf"
+            
+            Path("Bills/Ledgers/Sales").mkdir(parents=True, exist_ok=True)
+            pdf_path = os.path.join("Bills", "Ledgers", filename)
+            
+            workbook = xlsxwriter.Workbook(pdf_path.replace('.pdf', '.xlsx'))
+            worksheet = workbook.add_worksheet()
+            worksheet.set_paper(9)
+            worksheet.set_portrait()
+            worksheet.center_horizontally()
+            worksheet.set_margins(0.05, 0.05, 1.9, 0.2)
+            worksheet.set_default_row(15)
+            worksheet.set_header(header)
+            
+            # Formats
+            bold_14 = workbook.add_format({
+                'bold': 'bold',
+                'align': 'center',
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 14})
+            bold_12 = workbook.add_format({
+                'bold': 'bold',
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 12})
+            normal_12 = workbook.add_format({
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 12})
+            table_header = workbook.add_format({
+                'border': 1,
+                'bold': 'bold',
+                'align': 'center',
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 12})
+            table_data = workbook.add_format({
+                'border': 1,
+                'valign': 'bottom',
+                'align': 'center',
+                'font_name': 'Times New Roman',
+                'font_size': 11})
+            table_data_right = workbook.add_format({
+                'border': 1,
+                'valign': 'bottom',
+                'align': 'right',
+                'font_name': 'Times New Roman',
+                'font_size': 11})
+            
+            # Column widths
+            worksheet.set_column(0, 0, 10)  # Bill No
+            worksheet.set_column(1, 1, 15)  # Year
+            worksheet.set_column(2, 2, 12)  # Date
+            worksheet.set_column(3, 3, 35)  # Client Name
+            worksheet.set_column(4, 4, 15)  # Taxable Amount
+            worksheet.set_column(5, 5, 12)  # CGST
+            worksheet.set_column(6, 6, 12)  # SGST
+            worksheet.set_column(7, 7, 12)  # IGST
+            worksheet.set_column(8, 8, 15)  # Total Amount
+            worksheet.set_column(9, 9, 15)  # Payment Status
+            
+            # Title
+            worksheet.merge_range('A1:J1', "PAYMENT LEDGER", bold_14)
+            worksheet.merge_range('A2:J2', f"Generated on: {dt.strftime('%d-%m-%Y %I:%M %p')}", normal_12)
+            
+            # Filter info
+            if constraints[0] == "c_name":
+                worksheet.merge_range('A3:J3', f"Client: {constraints[1]}", bold_12)
+            else:
+                worksheet.merge_range('A3:J3', f"Year: {constraints[0]}", bold_12)
+            
+            # Headers
+            row = 5
+            worksheet.write(row, 0, "Bill No.", table_header)
+            worksheet.write(row, 1, "Year", table_header)
+            worksheet.write(row, 2, "Date", table_header)
+            worksheet.write(row, 3, "Client Name", table_header)
+            worksheet.write(row, 4, "Taxable Amt", table_header)
+            worksheet.write(row, 5, "CGST", table_header)
+            worksheet.write(row, 6, "SGST", table_header)
+            worksheet.write(row, 7, "IGST", table_header)
+            worksheet.write(row, 8, "Total", table_header)
+            worksheet.write(row, 9, "Status", table_header)
+            
+            row += 1
+            
+            # Fetch all bills based on constraints
+            if constraints[0] == "c_name":
+                cursor.execute("Select c_id FROM client WHERE c_name =?;", (constraints[1],))
+                c_id = cursor.fetchone()[0]
+                if len(constraints) == 2:
+                    cursor.execute(
+                        "Select b_no, b_year, b_date, b_status FROM bill WHERE c_id=? ORDER BY b_year, b_no;", (c_id,))
+                elif len(constraints) == 3:
+                    cursor.execute("Select b_no, b_year, b_date, b_status FROM bill WHERE c_id=? AND b_year=? ORDER BY b_no;",
+                                (c_id, constraints[2],))
+                else:
+                    cursor.execute("Select b_no, b_year, b_date, b_status FROM bill WHERE c_id=? AND b_year=? AND b_month=? ORDER BY b_no;",
+                                (c_id, constraints[2], constraints[3]))
+                bills = cursor.fetchall()
+                client_name_col = constraints[1]
+            else:
+                if len(constraints) == 1:
+                    cursor.execute("Select b_no, b_year, c_id, b_date, b_status FROM bill WHERE b_year=? ORDER BY b_no;",
+                                (constraints[0],))
+                else:
+                    cursor.execute("Select b_no, b_year, c_id, b_date, b_status FROM bill WHERE b_year=? AND b_month=? ORDER BY b_no;",
+                                (constraints[0], constraints[1]))
+                bills = cursor.fetchall()
+            
+            total_taxable = 0
+            total_cgst = 0
+            total_igst = 0
+            total_amount = 0
+            paid_bills = []
+            unpaid_bills = []
+            
+            for bill in bills:
+                if constraints[0] == "c_name":
+                    b_no, b_year, b_date, b_status = bill
+                    c_name = client_name_col
+                else:
+                    b_no, b_year, c_id, b_date, b_status = bill
+                    cursor.execute("Select c_name FROM client WHERE c_id =?;", (c_id,))
+                    c_name = cursor.fetchone()[0]
+                
+                # Calculate amounts
+                cursor.execute("""
+                    SELECT SUM(bd_amount), SUM(bd_amount * bd_cgst * 0.01), SUM(bd_amount * bd_igst * 0.01)
+                    FROM bill_detail 
+                    WHERE b_year=? AND b_no=?
+                """, (b_year, b_no))
+                amounts = cursor.fetchone()
+                
+                taxable_amt = amounts[0] if amounts[0] else 0
+                cgst_amt = amounts[1] if amounts[1] else 0
+                igst_amt = amounts[2] if amounts[2] else 0
+                sgst_amt = cgst_amt
+                
+                bill_total = int(Decimal(taxable_amt + (2 * cgst_amt) + igst_amt).quantize(0, ROUND_HALF_UP))
+                
+                # Write to Excel
+                worksheet.write_number(row, 0, b_no, table_data)
+                worksheet.write_string(row, 1, b_year, table_data)
+                worksheet.write_string(row, 2, b_date, table_data)
+                worksheet.write_string(row, 3, c_name, table_data)
+                worksheet.write_number(row, 4, taxable_amt, table_data_right)
+                worksheet.write_number(row, 5, cgst_amt, table_data_right)
+                worksheet.write_number(row, 6, sgst_amt, table_data_right)
+                worksheet.write_number(row, 7, igst_amt, table_data_right)
+                worksheet.write_number(row, 8, bill_total, table_data_right)
+                worksheet.write_string(row, 9, b_status, table_data)
+                
+                total_taxable += taxable_amt
+                total_cgst += cgst_amt
+                total_igst += igst_amt
+                total_amount += bill_total
+                
+                if b_status.lower() in ['paid', 'complete', 'done']:
+                    paid_bills.append((b_no, b_year, bill_total))
+                else:
+                    unpaid_bills.append((b_no, b_year, bill_total))
+                
+                row += 1
+            
+            # Summary rows
+            row += 1
+            worksheet.merge_range(row, 0, row, 3, "TOTAL", table_header)
+            worksheet.write_number(row, 4, total_taxable, table_header)
+            worksheet.write_number(row, 5, total_cgst, table_header)
+            worksheet.write_number(row, 6, total_cgst, table_header)
+            worksheet.write_number(row, 7, total_igst, table_header)
+            worksheet.write_number(row, 8, total_amount, table_header)
+            worksheet.write_string(row, 9, "", table_header)
+            
+            # Payment split
+            row += 2
+            paid_amount = sum([b[2] for b in paid_bills])
+            unpaid_amount = sum([b[2] for b in unpaid_bills])
+            
+            worksheet.merge_range(row, 0, row, 7, "PAID BILLS", bold_12)
+            worksheet.write_number(row, 8, paid_amount, bold_12)
+            
+            row += 1
+            worksheet.merge_range(row, 0, row, 7, "UNPAID BILLS", bold_12)
+            worksheet.write_number(row, 8, unpaid_amount, bold_12)
+            
+            # Bank Details (footer)
+            row += 3
+            worksheet.write(row, 0, "Bank details:", normal_12)
+            worksheet.write(row + 1, 0, "Bank Name: Bank of India", normal_12)
+            worksheet.write(row + 2, 0, "Branch: Kalbadevi Branch", normal_12)
+            worksheet.write(row + 3, 0, "A/C No: 002420110001459", normal_12)
+            worksheet.write(row + 4, 0, "RTGS/NEFT/IFSC Code: BKID0000024", normal_12)
+            
+            # Signature
+            worksheet.merge_range(row, 6, row, 9, "FOR F.K. PATANWALA & Co.", bold_14)
+            worksheet.merge_range(row + 5, 6, row + 5, 9, "Proprietor/Authorized signatory", bold_14)
+            
+            workbook.close()
+            
+            sqliteConnection.commit()
+            cursor.close()
+            
+            # Convert to PDF
+            self.xlsxToPdf_Ledger(pdf_path.replace('.pdf', '.xlsx'), pdf_path)
+            
+            messagebox.showinfo(title="Successful", 
+                            message=f"Ledger created successfully!\nSaved as: {filename}")
+            
+        except sqlite3.Error as error:
+            messagebox.showerror(title="Failed to generate ledger", message=error)
+        except Exception as e:
+            messagebox.showerror(title="Failed to generate ledger", message=str(e))
+        finally:
+            if (sqliteConnection):
+                sqliteConnection.close()
+
+    def xlsxToPdf_Ledger(self, input_file, output_file):
+        # Convert Excel ledger to PDF
+        try:
+            app = client.Dispatch("Excel.Application")
+            app.Interactive = False
+            app.Visible = False
+            Workbook = app.Workbooks.Open(input_file)
+            Workbook.ActiveSheet.ExportAsFixedFormat(0, output_file)
+            Workbook.Close()
+            app.Quit()
+            del app
+        except Exception as e:
+            messagebox.showerror(title="Failed to convert to PDF", message=str(e))
 
     def editStatus(self):
         b_year = self.byear.get()
@@ -3857,19 +4191,28 @@ class UpdatePurchaseStatus(Frame):
         self.viewBillF = LabelFrame(self.purchaseF, text="View Bill Detials", bd=6, relief=GROOVE, labelanchor=NW, font=(
             "times new roman", 18, "bold"))
         self.viewBillF.place(relx=0.01, rely=0.4,
-                             relwidth=0.98, relheight=0.59)
+                            relwidth=0.98, relheight=0.54)
         self.displayBillF = Frame(self.viewBillF)
         self.displayBillF.place(relx=0.01, rely=0.05,
-                                relwidth=0.98, relheight=0.9)
+                                relwidth=0.98, relheight=0.95)
         self.displayText = scrolledtext.ScrolledText(
             self.displayBillF, height=280, font=("Courier",
-                                                 12, "bold"), padx=10, pady=10)
+                                                11, "bold"), padx=10, pady=10)
         self.displayText.insert(INSERT,
                                 "\n\n\n\n\n\n\t\tSelect Billing Year or Purchaser's Name to see the entries!! ")
         self.displayText.configure(state='disabled')
         self.displayText.pack(side="left", fill="both", expand=True)
-        Label(self.viewBillF, text="Bill No.\tYear\t\t            Purchaser's Name\t\t\t Amount\t              Payment", font=(
-            "times new roman", 15, "bold")).place(relx=0.02, rely=0.01)
+        Label(self.viewBillF, text="Bill No.  Year\t\t      Purchaser's Name\t\t\t  Amount\t     Payment", font=(
+            "times new roman", 14, "bold")).place(relx=0.02, rely=0.01)
+
+        # --------- Generate Ledger Button Frame ------------
+        self.ledgerBtnF = LabelFrame(self.purchaseF, text="Generate Report", bd=6, relief=GROOVE, labelanchor=NW, font=(
+            "times new roman", 18, "bold"))
+        self.ledgerBtnF.place(relx=0.01, rely=0.95, relwidth=0.98, relheight=0.04)
+
+        # Generate Ledger Button
+        Button(self.ledgerBtnF, text="Generate Purchase Ledger PDF", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+            "arial", 16, "bold"), command=self.generatePurchaseLedger).place(relx=0.35, rely=0.05, relwidth=0.3, relheight=0.9)
 
     def searchBill(self):
         constraints = []
@@ -3893,12 +4236,276 @@ class UpdatePurchaseStatus(Frame):
             return
         self.SelectBill(constraints)
 
+    def generatePurchaseLedger(self):
+        if not hasattr(self, 'current_ledger_data'):
+            messagebox.showerror(
+                title="Error", message="Please search bills first before generating ledger!")
+            return
+        
+        constraints = self.current_ledger_data['constraints']
+        
+        # Determine purchaser name for filename
+        if constraints[0] == "p_name":
+            purchaser_name = constraints[1]
+        else:
+            purchaser_name = "All_Purchasers"
+        
+        # Create PDF
+        try:
+            sqliteConnection = sqlite3.connect('Bills/Database/Billing.db')
+            cursor = sqliteConnection.cursor()
+            
+            dt = datetime.now()
+            filename = f"Purchase_Ledger_{purchaser_name}_{dt.strftime('%d-%m-%Y')}.pdf"
+            
+            Path("Bills/Ledgers/Purchase/").mkdir(parents=True, exist_ok=True)
+            pdf_path = os.path.join("Bills", "Ledgers", filename)
+            
+            workbook = xlsxwriter.Workbook(pdf_path.replace('.pdf', '.xlsx'))
+            worksheet = workbook.add_worksheet()
+            worksheet.set_paper(9)
+            worksheet.set_portrait()
+            worksheet.center_horizontally()
+            worksheet.set_margins(0.05, 0.05, 1.9, 0.2)
+            worksheet.set_default_row(15)
+            worksheet.set_header(header)
+            
+            # Formats
+            bold_14 = workbook.add_format({
+                'bold': 'bold',
+                'align': 'center',
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 14})
+            bold_12 = workbook.add_format({
+                'bold': 'bold',
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 12})
+            normal_12 = workbook.add_format({
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 12})
+            table_header = workbook.add_format({
+                'border': 1,
+                'bold': 'bold',
+                'align': 'center',
+                'valign': 'bottom',
+                'font_name': 'Times New Roman',
+                'font_size': 12})
+            table_data = workbook.add_format({
+                'border': 1,
+                'valign': 'bottom',
+                'align': 'center',
+                'font_name': 'Times New Roman',
+                'font_size': 11})
+            table_data_right = workbook.add_format({
+                'border': 1,
+                'valign': 'bottom',
+                'align': 'right',
+                'font_name': 'Times New Roman',
+                'font_size': 11})
+            
+            # Column widths
+            worksheet.set_column(0, 0, 10)  # Bill No (our sr no)
+            worksheet.set_column(1, 1, 15)  # Supplier Bill No
+            worksheet.set_column(2, 2, 15)  # Year
+            worksheet.set_column(3, 3, 12)  # Date
+            worksheet.set_column(4, 4, 30)  # Purchaser Name
+            worksheet.set_column(5, 5, 15)  # Taxable Amount
+            worksheet.set_column(6, 6, 10)  # GST 5%
+            worksheet.set_column(7, 7, 10)  # GST 12%
+            worksheet.set_column(8, 8, 10)  # GST 18%
+            worksheet.set_column(9, 9, 10)  # GST 28%
+            worksheet.set_column(10, 10, 15)  # Total Amount
+            worksheet.set_column(11, 11, 15)  # Payment Status
+            
+            # Title
+            worksheet.merge_range('A1:L1', "PURCHASE PAYMENT LEDGER", bold_14)
+            worksheet.merge_range('A2:L2', f"Generated on: {dt.strftime('%d-%m-%Y %I:%M %p')}", normal_12)
+            
+            # Filter info
+            if constraints[0] == "p_name":
+                worksheet.merge_range('A3:L3', f"Purchaser: {constraints[1]}", bold_12)
+            else:
+                filter_text = f"Year: {constraints[0]}"
+                if len(constraints) > 1:
+                    filter_text += f" | Month: {constraints[1]}"
+                worksheet.merge_range('A3:L3', filter_text, bold_12)
+            
+            # Headers
+            row = 5
+            worksheet.write(row, 0, "Sr. No.", table_header)
+            worksheet.write(row, 1, "Bill No.", table_header)
+            worksheet.write(row, 2, "Year", table_header)
+            worksheet.write(row, 3, "Date", table_header)
+            worksheet.write(row, 4, "Purchaser Name", table_header)
+            worksheet.write(row, 5, "Taxable Amt", table_header)
+            worksheet.write(row, 6, "GST 5%", table_header)
+            worksheet.write(row, 7, "GST 12%", table_header)
+            worksheet.write(row, 8, "GST 18%", table_header)
+            worksheet.write(row, 9, "GST 28%", table_header)
+            worksheet.write(row, 10, "Total", table_header)
+            worksheet.write(row, 11, "Status", table_header)
+            
+            row += 1
+            
+            # Fetch all bills based on constraints
+            if constraints[0] == "p_name":
+                cursor.execute("Select p_id FROM purchaser WHERE p_name =?;", (constraints[1],))
+                p_id = cursor.fetchone()[0]
+                if len(constraints) == 2:
+                    cursor.execute(
+                        "Select pb_no, pb_year, pb_month, pb_day, pb_bill_no, pb_tax_amt, pb_gst_5, pb_igst_5, pb_gst_12, pb_igst_12, pb_gst_18, pb_igst_18, pb_gst_28, pb_igst_28, pb_total_amt, pb_status FROM purchase_bill WHERE p_id=? ORDER BY pb_year, pb_month, pb_day;", (p_id,))
+                elif len(constraints) == 3:
+                    cursor.execute("Select pb_no, pb_year, pb_month, pb_day, pb_bill_no, pb_tax_amt, pb_gst_5, pb_igst_5, pb_gst_12, pb_igst_12, pb_gst_18, pb_igst_18, pb_gst_28, pb_igst_28, pb_total_amt, pb_status FROM purchase_bill WHERE p_id=? AND pb_year=? ORDER BY pb_month, pb_day;",
+                                (p_id, constraints[2],))
+                else:
+                    cursor.execute("Select pb_no, pb_year, pb_month, pb_day, pb_bill_no, pb_tax_amt, pb_gst_5, pb_igst_5, pb_gst_12, pb_igst_12, pb_gst_18, pb_igst_18, pb_gst_28, pb_igst_28, pb_total_amt, pb_status FROM purchase_bill WHERE p_id=? AND pb_year=? AND pb_month=? ORDER BY pb_day;",
+                                (p_id, constraints[2], constraints[3]))
+                bills = cursor.fetchall()
+                purchaser_name_col = constraints[1]
+            else:
+                if len(constraints) == 1:
+                    cursor.execute("Select pb_no, pb_year, pb_month, pb_day, p_id, pb_bill_no, pb_tax_amt, pb_gst_5, pb_igst_5, pb_gst_12, pb_igst_12, pb_gst_18, pb_igst_18, pb_gst_28, pb_igst_28, pb_total_amt, pb_status FROM purchase_bill WHERE pb_year=? ORDER BY pb_month, pb_day;",
+                                (constraints[0],))
+                else:
+                    cursor.execute("Select pb_no, pb_year, pb_month, pb_day, p_id, pb_bill_no, pb_tax_amt, pb_gst_5, pb_igst_5, pb_gst_12, pb_igst_12, pb_gst_18, pb_igst_18, pb_gst_28, pb_igst_28, pb_total_amt, pb_status FROM purchase_bill WHERE pb_year=? AND pb_month=? ORDER BY pb_day;",
+                                (constraints[0], constraints[1]))
+                bills = cursor.fetchall()
+            
+            total_taxable = 0
+            total_gst_5 = 0
+            total_gst_12 = 0
+            total_gst_18 = 0
+            total_gst_28 = 0
+            total_amount = 0
+            paid_bills = []
+            unpaid_bills = []
+            
+            for bill in bills:
+                if constraints[0] == "p_name":
+                    pb_no, pb_year, pb_month, pb_day, pb_bill_no, pb_tax_amt, pb_gst_5, pb_igst_5, pb_gst_12, pb_igst_12, pb_gst_18, pb_igst_18, pb_gst_28, pb_igst_28, pb_total_amt, pb_status = bill
+                    p_name = purchaser_name_col
+                else:
+                    pb_no, pb_year, pb_month, pb_day, p_id, pb_bill_no, pb_tax_amt, pb_gst_5, pb_igst_5, pb_gst_12, pb_igst_12, pb_gst_18, pb_igst_18, pb_gst_28, pb_igst_28, pb_total_amt, pb_status = bill
+                    cursor.execute("Select p_name FROM purchaser WHERE p_id =?;", (p_id,))
+                    p_name = cursor.fetchone()[0]
+                
+                # Calculate total GST per category (CGST + SGST + IGST)
+                gst_5_total = (2 * pb_gst_5) + pb_igst_5
+                gst_12_total = (2 * pb_gst_12) + pb_igst_12
+                gst_18_total = (2 * pb_gst_18) + pb_igst_18
+                gst_28_total = (2 * pb_gst_28) + pb_igst_28
+                
+                # Date formatting
+                bill_date = f"{pb_day}/{pb_month}/{pb_year}"
+                
+                # Write to Excel
+                worksheet.write_number(row, 0, pb_no, table_data)
+                worksheet.write_string(row, 1, pb_bill_no, table_data)
+                worksheet.write_number(row, 2, pb_year, table_data)
+                worksheet.write_string(row, 3, bill_date, table_data)
+                worksheet.write_string(row, 4, p_name, table_data)
+                worksheet.write_number(row, 5, pb_tax_amt, table_data_right)
+                worksheet.write_number(row, 6, gst_5_total, table_data_right)
+                worksheet.write_number(row, 7, gst_12_total, table_data_right)
+                worksheet.write_number(row, 8, gst_18_total, table_data_right)
+                worksheet.write_number(row, 9, gst_28_total, table_data_right)
+                worksheet.write_number(row, 10, pb_total_amt, table_data_right)
+                worksheet.write_string(row, 11, pb_status, table_data)
+                
+                total_taxable += pb_tax_amt
+                total_gst_5 += gst_5_total
+                total_gst_12 += gst_12_total
+                total_gst_18 += gst_18_total
+                total_gst_28 += gst_28_total
+                total_amount += pb_total_amt
+                
+                if pb_status.lower() in ['paid', 'complete', 'done']:
+                    paid_bills.append((pb_no, pb_year, pb_total_amt))
+                else:
+                    unpaid_bills.append((pb_no, pb_year, pb_total_amt))
+                
+                row += 1
+            
+            # Summary rows
+            row += 1
+            worksheet.merge_range(row, 0, row, 4, "TOTAL", table_header)
+            worksheet.write_number(row, 5, total_taxable, table_header)
+            worksheet.write_number(row, 6, total_gst_5, table_header)
+            worksheet.write_number(row, 7, total_gst_12, table_header)
+            worksheet.write_number(row, 8, total_gst_18, table_header)
+            worksheet.write_number(row, 9, total_gst_28, table_header)
+            worksheet.write_number(row, 10, total_amount, table_header)
+            worksheet.write_string(row, 11, "", table_header)
+            
+            # Payment split
+            row += 2
+            paid_amount = sum([b[2] for b in paid_bills])
+            unpaid_amount = sum([b[2] for b in unpaid_bills])
+            
+            worksheet.merge_range(row, 0, row, 9, "PAID BILLS", bold_12)
+            worksheet.write_number(row, 10, paid_amount, bold_12)
+            
+            row += 1
+            worksheet.merge_range(row, 0, row, 9, "UNPAID BILLS", bold_12)
+            worksheet.write_number(row, 10, unpaid_amount, bold_12)
+            
+            # Bank Details (footer)
+            row += 3
+            worksheet.write(row, 0, "Bank details:", normal_12)
+            worksheet.write(row + 1, 0, "Bank Name: Bank of India", normal_12)
+            worksheet.write(row + 2, 0, "Branch: Kalbadevi Branch", normal_12)
+            worksheet.write(row + 3, 0, "A/C No: 002420110001459", normal_12)
+            worksheet.write(row + 4, 0, "RTGS/NEFT/IFSC Code: BKID0000024", normal_12)
+            
+            # Signature
+            worksheet.merge_range(row, 8, row, 11, "FOR F.K. PATANWALA & Co.", bold_14)
+            worksheet.merge_range(row + 5, 8, row + 5, 11, "Proprietor/Authorized signatory", bold_14)
+            
+            workbook.close()
+            
+            sqliteConnection.commit()
+            cursor.close()
+            
+            # Convert to PDF
+            self.xlsxToPdf_PurchaseLedger(pdf_path.replace('.pdf', '.xlsx'), pdf_path)
+            
+            messagebox.showinfo(title="Successful", 
+                            message=f"Purchase Ledger created successfully!\nSaved as: {filename}")
+            
+        except sqlite3.Error as error:
+            messagebox.showerror(title="Failed to generate ledger", message=error)
+        except Exception as e:
+            messagebox.showerror(title="Failed to generate ledger", message=str(e))
+        finally:
+            if (sqliteConnection):
+                sqliteConnection.close()
+
+    def xlsxToPdf_PurchaseLedger(self, input_file, output_file):
+        # Convert Excel purchase ledger to PDF
+            try:
+                app = client.Dispatch("Excel.Application")
+                app.Interactive = False
+                app.Visible = False
+                Workbook = app.Workbooks.Open(input_file)
+                Workbook.ActiveSheet.ExportAsFixedFormat(0, output_file)
+                Workbook.Close()
+                app.Quit()
+                del app
+            except Exception as e:
+                messagebox.showerror(title="Failed to convert to PDF", message=str(e))
+
     def SelectBill(self, constraints):
         try:
             sqliteConnection = sqlite3.connect('Bills/Database/Billing.db')
             cursor = sqliteConnection.cursor()
 
             s = ""
+            total_amount = 0
+            paid_amount = 0
+            unpaid_amount = 0
             if constraints[0] == "p_name":
                 cursor.execute(
                     "Select p_id FROM purchaser WHERE p_name =?;", (constraints[1],))
@@ -3909,10 +4516,10 @@ class UpdatePurchaseStatus(Frame):
                         "Select pb_no, pb_year, pb_total_amt, pb_status FROM purchase_bill WHERE p_id=?;", (p_id,))
                 elif len(constraints) == 3:
                     cursor.execute("Select pb_no, pb_year, pb_total_amt, pb_status FROM purchase_bill WHERE p_id=? AND pb_year=?;",
-                                   (p_id, constraints[2],))
+                                (p_id, constraints[2],))
                 else:
                     cursor.execute("Select pb_no, pb_year, pb_total_amt, pb_status FROM purchase_bill WHERE p_id=? AND pb_year=? AND pb_month=?;",
-                                   (p_id, constraints[2], constraints[3]))
+                                (p_id, constraints[2], constraints[3]))
                 rows = cursor.fetchall()
                 for row in rows:
                     s += "\n"+str(row[0]).center(7)
@@ -3920,13 +4527,18 @@ class UpdatePurchaseStatus(Frame):
                     s += constraints[1].center(47)
                     s += str(row[2]).center(13)
                     s += str(row[3]).center(17)
+                    total_amount += row[2]
+                    if row[3].lower() in ['paid', 'complete', 'done']:
+                        paid_amount += row[2]
+                    else:
+                        unpaid_amount += row[2]
             else:
                 if len(constraints) == 1:
                     cursor.execute("Select pb_no, pb_year, p_id, pb_total_amt, pb_status FROM purchase_bill WHERE pb_year=?;",
-                                   (constraints[0],))
+                                (constraints[0],))
                 else:
                     cursor.execute("Select pb_no, pb_year, p_id, pb_total_amt, pb_status FROM purchase_bill WHERE pb_year=? AND pb_month=?;",
-                                   (constraints[0], constraints[1]))
+                                (constraints[0], constraints[1]))
                 rows = cursor.fetchall()
                 for row in rows:
                     s += "\n"+str(row[0]).center(7)
@@ -3937,10 +4549,30 @@ class UpdatePurchaseStatus(Frame):
                     s += p_name[0][0].center(47)
                     s += str(row[3]).center(13)
                     s += str(row[4]).center(17)
+                    total_amount += row[3]
+                    if row[4].lower() in ['paid', 'complete', 'done']:
+                        paid_amount += row[3]
+                    else:
+                        unpaid_amount += row[3]
+            
+            # Add summary at bottom
+            s += "\n" + "-" * 100
+            s += "\n" + " " * 69 + "TOTAL:".ljust(13) + str(total_amount).center(17)
+            s += "\n" + " " * 69 + "PAID:".ljust(13) + str(paid_amount).center(17)
+            s += "\n" + " " * 69 + "UNPAID:".ljust(13) + str(unpaid_amount).center(17)
             self.displayText.configure(state='normal')
             self.displayText.delete('1.0', END)
             self.displayText.insert(INSERT, s)
             self.displayText.configure(state='disabled')
+            
+            # Store for PDF generation
+            self.current_ledger_data = {
+                'constraints': constraints,
+                'total': total_amount,
+                'paid': paid_amount,
+                'unpaid': unpaid_amount
+            }
+            
             sqliteConnection.commit()
             cursor.close()
 
