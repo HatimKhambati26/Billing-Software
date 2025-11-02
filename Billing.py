@@ -1812,17 +1812,21 @@ class UpdateBillStatus(Frame):
 
     def xlsxToPdf_Ledger(self, input_file, output_file):
         # Convert Excel ledger to PDF
+        app = client.Dispatch("Excel.Application")
+        app.Interactive = False
+        app.Visible = False
+        Workbook = app.Workbooks.Open(input_file)
         try:
-            app = client.Dispatch("Excel.Application")
-            app.Interactive = False
-            app.Visible = False
-            Workbook = app.Workbooks.Open(input_file)
             Workbook.ActiveSheet.ExportAsFixedFormat(0, output_file)
+            messagebox.showinfo(title="Successful",
+                                message="PDF Sales Ledger created successfully!!")
+        except Exception as e:
+            messagebox.showerror(
+                title="Failed to convert in PDF format.", message=str(e))
+        finally:
             Workbook.Close()
             app.Quit()
             del app
-        except Exception as e:
-            messagebox.showerror(title="Failed to convert to PDF", message=str(e))
 
     def editStatus(self):
         b_year = self.byear.get()
@@ -4475,17 +4479,21 @@ class UpdatePurchaseStatus(Frame):
 
     def xlsxToPdf_PurchaseLedger(self, input_file, output_file):
         # Convert Excel purchase ledger to PDF
-            try:
-                app = client.Dispatch("Excel.Application")
-                app.Interactive = False
-                app.Visible = False
-                Workbook = app.Workbooks.Open(input_file)
-                Workbook.ActiveSheet.ExportAsFixedFormat(0, output_file)
-                Workbook.Close()
-                app.Quit()
-                del app
-            except Exception as e:
-                messagebox.showerror(title="Failed to convert to PDF", message=str(e))
+        app = client.Dispatch("Excel.Application")
+        app.Interactive = False
+        app.Visible = False
+        Workbook = app.Workbooks.Open(input_file)
+        try:
+            Workbook.ActiveSheet.ExportAsFixedFormat(0, output_file)
+            messagebox.showinfo(title="Successful",
+                                message="PDF Purchase Ledger created successfully!!")
+        except Exception as e:
+            messagebox.showerror(
+                title="Failed to convert in PDF format.", message=str(e))
+        finally:
+            Workbook.Close()
+            app.Quit()
+            del app
 
     def SelectBill(self, constraints):
         try:
