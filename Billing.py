@@ -1594,7 +1594,7 @@ class UpdateBillStatus(Frame):
             filename = f"Ledger_{client_name}_{dt.strftime('%d-%m-%Y')}.pdf"
             
             Path("Bills/Ledgers/Sales").mkdir(parents=True, exist_ok=True)
-            pdf_path = os.path.join("Bills", "Ledgers", filename)
+            pdf_path = os.path.join("Bills", "Ledgers/Sales", filename)
             
             workbook = xlsxwriter.Workbook(pdf_path.replace('.pdf', '.xlsx'))
             worksheet = workbook.add_worksheet()
@@ -4154,7 +4154,7 @@ class UpdatePurchaseStatus(Frame):
             "arial", 18, "bold"), command=self.generatePurchaseBill).place(relx=0.35, rely=0.61, relwidth=0.3, relheight=0.3)
 
         # Generate Ledger Button
-        Button(self.SelectBillF, text="Generate Ledger", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+        Button(self.SelectBillF, text="Ledger", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
             "arial", 18, "bold"), command=self.generatePurchaseLedger).place(relx=0.68, rely=0.61, relwidth=0.3, relheight=0.3)
 
         # --------- Edit Bill Status Frame ------------
@@ -4249,7 +4249,7 @@ class UpdatePurchaseStatus(Frame):
             filename = f"Purchase_Ledger_{purchaser_name}_{dt.strftime('%d-%m-%Y')}.pdf"
             
             Path("Bills/Ledgers/Purchase/").mkdir(parents=True, exist_ok=True)
-            pdf_path = os.path.join("Bills", "Ledgers", filename)
+            pdf_path = os.path.join("Bills", "Ledgers/Purchase", filename)
             
             workbook = xlsxwriter.Workbook(pdf_path.replace('.pdf', '.xlsx'))
             worksheet = workbook.add_worksheet()
