@@ -1593,8 +1593,8 @@ class UpdateBillStatus(Frame):
             dt = datetime.now()
             filename = f"Ledger_{client_name}_{dt.strftime('%d-%m-%Y')}.pdf"
             
-            Path("Bills/Ledgers/Sales").mkdir(parents=True, exist_ok=True)
-            pdf_path = os.path.join("Bills", "Ledgers/Sales", filename)
+            # Path("Bills/Ledgers/Sales").mkdir(parents=True, exist_ok=True)
+            pdf_path = os.path.join("Bills", "Ledgers", "Sales", filename)
             
             workbook = xlsxwriter.Workbook(pdf_path.replace('.pdf', '.xlsx'))
             worksheet = workbook.add_worksheet()
@@ -4252,8 +4252,8 @@ class UpdatePurchaseStatus(Frame):
             dt = datetime.now()
             filename = f"Purchase_Ledger_{purchaser_name}_{dt.strftime('%d-%m-%Y')}.pdf"
             
-            Path("Bills/Ledgers/Purchase/").mkdir(parents=True, exist_ok=True)
-            pdf_path = os.path.join("Bills", "Ledgers/Purchase", filename)
+            # Path("Bills/Ledgers/Purchase/").mkdir(parents=True, exist_ok=True)
+            pdf_path = os.path.join("Bills", "Ledgers", "Purchase", filename)
             
             workbook = xlsxwriter.Workbook(pdf_path.replace('.pdf', '.xlsx'))
             worksheet = workbook.add_worksheet()
