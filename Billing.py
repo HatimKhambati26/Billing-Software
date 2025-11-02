@@ -1353,37 +1353,41 @@ class UpdateBillStatus(Frame):
         self.SelectBillF = LabelFrame(self.saleF, text="  Search Bill Payment  ", bd=6, relief=GROOVE, labelanchor=NW, font=(
             "times new roman", 22, "bold"))
         self.SelectBillF.place(relx=0.05, rely=0.14,
-                               relwidth=0.43, relheight=0.38)
+                            relwidth=0.43, relheight=0.38)
 
         # Billing Year
         Label(self.SelectBillF, text="Billing Year:", font=(
-            "times new roman", 18, "bold")).place(relx=0.1, rely=0.1, relwidth=0.3, relheight=0.12)
+            "times new roman", 16, "bold")).place(relx=0, rely=0.01, relwidth=0.4, relheight=0.15)
         self.byear = StringVar()
         self.byearC = ttk.Combobox(self.SelectBillF, font=(
-            "arial", 18, "bold"), textvariable=self.byear, values=years)
-        self.byearC.place(relx=0.4, rely=0.11, relwidth=0.5, relheight=0.11)
+            "arial", 16, "bold"), textvariable=self.byear, values=years)
+        self.byearC.place(relx=0.4, rely=0.01, relwidth=0.4, relheight=0.15)
 
         # Client's Name
         Label(self.SelectBillF, text="Client's Name:", font=(
-            "times new roman", 18, "bold")).place(relx=0.1, rely=0.35, relwidth=0.3, relheight=0.12)
+            "times new roman", 16, "bold")).place(relx=0, rely=0.25, relwidth=0.4, relheight=0.15)
         self.cname = StringVar()
         self.cnameC = ttk.Combobox(self.SelectBillF, font=(
-            "arial", 18, "bold"), textvariable=self.cname, postcommand=self.updateClientList)
-        self.cnameC.place(relx=0.4, rely=0.35, relwidth=0.5, relheight=0.14)
+            "arial", 16, "bold"), textvariable=self.cname, postcommand=self.updateClientList)
+        self.cnameC.place(relx=0.4, rely=0.25, relwidth=0.4, relheight=0.15)
 
         # Search Bills Button
         Button(self.SelectBillF, text="Search Bill", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
-            "arial", 18, "bold"), command=self.searchBill).place(relx=0.1, rely=0.65, relwidth=0.35, relheight=0.21)
+            "arial", 16, "bold"), command=self.searchBill).place(relx=0.05, rely=0.55, relwidth=0.42, relheight=0.18)
+
+        # Generate Ledger Button
+        Button(self.SelectBillF, text="Generate Ledger", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+            "arial", 16, "bold"), command=self.generateLedger).place(relx=0.53, rely=0.55, relwidth=0.42, relheight=0.18)
 
         # Home Button
         Button(self.SelectBillF, text="Home", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
-            "arial", 18, "bold"), command=lambda: controller.show_frame(Home)).place(relx=0.55, rely=0.65, relwidth=0.35, relheight=0.21)
+            "arial", 16, "bold"), command=lambda: controller.show_frame(Home)).place(relx=0.05, rely=0.78, relwidth=0.9, relheight=0.18)
 
         # --------- Edit Bill Status Frame ------------
         self.editStatusF = LabelFrame(self.saleF, text="  Update Bill Payment  ", bd=6, relief=GROOVE, labelanchor=NW, font=(
             "times new roman", 22, "bold"))
         self.editStatusF.place(relx=0.52, rely=0.14,
-                               relwidth=0.43, relheight=0.38)
+                            relwidth=0.43, relheight=0.38)
 
         # Bill No.
         Label(self.editStatusF, text="Billing No:", font=(
@@ -1408,10 +1412,10 @@ class UpdateBillStatus(Frame):
         self.viewBillF = LabelFrame(self.saleF, text="View Bill Detials", bd=6, relief=GROOVE, labelanchor=NW, font=(
             "times new roman", 18, "bold"), padx=10, pady=10)
         self.viewBillF.place(relx=0.05, rely=0.54,
-                            relwidth=0.9, relheight=0.4)
+                            relwidth=0.9, relheight=0.45)
         self.displayBillF = Frame(self.viewBillF)
         self.displayBillF.place(relx=0.01, rely=0.05,
-                                relwidth=0.98, relheight=0.95)
+                                relwidth=0.98, relheight=0.98)
         self.displayText = scrolledtext.ScrolledText(
             self.displayBillF, font=("Courier",
                                     11, "bold"), padx=10, pady=10)
@@ -1421,15 +1425,6 @@ class UpdateBillStatus(Frame):
         self.displayText.pack(side="left", fill="both", expand=True)
         Label(self.viewBillF, text="Bill No.    Year\t\t     Client's Name\t\t\t       Amount\t     Payment", font=(
             "times new roman", 14, "bold")).place(x=30, y=0)
-
-        # --------- Generate Ledger Button Frame ------------
-        self.ledgerBtnF = LabelFrame(self.saleF, text="Generate Report", bd=6, relief=GROOVE, labelanchor=NW, font=(
-            "times new roman", 18, "bold"))
-        self.ledgerBtnF.place(relx=0.05, rely=0.95, relwidth=0.9, relheight=0.04)
-
-        # Generate Ledger Button
-        Button(self.ledgerBtnF, text="Generate Ledger PDF", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
-            "arial", 16, "bold"), command=self.generateLedger).place(relx=0.35, rely=0.05, relwidth=0.3, relheight=0.9)
 
     def searchBill(self):
         constraints = []
@@ -1503,10 +1498,10 @@ class UpdateBillStatus(Frame):
                     s += str(row[2]).center(15)
                     
                     total_amount += bill_total
-                    if row[2].lower() in ['paid', 'complete', 'done']:
-                        paid_amount += bill_total
-                    else:
+                    if row[2].lower() in ['pending']:
                         unpaid_amount += bill_total
+                    else:
+                        paid_amount += bill_total
             else:
                 if len(constraints) == 1:
                     cursor.execute("Select b_no, b_year, c_id, b_status FROM bill WHERE b_year=?;",
@@ -1542,10 +1537,10 @@ class UpdateBillStatus(Frame):
                     s += str(row[3]).center(15)
                     
                     total_amount += bill_total
-                    if row[3].lower() in ['paid', 'complete', 'done']:
-                        paid_amount += bill_total
-                    else:
+                    if row[3].lower() in ['pending']:
                         unpaid_amount += bill_total
+                    else:
+                        paid_amount += bill_total
             
             # Add summary at bottom
             s += "\n" + "-" * 100
@@ -1755,10 +1750,10 @@ class UpdateBillStatus(Frame):
                 total_igst += igst_amt
                 total_amount += bill_total
                 
-                if b_status.lower() in ['paid', 'complete', 'done']:
-                    paid_bills.append((b_no, b_year, bill_total))
-                else:
+                if b_status.lower() in ['pending']:
                     unpaid_bills.append((b_no, b_year, bill_total))
+                else:
+                    paid_bills.append((b_no, b_year, bill_total))
                 
                 row += 1
             
@@ -4126,7 +4121,7 @@ class UpdatePurchaseStatus(Frame):
         self.SelectBillF = LabelFrame(self.purchaseF, text="  Search & Generate Excel Bill   ", bd=6, relief=GROOVE, labelanchor=NW, font=(
             "times new roman", 22, "bold"))
         self.SelectBillF.place(relx=0.01, rely=0.09,
-                               relwidth=0.48, relheight=0.3)
+                            relwidth=0.48, relheight=0.3)
 
         # Billing Year
         Label(self.SelectBillF, text="Bill Year:", font=(
@@ -4152,17 +4147,21 @@ class UpdatePurchaseStatus(Frame):
 
         # Search Bills Button
         Button(self.SelectBillF, text="Search Bill", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
-            "arial", 18, "bold"), command=self.searchBill).place(relx=0.1, rely=0.61, relwidth=0.35, relheight=0.3)
+            "arial", 18, "bold"), command=self.searchBill).place(relx=0.02, rely=0.61, relwidth=0.3, relheight=0.3)
 
-        # Generate Excel Button
-        Button(self.SelectBillF, text="Add to Excel", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", width=25, pady=20, font=(
-            "arial", 18, "bold"), command=self.generatePurchaseBill).place(relx=0.55, rely=0.61, relwidth=0.35, relheight=0.3)
+        # Add to Excel Button
+        Button(self.SelectBillF, text="Add to Excel", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+            "arial", 18, "bold"), command=self.generatePurchaseBill).place(relx=0.35, rely=0.61, relwidth=0.3, relheight=0.3)
+
+        # Generate Ledger Button
+        Button(self.SelectBillF, text="Generate Ledger", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
+            "arial", 18, "bold"), command=self.generatePurchaseLedger).place(relx=0.68, rely=0.61, relwidth=0.3, relheight=0.3)
 
         # --------- Edit Bill Status Frame ------------
         self.editStatusF = LabelFrame(self.purchaseF, text="  Update Bill Payment  ", bd=6, relief=GROOVE, labelanchor=NW, font=(
             "times new roman", 22, "bold"))
         self.editStatusF.place(relx=0.51, rely=0.09,
-                               relwidth=0.48, relheight=0.3)
+                            relwidth=0.48, relheight=0.3)
 
         # Bill No.
         Label(self.editStatusF, text="Billing No:", font=(
@@ -4191,7 +4190,7 @@ class UpdatePurchaseStatus(Frame):
         self.viewBillF = LabelFrame(self.purchaseF, text="View Bill Detials", bd=6, relief=GROOVE, labelanchor=NW, font=(
             "times new roman", 18, "bold"))
         self.viewBillF.place(relx=0.01, rely=0.4,
-                            relwidth=0.98, relheight=0.54)
+                            relwidth=0.98, relheight=0.59)
         self.displayBillF = Frame(self.viewBillF)
         self.displayBillF.place(relx=0.01, rely=0.05,
                                 relwidth=0.98, relheight=0.95)
@@ -4204,15 +4203,6 @@ class UpdatePurchaseStatus(Frame):
         self.displayText.pack(side="left", fill="both", expand=True)
         Label(self.viewBillF, text="Bill No.  Year\t\t      Purchaser's Name\t\t\t  Amount\t     Payment", font=(
             "times new roman", 14, "bold")).place(relx=0.02, rely=0.01)
-
-        # --------- Generate Ledger Button Frame ------------
-        self.ledgerBtnF = LabelFrame(self.purchaseF, text="Generate Report", bd=6, relief=GROOVE, labelanchor=NW, font=(
-            "times new roman", 18, "bold"))
-        self.ledgerBtnF.place(relx=0.01, rely=0.95, relwidth=0.98, relheight=0.04)
-
-        # Generate Ledger Button
-        Button(self.ledgerBtnF, text="Generate Purchase Ledger PDF", cursor="hand2", bd=5, relief=GROOVE, bg="cadetblue", font=(
-            "arial", 16, "bold"), command=self.generatePurchaseLedger).place(relx=0.35, rely=0.05, relwidth=0.3, relheight=0.9)
 
     def searchBill(self):
         constraints = []
@@ -4422,10 +4412,10 @@ class UpdatePurchaseStatus(Frame):
                 total_gst_28 += gst_28_total
                 total_amount += pb_total_amt
                 
-                if pb_status.lower() in ['paid', 'complete', 'done']:
-                    paid_bills.append((pb_no, pb_year, pb_total_amt))
-                else:
+                if pb_status.lower() in ['pending']:
                     unpaid_bills.append((pb_no, pb_year, pb_total_amt))
+                else:
+                    paid_bills.append((pb_no, pb_year, pb_total_amt))
                 
                 row += 1
             
@@ -4506,60 +4496,67 @@ class UpdatePurchaseStatus(Frame):
             total_amount = 0
             paid_amount = 0
             unpaid_amount = 0
+            
             if constraints[0] == "p_name":
                 cursor.execute(
                     "Select p_id FROM purchaser WHERE p_name =?;", (constraints[1],))
-                rows = cursor.fetchall()
-                p_id = rows[0][0]
+                rows = cursor.fetchone()
+                p_id = rows[0]
+                
                 if len(constraints) == 2:
                     cursor.execute(
-                        "Select pb_no, pb_year, pb_total_amt, pb_status FROM purchase_bill WHERE p_id=?;", (p_id,))
+                        "Select pb_no, pb_bill_no, pb_year, pb_total_amt, pb_status FROM purchase_bill WHERE p_id=?;", (p_id,))
                 elif len(constraints) == 3:
-                    cursor.execute("Select pb_no, pb_year, pb_total_amt, pb_status FROM purchase_bill WHERE p_id=? AND pb_year=?;",
+                    cursor.execute("Select pb_no, pb_bill_no, pb_year, pb_total_amt, pb_status FROM purchase_bill WHERE p_id=? AND pb_year=?;",
                                 (p_id, constraints[2],))
                 else:
-                    cursor.execute("Select pb_no, pb_year, pb_total_amt, pb_status FROM purchase_bill WHERE p_id=? AND pb_year=? AND pb_month=?;",
+                    cursor.execute("Select pb_no, pb_bill_no, pb_year, pb_total_amt, pb_status FROM purchase_bill WHERE p_id=? AND pb_year=? AND pb_month=?;",
                                 (p_id, constraints[2], constraints[3]))
                 rows = cursor.fetchall()
+                
                 for row in rows:
-                    s += "\n"+str(row[0]).center(7)
-                    s += str(row[1]).center(8)
+                    s += "\n"+str(row[1]).center(7)  # Changed from row[0] to row[1] (pb_bill_no)
+                    s += str(row[2]).center(8)       # Changed from row[1] to row[2] (pb_year)
                     s += constraints[1].center(47)
-                    s += str(row[2]).center(13)
-                    s += str(row[3]).center(17)
-                    total_amount += row[2]
-                    if row[3].lower() in ['paid', 'complete', 'done']:
-                        paid_amount += row[2]
+                    s += str(row[3]).center(13)      # Changed from row[2] to row[3] (pb_total_amt)
+                    s += str(row[4]).center(17)      # Changed from row[3] to row[4] (pb_status)
+                    
+                    total_amount += row[3]
+                    if row[4].lower() in ['pending']:
+                        unpaid_amount += row[3]
                     else:
-                        unpaid_amount += row[2]
+                        paid_amount += row[3]
             else:
                 if len(constraints) == 1:
-                    cursor.execute("Select pb_no, pb_year, p_id, pb_total_amt, pb_status FROM purchase_bill WHERE pb_year=?;",
+                    cursor.execute("Select pb_no, pb_bill_no, pb_year, p_id, pb_total_amt, pb_status FROM purchase_bill WHERE pb_year=?;",
                                 (constraints[0],))
                 else:
-                    cursor.execute("Select pb_no, pb_year, p_id, pb_total_amt, pb_status FROM purchase_bill WHERE pb_year=? AND pb_month=?;",
+                    cursor.execute("Select pb_no, pb_bill_no, pb_year, p_id, pb_total_amt, pb_status FROM purchase_bill WHERE pb_year=? AND pb_month=?;",
                                 (constraints[0], constraints[1]))
                 rows = cursor.fetchall()
+                
                 for row in rows:
-                    s += "\n"+str(row[0]).center(7)
-                    s += str(row[1]).center(8)
+                    s += "\n"+str(row[1]).center(7)  # Changed from row[0] to row[1] (pb_bill_no)
+                    s += str(row[2]).center(8)       # Changed from row[1] to row[2] (pb_year)
                     cursor.execute(
-                        "Select p_name FROM purchaser WHERE p_id =?;", (row[2],))
+                        "Select p_name FROM purchaser WHERE p_id =?;", (row[3],))  # Changed from row[2] to row[3]
                     p_name = cursor.fetchall()
                     s += p_name[0][0].center(47)
-                    s += str(row[3]).center(13)
-                    s += str(row[4]).center(17)
-                    total_amount += row[3]
-                    if row[4].lower() in ['paid', 'complete', 'done']:
-                        paid_amount += row[3]
+                    s += str(row[4]).center(13)      # Changed from row[3] to row[4] (pb_total_amt)
+                    s += str(row[5]).center(17)      # Changed from row[4] to row[5] (pb_status)
+                    
+                    total_amount += row[4]
+                    if row[5].lower() in ['pending']:
+                        unpaid_amount += row[4]
                     else:
-                        unpaid_amount += row[3]
+                        paid_amount += row[4]
             
             # Add summary at bottom
             s += "\n" + "-" * 100
             s += "\n" + " " * 69 + "TOTAL:".ljust(13) + str(total_amount).center(17)
             s += "\n" + " " * 69 + "PAID:".ljust(13) + str(paid_amount).center(17)
             s += "\n" + " " * 69 + "UNPAID:".ljust(13) + str(unpaid_amount).center(17)
+            
             self.displayText.configure(state='normal')
             self.displayText.delete('1.0', END)
             self.displayText.insert(INSERT, s)
