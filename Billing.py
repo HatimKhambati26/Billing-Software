@@ -4802,7 +4802,7 @@ class UpdatePurchaseStatus(Frame):
             cursor = sqliteConnection.cursor()
 
             cursor.execute(
-                "UPDATE purchase_bill SET pb_status=? WHERE pb_year=? AND pb_no=?;", constraints)
+                "UPDATE purchase_bill SET pb_status=? WHERE pb_year=? AND pb_bill_no=?;", constraints)
             messagebox.showinfo(
                 title="Successfull", message="Payment Status updated Successfully!!")
             sqliteConnection.commit()
