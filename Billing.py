@@ -121,15 +121,15 @@ def draw_frame_border(workbook, worksheet, first_row, first_col, rows_count, col
 
 
 # Header
-header_text = '&C&"Times New Roman"&B&U&20GST TAX INVOICE&18\n&U \n&UF.K. PATANWALA && Co.&U&18\n &14Hardware, Plumbing goods, Sanitary goods, Paints, Electrical materials && General merchant&18\n &14Address:- 67,Trinity Street, S.S Gaikwad Marg Dhobi Talao, Mumbai-400002.'
+header_text = '&C&"Times New Roman"&B&U&20GST TAX INVOICE&18\n&U \n&UF.K. PATANWALA && Co. \n &14Hardware, Plumbing goods, Sanitary goods, Paints, Electrical materials && General merchant&18\n &14Address:- 67,Trinity Street, S.S Gaikwad Marg Dhobi Talao, Mumbai-400002.'
 
-logo_path = 'logo/FKP_logo.jpeg'
+logo_path = os.path.relpath('logo/FKP_logo.png')
 
 
 def set_header_with_logo(worksheet):
     """Set worksheet header with logo on left and text on right."""
     header = f'&L&G{header_text}'
-    worksheet.set_header(header, {'image_left': logo_path, 'scale_left': 0.4})
+    worksheet.set_header(header, {'image_left': logo_path, 'scale_left': 0.1})
 
 
 class App(Tk):
