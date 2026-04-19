@@ -121,7 +121,15 @@ def draw_frame_border(workbook, worksheet, first_row, first_col, rows_count, col
 
 
 # Header
-header = '&C&"Times New Roman"&B&U&20GST TAX INVOICE&18\n&U \n&UF.K. PATANWALA && Co.&U&18\n &14Hardware, Plumbing goods, Sanitary goods, Paints, Electrical materials && General merchant&18\n &14Address:- 67,Trinity Street, S.S Gaikwad Marg Dhobi Talao, Mumbai-400002.'
+header_text = '&C&"Times New Roman"&B&U&20GST TAX INVOICE&18\n&U \n&UF.K. PATANWALA && Co.&U&18\n &14Hardware, Plumbing goods, Sanitary goods, Paints, Electrical materials && General merchant&18\n &14Address:- 67,Trinity Street, S.S Gaikwad Marg Dhobi Talao, Mumbai-400002.'
+
+logo_path = 'logo/FKP_logo.jpeg'
+
+
+def set_header_with_logo(worksheet):
+    """Set worksheet header with logo on left and text on right."""
+    header = f'&L&G{header_text}'
+    worksheet.set_header(header, {'image_left': logo_path, 'scale_left': 0.4})
 
 
 class App(Tk):
@@ -1603,7 +1611,7 @@ class UpdateBillStatus(Frame):
             worksheet.center_horizontally()
             worksheet.set_margins(0.05, 0.05, 1.9, 0.2)
             worksheet.set_default_row(15)
-            worksheet.set_header(header)
+            set_header_with_logo(worksheet)
             
             # Formats
             bold_14 = workbook.add_format({
@@ -2013,7 +2021,7 @@ class GenerateBill(Frame):
             worksheet.center_horizontally()
             worksheet.set_margins(0.05, 0.05, 1.9, 0.2)
             worksheet.set_default_row(15)
-            worksheet.set_header(header)
+            set_header_with_logo(worksheet)
             merge_head = workbook.add_format({
                 'bold': 'bold',
                 'underline': 'underline',
@@ -2351,7 +2359,7 @@ class GenerateBill(Frame):
             worksheet.center_horizontally()
             worksheet.set_margins(0.05, 0.05, 1.9, 0.2)
             worksheet.set_default_row(15)
-            worksheet.set_header(header)
+            set_header_with_logo(worksheet)
             merge_head = workbook.add_format({
                 'bold': 'bold',
                 'underline': 'underline',
@@ -2689,7 +2697,7 @@ class GenerateBill(Frame):
             worksheet.center_horizontally()
             worksheet.set_margins(0.05, 0.05, 1.9, 0.2)
             worksheet.set_default_row(15)
-            worksheet.set_header(header)
+            set_header_with_logo(worksheet)
             merge_head = workbook.add_format({
                 'bold': 'bold',
                 'underline': 'underline',
@@ -2747,9 +2755,9 @@ class GenerateBill(Frame):
                 'font_size': 11})
 
             # ------ Set column Width -----
-            worksheet.set_column(0, 0, 5)  # Sr. No.
+            worksheet.set_column(0, 0, 3)  # Sr. No.
             worksheet.set_column(1, 1, 36)  # PARTICULARS / PRODUCT
-            worksheet.set_column(2, 2, 6)  # HSN
+            worksheet.set_column(2, 2, 8)  # HSN
             worksheet.set_column(3, 3, 5)  # Quantity
             worksheet.set_column(4, 4, 7)  # Rate
             worksheet.set_column(5, 5, 8)  # GST
@@ -2797,7 +2805,7 @@ class GenerateBill(Frame):
 
                 # Table Columns
                 worksheet.write(
-                    'A' + str(7+pg), "Sr.No.", table_header)
+                    'A' + str(7+pg), "Sr.", table_header)
                 worksheet.write(
                     'B' + str(7+pg), "PARTICULARS", table_header)
                 worksheet.write(
@@ -3027,7 +3035,7 @@ class GenerateBill(Frame):
             worksheet.center_horizontally()
             worksheet.set_margins(0.05, 0.05, 1.9, 0.2)
             worksheet.set_default_row(15)
-            worksheet.set_header(header)
+            set_header_with_logo(worksheet)
             merge_head = workbook.add_format({
                 'bold': 'bold',
                 'underline': 'underline',
@@ -3341,7 +3349,7 @@ class GenerateBill(Frame):
             worksheet.center_horizontally()
             worksheet.set_margins(0.05, 0.05, 1.9, 0.2)
             worksheet.set_default_row(15)
-            worksheet.set_header(header)
+            set_header_with_logo(worksheet)
             merge_head = workbook.add_format({
                 'bold': 'bold',
                 'underline': 'underline',
@@ -4262,7 +4270,7 @@ class UpdatePurchaseStatus(Frame):
             worksheet.center_horizontally()
             worksheet.set_margins(0.05, 0.05, 1.9, 0.2)
             worksheet.set_default_row(15)
-            worksheet.set_header(header)
+            set_header_with_logo(worksheet)
             
             # Formats
             bold_14 = workbook.add_format({
